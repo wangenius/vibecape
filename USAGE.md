@@ -6,10 +6,10 @@
 
 ```bash
 # 全局安装（推荐）
-npm install -g vibeta
+npm install -g vibecape
 
 # 或者在项目中本地使用
-npx vibeta
+npx vibecape
 ```
 
 ### 2. 创建新项目

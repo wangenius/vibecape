@@ -1,7 +1,7 @@
 {
-  "name": "vibe-cli",
+  "name": "vibecape-cli",
   "version": "1.0.0",
-  "description": "SaaS 应用搭建神器 - 让开发者用一行命令就能快速搭建出完整的在线服务系统",
+  "description": "vibecape - 让开发者用一行命令就能快速搭建出完整的在线服务系统",
   "main": "dist/index.js",
   "bin": {
     "vibe": "dist/cli.js"

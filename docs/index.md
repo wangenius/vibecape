@@ -2,11 +2,11 @@
 layout: home
 
 hero:
-  name: "Vibe CLI"
+  name: "vibecape"
   text: "SaaS 应用搭建神器"
   tagline: 让开发者用一行命令就能快速搭建出完整的在线服务系统
   image:
-    src: /logo.svg
+    src: /logo.png
     alt: Vibe CLI
   actions:
     - theme: brand
@@ -41,10 +41,10 @@ features:
 
 ```bash
 # 安装 Vibe CLI
-npm install -g vibe-cli
+npm install -g vibecape
 
 # 创建新项目
-vibe create my-saas-app
+vibe create my-app
 
 # 添加用户认证
 vibe install auth --provider=clerk

@@ -6,7 +6,7 @@ export default defineConfig({
   lang: 'zh-CN',
   
   themeConfig: {
-    logo: '/logo.svg',
+    logo: '/logo.png',
     
     nav: [
       { text: '首页', link: '/' },
@@ -114,5 +114,8 @@ export default defineConfig({
       dark: 'github-dark'
     },
     lineNumbers: true
-  }
+  },
+
+  // 忽略死链接检查（用于开发阶段）
+  ignoreDeadLinks: true
 }) 

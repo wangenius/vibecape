@@ -6,10 +6,10 @@
 
 ```bash
 # 全局安装（推荐）
-npm install -g vibe-cli
+npm install -g vibeta
 
 # 或者在项目中本地使用
-npx vibe-cli
+npx vibeta
 ```
 
 ### 2. 创建新项目
@@ -196,7 +196,7 @@ my-saas-project/
 │   ├── service/            # 业务逻辑
 │   └── database/           # 数据库配置
 ├── types/                  # 类型定义
-├── vibe.config.json        # Vibe CLI 配置
+├── vibe.config.ts        # Vibe CLI 配置
 ├── package.json
 └── README.md
 ```

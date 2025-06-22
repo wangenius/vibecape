@@ -1,0 +1,13 @@
+{
+    "style": "default",
+    "tailwind": {
+      "config": "tailwind.config.js",
+      "css": "@site/src/styles/global.css",
+      "cssVariables": true
+    },
+    "tsx": true,
+    "aliases": {
+      "utils": "@site/src/lib/utils",
+      "components": "@site/src/components"
+    }
+  }

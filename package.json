@@ -1,5 +1,5 @@
 {
-  "name": "vibecape-cli",
+  "name": "vibecape",
   "version": "1.0.0",
   "description": "vibecape - 让开发者用一行命令就能快速搭建出完整的在线服务系统",
   "main": "dist/index.js",

@@ -23,10 +23,10 @@ function Footer(): React.ReactElement | null {
           <div>
             <h3 className="text-lg font-semibold mb-4">Quick links</h3>
             <ul className="space-y-2">
-              <li><a href="/docs/guide/getting-started" className="text-gray-400 hover:text-white">Getting started</a></li>
-              <li><a href="/docs/guide/creating-project" className="text-gray-400 hover:text-white">Creating project</a></li>
-              <li><a href="/docs/integrations" className="text-gray-400 hover:text-white">Integration guide</a></li>
-              <li><a href="/docs/templates" className="text-gray-400 hover:text-white">Templates</a></li>
+              <li><a href="/docs/guide/getting-started" className="!text-gray-400 hover:text-white">Getting started</a></li>
+              <li><a href="/docs/guide/creating-project" className="!text-gray-400 hover:text-white">Creating project</a></li>
+              <li><a href="/docs/integrations" className="!text-gray-400 hover:text-white">Integration guide</a></li>
+              <li><a href="/docs/templates" className="!text-gray-400 hover:text-white">Templates</a></li>
             </ul>
           </div>
 
@@ -34,9 +34,9 @@ function Footer(): React.ReactElement | null {
           <div>
             <h3 className="text-lg font-semibold mb-4">Resources</h3>
             <ul className="space-y-2">
-              <li><a href="/docs/reference/commands" className="text-gray-400 hover:text-white">Command reference</a></li>
-              <li><a href="/blog" className="text-gray-400 hover:text-white">Blog</a></li>
-              <li><a href="https://github.com/vibe-cli/vibe" className="text-gray-400 hover:text-white">GitHub</a></li>
+              <li><a href="/docs/reference/commands" className="!text-gray-400 hover:text-white">Command reference</a></li>
+              <li><a href="/blog" className="!text-gray-400 hover:text-white">Blog</a></li>
+              <li><a href="https://github.com/vibe-cli/vibe" className="!text-gray-400 hover:text-white">GitHub</a></li>
             </ul>
           </div>
 
@@ -44,9 +44,9 @@ function Footer(): React.ReactElement | null {
           <div>
             <h3 className="text-lg font-semibold mb-4">Community</h3>
             <ul className="space-y-2">
-              <li><a href="https://github.com/vibe-cli/vibe/discussions" className="text-gray-400 hover:text-white">Discussions</a></li>
-              <li><a href="https://github.com/vibe-cli/vibe/issues" className="text-gray-400 hover:text-white">Issue feedback</a></li>
-              <li><a href="https://twitter.com/vibe_cli" className="text-gray-400 hover:text-white">Twitter</a></li>
+              <li><a href="https://github.com/vibe-cli/vibe/discussions" className="!text-gray-400 hover:text-white">Discussions</a></li>
+              <li><a href="https://github.com/vibe-cli/vibe/issues" className="!text-gray-400 hover:text-white">Issue feedback</a></li>
+              <li><a href="https://twitter.com/vibe_cli" className="!text-gray-400 hover:text-white">Twitter</a></li>
             </ul>
           </div>
         </div>

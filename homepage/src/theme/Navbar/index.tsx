@@ -87,7 +87,7 @@ export default function NavbarWrapper(props: Props): React.ReactElement {
               content={
                 <>
                   <NavItem href="/">vibecape</NavItem>
-                  <NavItem href="/product/market">Marketplace</NavItem>
+                  <NavItem href="/product/market">Templates</NavItem>
                 </>
               }
               contentProps={{ className: popoverContentClass }}
@@ -164,7 +164,7 @@ export default function NavbarWrapper(props: Props): React.ReactElement {
               variant="secondary"
               size="sm"
               onClick={() =>
-                 window.open("https://github.com/vibe-cli/vibe", "_blank")
+                 window.open("https://github.com/wangenius/vibecape", "_blank")
                 }
             >
               <TbBrandGithub className="w-6 h-6" />

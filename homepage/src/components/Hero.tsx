@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { PiArrowDown } from "react-icons/pi";
+import { PiArrowDown, PiArrowRight, PiTerminal } from "react-icons/pi";
 
 const Hero = ({
   setIsScrolled,
@@ -20,15 +20,15 @@ const Hero = ({
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const handleDownload = () => {
-    // 跳转到GitHub releases页面
-    window.open("https://github.com/vibe-cli/vibe/releases", "_blank");
+  const handleGetStarted = () => {
+    // 跳转到快速开始文档
+    window.open("/docs/guide/getting-started", "_blank");
   };
 
   return (
     <>
-      <section className="relative min-h-screen max-h-screen !-mt-14 overflow-hidden bg-gradient-to-b from-background via-background/95 to-muted/30">
-        <div className="relative min-h-screen !-mt-14 flex items-center justify-center overflow-hidden">
+      <section className="relative min-h-screen max-h-screen !mt-8 overflow-hidden bg-gradient-to-b from-background via-background/95 to-muted/30">
+        <div className="relative min-h-screen !mt-8 flex items-center justify-center overflow-hidden">
           {/* 高级背景效果 */}
           <div className="absolute inset-0 overflow-hidden">
             <motion.div
@@ -74,7 +74,7 @@ const Hero = ({
                     repeatType: "reverse",
                   }}
                 >
-                  SaaS 应用搭建神器
+                  SaaS Builder AI CLI
                 </motion.span>
               </motion.div>
 
@@ -83,33 +83,52 @@ const Hero = ({
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.2 }}
-                className="mb-14 text-xl"
+                className="mb-8 text-xl md:text-2xl text-muted-foreground max-w-4xl mx-auto"
               >
-                让开发者用一行命令就能快速搭建出完整的在线服务系统。
-                支持认证、支付、数据库、国际化等中间件的快速集成。
+                Build SaaS apps with a single command
+              </motion.div>
+
+              {/* 命令行演示 */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.4 }}
+                className="mb-12 bg-gray-900 rounded-lg p-6 text-left max-w-2xl mx-auto"
+              >
+                <div className="flex items-center mb-4">
+                  <PiTerminal className="text-green-400 mr-2" size={20} />
+                  <span className="text-gray-400 text-sm">terminal</span>
+                </div>
+                <div className="font-mono text-sm space-y-2">
+                  <span className="text-purple-400">$ curl</span>
+                  <span className="text-gray-400"> -fsSL</span>
+                  <span className="text-green-400"> https://vibecape.com/install.sh</span>
+                  <span className="text-gray-400"> |</span>
+                  <span className="text-purple-400"> bash</span>
+                </div>
               </motion.div>
 
               {/* 按钮组 - 更加高级的按钮设计 */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.4 }}
+                transition={{ duration: 0.8, delay: 0.6 }}
                 className="flex flex-col sm:flex-row gap-6 justify-center items-center"
               >
                 <motion.button
-                  onClick={handleDownload}
+                  onClick={handleGetStarted}
                   onMouseEnter={() => setIsHovered(true)}
                   onMouseLeave={() => setIsHovered(false)}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.98 }}
-                  className="inline-flex cursor-pointer items-center gap-3 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground px-8 py-4 rounded-full font-semibold text-lg shadow-lg shadow-primary/20 border border-primary/20"
+                  className="inline-flex cursor-pointer items-center gap-3 bg-primary text-primary-foreground px-8 py-4 rounded-full font-semibold text-lg shadow-lg shadow-primary/20 border border-primary/20"
                 >
-                  安装 vibecape
+                  start using vibecape
                   <motion.span
                     animate={{ x: isHovered ? 5 : 0 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <PiArrowDown size={24} />
+                    <PiArrowRight size={24} />
                   </motion.span>
                 </motion.button>
 
@@ -118,9 +137,30 @@ const Hero = ({
                   href="/docs/introduction"
                 >
                   <span className="relative z-10 transition-colors duration-300 group-hover:text-primary">
-                    查看文档
+                      view docs
                   </span>
                 </a>
+              </motion.div>
+
+              {/* 特性亮点 */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.8 }}
+                className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6 text-center"
+              >
+                <div className="p-4">
+                  <div className="text-2xl font-bold text-primary mb-2">30 minutes</div>
+                  <div className="text-muted-foreground">from zero to complete SaaS app</div>
+                </div>
+                <div className="p-4">
+                  <div className="text-2xl font-bold text-primary mb-2">one command</div>
+                  <div className="text-muted-foreground">integrate auth, payment, database</div>
+                </div>
+                <div className="p-4">
+                  <div className="text-2xl font-bold text-primary mb-2">ready to use</div>
+                  <div className="text-muted-foreground">built-in best practices and architecture</div>
+                </div>
               </motion.div>
             </div>
           </div>
@@ -148,13 +188,6 @@ const Hero = ({
             </motion.div>
           </motion.div>
         </div>
-        <motion.img
-          src="/image-black.png"
-          alt="vibecape 平台界面"
-          className="max-w-7xl h-auto object-cover mx-auto absolute -bottom-48 left-1/2 transform -translate-x-1/2 rounded-3xl"
-          whileHover={{ scale: 1.02 }}
-          transition={{ duration: 0.5 }}
-        />
       </section>
     </>
   );

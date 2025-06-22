@@ -9,43 +9,43 @@ function Footer(): React.ReactElement | null {
           {/* Logo and Brand */}
           <div className="col-span-1">
             <div className="flex items-center space-x-3 mb-4">
-                          <img src="/logo.svg" alt="vibecape" className="w-8 h-8" />
+                          <img src="/icon-white.svg" alt="vibecape" className="w-8 h-8" />
             <span className="text-xl font-bold">
               vibecape
             </span>
             </div>
             <p className="text-gray-400 text-sm">
-              SaaS 应用搭建神器，让开发者用一行命令就能快速搭建出完整的在线服务系统。
+              Vibecape is a SaaS application development tool that allows developers to quickly build complete online service systems with a single command.
             </p>
           </div>
 
           {/* Quick Links */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">快速链接</h3>
+            <h3 className="text-lg font-semibold mb-4">Quick links</h3>
             <ul className="space-y-2">
-              <li><a href="/docs/guide/getting-started" className="text-gray-400 hover:text-white">快速开始</a></li>
-              <li><a href="/docs/guide/creating-project" className="text-gray-400 hover:text-white">创建项目</a></li>
-              <li><a href="/docs/integrations" className="text-gray-400 hover:text-white">集成指南</a></li>
-              <li><a href="/docs/templates" className="text-gray-400 hover:text-white">模板</a></li>
+              <li><a href="/docs/guide/getting-started" className="text-gray-400 hover:text-white">Getting started</a></li>
+              <li><a href="/docs/guide/creating-project" className="text-gray-400 hover:text-white">Creating project</a></li>
+              <li><a href="/docs/integrations" className="text-gray-400 hover:text-white">Integration guide</a></li>
+              <li><a href="/docs/templates" className="text-gray-400 hover:text-white">Templates</a></li>
             </ul>
           </div>
 
           {/* Resources */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">资源</h3>
+            <h3 className="text-lg font-semibold mb-4">Resources</h3>
             <ul className="space-y-2">
-              <li><a href="/docs/reference/commands" className="text-gray-400 hover:text-white">命令参考</a></li>
-              <li><a href="/blog" className="text-gray-400 hover:text-white">博客</a></li>
+              <li><a href="/docs/reference/commands" className="text-gray-400 hover:text-white">Command reference</a></li>
+              <li><a href="/blog" className="text-gray-400 hover:text-white">Blog</a></li>
               <li><a href="https://github.com/vibe-cli/vibe" className="text-gray-400 hover:text-white">GitHub</a></li>
             </ul>
           </div>
 
           {/* Community */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">社区</h3>
+            <h3 className="text-lg font-semibold mb-4">Community</h3>
             <ul className="space-y-2">
-              <li><a href="https://github.com/vibe-cli/vibe/discussions" className="text-gray-400 hover:text-white">讨论</a></li>
-              <li><a href="https://github.com/vibe-cli/vibe/issues" className="text-gray-400 hover:text-white">问题反馈</a></li>
+              <li><a href="https://github.com/vibe-cli/vibe/discussions" className="text-gray-400 hover:text-white">Discussions</a></li>
+              <li><a href="https://github.com/vibe-cli/vibe/issues" className="text-gray-400 hover:text-white">Issue feedback</a></li>
               <li><a href="https://twitter.com/vibe_cli" className="text-gray-400 hover:text-white">Twitter</a></li>
             </ul>
           </div>

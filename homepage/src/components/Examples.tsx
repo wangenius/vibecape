@@ -1,36 +1,42 @@
 import { motion } from 'framer-motion';
-import { PiArrowRight, PiPlayCircle } from 'react-icons/pi';
+import { PiArrowRight, PiPlayCircle, PiTerminal } from 'react-icons/pi';
 
 const examples = [
   {
-    title: '完成学生测试试卷',
-    desc: "一句话完成复杂任务：'@xxx，制作一份高中数学单元测试卷，PDF格式，发送给xxx并要求他在周五前完成'",
-    videoUrl: 'https://example.com/video1.mp4',
-    name: '智能工作流',
+    title: 'Create AI SaaS app',
+    desc: "Quickly build AI-driven SaaS app: 'vibe create ai-chat --template=ai-saas', automatically configure OpenAI integration, user authentication, payment subscription system",
+    command: 'vibe create ai-chat --template=ai-saas',
+    name: 'AI SaaS',
   },
   {
-    title: '文件管理',
-    desc: "轻松处理文件任务：'整理文件，清理去年的文档并重新归档'或'将最近从微信下载的两个Word文件转换为PDF并合并打印'",
-    videoUrl: 'https://example.com/video2.mp4',
-    name: '文件管理',
+    title: 'Integrate user authentication system',
+    desc: "One-click add complete user authentication: 'vibe install auth --provider=clerk', including registration, login, password reset, social login, etc.",
+    command: 'vibe install auth --provider=clerk',
+    name: 'User authentication',
   },
   {
-    title: '联系安排下周活动',
-    desc: '@xxx，联系xxx安排下周活动，确认后让@xxx找一家酒店 - 多个代理协同工作，自动分配并执行任务',
-    videoUrl: 'https://example.com/video3.mp4',
-    name: '多代理协作',
+    title: 'Configure payment subscription system',
+    desc: 'Quickly integrate Stripe payment: automatically configure subscription plans, webhook processing, invoice management, support one-time payment and regular subscription',
+    command: 'vibe install payments --provider=stripe',
+    name: 'Payment system',
   },
   {
-    title: '会议记录整理',
-    desc: '自动整理会议记录，提取关键点并生成任务清单，分配给相关团队成员',
-    videoUrl: 'https://example.com/video4.mp4',
-    name: '智能助理',
+    title: 'Multi-language internationalization',
+    desc: 'Add multi-language support: automatically configure routing, translation file structure, language switching component, support SEO-optimized multi-language pages',
+    command: 'vibe install i18n --provider=next-intl',
+    name: 'Internationalization',
   },
   {
-    title: '数据分析报告',
-    desc: "一键生成数据分析报告：'分析过去三个月的销售数据，找出趋势并预测下个季度的表现'",
-    videoUrl: 'https://example.com/video5.mp4',
-    name: '数据智能',
+    title: 'Database configuration',
+    desc: "Quickly configure database: 'vibe install database --provider=supabase', automatically generate ORM configuration, data table structure, and API interface",
+    command: 'vibe install database --provider=supabase',
+    name: 'Database',
+  },
+  {
+    title: 'Email service integration',
+    desc: 'Integrate email functionality: automatically configure email templates, send service, user notification system, support welcome email, password reset, etc.',
+    command: 'vibe install email --provider=resend',
+    name: 'Email service',
   },
 ];
 
@@ -54,10 +60,10 @@ export const Examples = ({ isScrolled }: { isScrolled: boolean }) => {
           className="text-center mb-12"
         >
           <span className="text-4xl md:text-5xl font-bold tracking-tight mb-6">
-            应用示例
+            Case
           </span>
           <div className="text-gray-600 text-lg mt-4">
-            vibecape 专注于 SaaS 应用开发中的特定使用场景
+            Vibecape makes SaaS app development simple and efficient, solving complex configurations with a single command
           </div>
         </motion.div>
       </div>
@@ -72,27 +78,37 @@ export const Examples = ({ isScrolled }: { isScrolled: boolean }) => {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 viewport={{ once: true, margin: '-50px' }}
-                className="bg-muted rounded-xl overflow-hidden flex flex-col h-[280px] transition-shadow border border-muted/30"
+                className="bg-card rounded-xl overflow-hidden flex flex-col h-[320px] transition-shadow border border-muted/30 hover:shadow-lg"
               >
                 <div className="p-6 flex flex-col h-full">
-                  <div className="mb-2">
+                  <div className="mb-3">
                     <span className="text-xs font-medium px-2 py-1 bg-primary/10 text-primary rounded-full">
                       {example.name}
                     </span>
                   </div>
                   <h3 className="text-xl font-bold mb-3">{example.title}</h3>
-                  <p className="text-gray-700 text-sm flex-grow">
+                  <p className="text-gray-700 text-sm mb-4 flex-grow">
                     {example.desc}
                   </p>
-                  <div className="mt-4">
+                  
+                  {/* 命令行演示 */}
+                  <div className="bg-gray-900 rounded-lg p-3 mb-4">
+                    <div className="flex items-center mb-2">
+                      <PiTerminal className="text-green-400 mr-2" size={16} />
+                      <span className="text-gray-400 text-xs">终端</span>
+                    </div>
+                    <div className="font-mono text-xs text-green-400">
+                      $ {example.command}
+                    </div>
+                  </div>
+
+                  <div className="mt-auto">
                     <a
-                      href={example.videoUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex !text-primary !no-underline items-center gap-2 px-4 py-2 bg-primary/10 rounded-lg hover:bg-primary/20 transition-colors"
+                      href="/docs/guide/getting-started"
+                      className="inline-flex !text-primary !no-underline items-center gap-2 px-4 py-2 bg-primary/10 rounded-lg hover:bg-primary/20 transition-colors text-sm"
                     >
-                      <PiPlayCircle size={20} />
-                      <span>观看演示</span>
+                      <PiPlayCircle size={16} />
+                      <span>查看教程</span>
                     </a>
                   </div>
                 </div>
@@ -105,25 +121,25 @@ export const Examples = ({ isScrolled }: { isScrolled: boolean }) => {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: examples.length * 0.1 }}
               viewport={{ once: true, margin: '-50px' }}
-              className="bg-primary/10 rounded-xl overflow-hidden flex flex-col h-[280px] border-2 border-dashed border-primary/30"
+              className="bg-primary/10 rounded-xl overflow-hidden flex flex-col h-[320px] border-2 border-dashed border-primary/30"
             >
               <div className="p-6 flex flex-col items-center justify-center h-full">
                 <div className="rounded-full bg-primary/20 p-5 mb-6">
                   <PiArrowRight size={30} className="text-primary" />
                 </div>
                 <h3 className="text-2xl font-bold mb-3 text-center">
-                  发现更多
+                  探索更多
                 </h3>
                 <p className="text-gray-700 text-center mb-6">
-                  探索更多 vibecape 能够解决的实际开发场景
+                  查看完整的功能列表和使用教程，开始你的SaaS开发之旅
                 </p>
                 <div className="text-center">
                   <a
                     href="/docs/guide/getting-started"
-                    className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-8 py-3 rounded-full font-semibold hover:bg-primary/90 transition-colors !no-underline"
+                    className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-full font-semibold hover:bg-primary/90 transition-colors !no-underline"
                   >
-                    探索更多 vibecape 能够解决的实际开发场景
-                    <PiArrowRight className="w-5 h-5" />
+                    开始使用
+                    <PiArrowRight className="w-4 h-4" />
                   </a>
                 </div>
               </div>

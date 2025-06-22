@@ -58,16 +58,7 @@ const config: Config = {
     ],
   ],
 
-  plugins: [
-    [
-      '@docusaurus/plugin-sitemap',
-      {
-        changefreq: 'weekly',
-        priority: 0.5,
-        filename: 'sitemap.xml',
-      },
-    ],
-  ],
+  plugins: [],
 
   themeConfig: {
     image: 'logo.png',

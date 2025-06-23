@@ -7,7 +7,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 const config: Config = {
   title: 'vibecape',
   tagline: 'SaaS 应用搭建神器 - 让开发者用一行命令就能快速搭建出完整的在线服务系统',
-  favicon: 'favicon.svg',
+  favicon: 'icon.png',
 
   // Set the production url of your site here
   url: 'https://vibecape.com',

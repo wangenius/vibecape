@@ -39,44 +39,72 @@ export const createCommand = new Command('create')
         projectName = answers.projectName;
       }
 
-      // 交互式选择模板和配置
+      // 获取可用模板
       const templateManager = new TemplateManager();
       const templates = await templateManager.getAvailableTemplates();
 
-      const config = await inquirer.prompt([
-        {
+      // 构建需要询问的问题
+      const questions: any[] = [];
+
+      // 只有在没有指定模板时才询问
+      if (!options.template) {
+        questions.push({
           type: 'list',
           name: 'template',
           message: '选择项目模板:',
           choices: templates.map(t => ({ name: t.displayName, value: t.name })),
-          default: options.template || 'ai-saas'
-        },
-        {
-          type: 'list',
-          name: 'packageManager',
-          message: '选择包管理器:',
-          choices: ['npm', 'yarn', 'pnpm'],
-          default: 'npm'
-        },
-        {
+          default: 'ai-saas'
+        });
+      }
+
+      // 包管理器选择
+      questions.push({
+        type: 'list',
+        name: 'packageManager',
+        message: '选择包管理器:',
+        choices: ['npm', 'yarn', 'pnpm'],
+        default: 'npm'
+      });
+
+      // 只有在没有指定选项时才询问
+      if (options.typescript === undefined) {
+        questions.push({
           type: 'confirm',
           name: 'typescript',
           message: '启用 TypeScript:',
-          default: options.typescript !== undefined ? options.typescript : true
-        },
-        {
+          default: true
+        });
+      }
+
+      if (options.tailwind === undefined) {
+        questions.push({
           type: 'confirm',
           name: 'tailwind',
           message: '启用 Tailwind CSS:',
-          default: options.tailwind !== undefined ? options.tailwind : true
-        },
-        {
+          default: true
+        });
+      }
+
+      if (options.eslint === undefined) {
+        questions.push({
           type: 'confirm',
           name: 'eslint',
           message: '启用 ESLint:',
-          default: options.eslint !== undefined ? options.eslint : true
-        }
-      ]);
+          default: true
+        });
+      }
+
+      // 执行交互式询问
+      const answers = questions.length > 0 ? await inquirer.prompt(questions) : {};
+
+      // 合并选项和答案
+      const config = {
+        template: options.template || answers.template || 'ai-saas',
+        packageManager: answers.packageManager || 'npm',
+        typescript: options.typescript !== undefined ? options.typescript : (answers.typescript !== undefined ? answers.typescript : true),
+        tailwind: options.tailwind !== undefined ? options.tailwind : (answers.tailwind !== undefined ? answers.tailwind : true),
+        eslint: options.eslint !== undefined ? options.eslint : (answers.eslint !== undefined ? answers.eslint : true)
+      };
 
       // 创建项目
       const spinner = ora('正在创建项目...').start();

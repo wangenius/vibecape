@@ -71,6 +71,16 @@ const config: Config = {
       {property: 'og:url', content: 'https://vibecape.com'},
       {name: 'twitter:card', content: 'summary_large_image'},
     ],
+    headTags: [
+      {
+        tagName: 'script',
+        attributes: {
+          async: true,
+          src: 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6224617757558738',
+          crossorigin: 'anonymous',
+        },
+      },
+    ],
     navbar: {
           title: 'vibecape',
     logo: {

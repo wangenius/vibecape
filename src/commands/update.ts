@@ -3,11 +3,11 @@ import chalk from 'chalk';
 import { UpdateManager } from '../core/update-manager';
 
 export const updateCommand = new Command('update')
-  .description('更新已安装的中间件')
-  .option('--all', '更新所有中间件')
-  .argument('[integration]', '要更新的集成名称')
+  .description('update installed middleware')
+  .option('--all', 'update all middleware')
+  .argument('[integration]', 'integration name to update')
   .action(async (integration: string, options: any) => {
-    console.log(chalk.blue.bold('\n🔄 更新中间件\n'));
+    console.log(chalk.blue.bold('\n🔄 update middleware\n'));
     
     const updateManager = new UpdateManager();
     
@@ -16,6 +16,6 @@ export const updateCommand = new Command('update')
     } else if (integration) {
       await updateManager.updateIntegration(integration);
     } else {
-      console.log(chalk.yellow('请指定要更新的集成或使用 --all 更新所有'));
+      console.log(chalk.yellow('please specify the integration to update or use --all to update all'));
     }
   }); 

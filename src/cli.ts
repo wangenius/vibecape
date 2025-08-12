@@ -14,6 +14,7 @@ import { healthCommand } from './commands/health';
 import { templatesCommand } from './commands/templates';
 import { updateCommand } from './commands/update';
 import { reviseCommand } from './commands/revise';
+import { upgradeCommand } from './commands/upgrade';
 
 const program = new Command();
 
@@ -40,6 +41,7 @@ program.addCommand(healthCommand);
 program.addCommand(templatesCommand);
 program.addCommand(updateCommand);
 program.addCommand(reviseCommand);
+program.addCommand(upgradeCommand);
 
 // 解析命令行参数
 program.parse();

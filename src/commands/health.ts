@@ -3,9 +3,9 @@ import chalk from 'chalk';
 import { HealthChecker } from '../core/health-checker';
 
 export const healthCommand = new Command('health')
-  .description('检查项目健康状态')
+  .description('check project health')
   .action(async () => {
-    console.log(chalk.blue.bold('\n🏥 项目健康检查\n'));
+    console.log(chalk.blue.bold('\n🏥 project health check\n'));
     
     const healthChecker = new HealthChecker();
     const results = await healthChecker.checkAll();
@@ -25,9 +25,9 @@ export const healthCommand = new Command('health')
     
     const failedChecks = results.filter(r => r.status === 'fail');
     if (failedChecks.length > 0) {
-      console.log(chalk.red.bold(`\n❌ 发现 ${failedChecks.length} 个问题需要修复`));
+      console.log(chalk.red.bold(`\n❌ found ${failedChecks.length} issues need to be fixed`));
       process.exit(1);
     } else {
-      console.log(chalk.green.bold('\n✅ 项目健康状态良好！'));
+      console.log(chalk.green.bold('\n✅ project health is good!'));
     }
   }); 

@@ -28,7 +28,7 @@ program
 program.addHelpText(
   'before',
   chalk.blue.bold(`
-🚀 Vibecape : 让每个有想法的人都能在半小时内搭建出自己的在线服务产品
+🚀 Vibecape : make your idea come true in 10 minutes
 `)
 );
 

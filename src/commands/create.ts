@@ -3,7 +3,6 @@ import inquirer from 'inquirer';
 import chalk from 'chalk';
 import ora from 'ora';
 import { ProjectCreator } from '../core/project-creator';
-import { TemplateManager } from '../core/template-manager';
 import { templates } from '../const';
 
 export const createCommand = new Command('create')
@@ -45,9 +44,10 @@ export const createCommand = new Command('create')
       if (availableTemplateNames.length === 0) {
         throw new Error('未配置任何模板');
       }
-      const template = options.template && availableTemplateNames.includes(options.template)
-        ? options.template
-        : availableTemplateNames[0];
+      const template =
+        options.template && availableTemplateNames.includes(options.template)
+          ? options.template
+          : availableTemplateNames[0];
       // 创建项目
       const spinner = ora('正在创建项目...').start();
 

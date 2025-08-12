@@ -46,10 +46,10 @@ local_release() {
     warn "当前分支为 $branch，建议在 main/master 分支进行发布"
   fi
 
-  info "安装依赖"
-  npm i
-  info "构建产物"
-  npm run build
+  # info "安装依赖"
+  # npm i
+  # info "构建产物"
+  # npm run build
 
   # 版本升级与打 tag（npm version 会同时提交并打 tag）
   info "版本升级：$release_type"

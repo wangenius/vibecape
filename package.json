@@ -2,7 +2,7 @@
   "name": "vibecape",
   "version": "1.0.0",
   "description": "vibecape - 让开发者用一行命令就能快速搭建出完整的在线服务系统",
-  "main": "dist/index.js",
+  "main": "dist/cli.js",
   "bin": {
     "vibe": "dist/cli.js"
   },
@@ -17,6 +17,15 @@
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "preferGlobal": true,
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
   },
   "keywords": [
     "cli",

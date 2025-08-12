@@ -2,6 +2,11 @@
 
 import { Command } from 'commander';
 import chalk from 'chalk';
+// 通过 package.json 动态读取版本号，避免手动同步
+// 注意：tsconfig 已启用 resolveJsonModule
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import pkg from '../package.json';
 import { createCommand } from './commands/create';
 import { installCommand } from './commands/install';
 import { configCommand } from './commands/config';
@@ -15,13 +20,17 @@ const program = new Command();
 // 设置基本信息
 program
   .name('vibecape')
-  .description('vibecape - 让开发者用一行命令就能快速搭建出完整的在线服务系统')
-  .version('1.0.0');
+  .description('vibecape - develop and ship your idea in 10 minutes')
+  // 支持 -v (小写) 与 --version，便于用户输入
+  .version(pkg.version, '-v, --version', '显示版本号');
 
 // 添加欢迎信息
-program.addHelpText('before', chalk.blue.bold(`
+program.addHelpText(
+  'before',
+  chalk.blue.bold(`
 🚀 Vibecape : 让每个有想法的人都能在半小时内搭建出自己的在线服务产品
-`));
+`)
+);
 
 // 注册命令
 program.addCommand(createCommand);
@@ -33,4 +42,4 @@ program.addCommand(updateCommand);
 program.addCommand(reviseCommand);
 
 // 解析命令行参数
-program.parse(); 
+program.parse();

@@ -36,7 +36,7 @@
     "development-tools",
     "boilerplate"
   ],
-  "author": "Vibe Team",
+  "author": "wangenius",
   "license": "MIT",
   "dependencies": {
     "axios": "^1.6.0",

@@ -5,4 +5,8 @@ export const templates: Record<string, Template> = {
     description: 'NPMJS Node Template',
     url: 'https://github.com/wangenius/npmjs-template.git',
   },
+  NextTemplate: {
+    description: 'Next.js Template',
+    url: 'https://github.com/wangenius/next-template.git',
+  },
 };

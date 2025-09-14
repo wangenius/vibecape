@@ -1,0 +1,5 @@
+{
+  "buildCommand": "npm -w homepage run build",
+  "outputDirectory": "homepage/out"
+}
+

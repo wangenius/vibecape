@@ -6,7 +6,10 @@ const withMDX = createMDX({
 });
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Export as a fully static site so Vercel can use a static output directory
+  output: "export",
+  // next/image requires this when using static export
+  images: { unoptimized: true },
 };
 
 export default withMDX(nextConfig);

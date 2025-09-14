@@ -73,8 +73,13 @@ local_release() {
         warn "没有可提交的改动或提交失败，继续发布流程"
       fi
     else
-      err "检测到未提交改动，且当前为非交互环境。请先提交后再发布。"
-      exit 1
+      if [[ "${CI:-}" == "true" ]]; then
+        err "检测到未提交改动，且当前为 CI 环境。请在提交后再触发发布。"
+        exit 1
+      fi
+      warn "非交互环境，使用默认信息自动提交"
+      git add -A || true
+      git commit -m "chore: release prep" || true
     fi
   fi
 

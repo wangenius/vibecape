@@ -42,6 +42,30 @@ setup_npm_auth() {
   fi
 }
 
+prompt_mode() {
+  info "请选择发布操作："
+  echo "1) 版本号提升并打标签（patch/minor/major）"
+  echo "2) 仅为当前版本打标签"
+  printf "> 选择 [1/2] (默认 1): "
+  IFS= read -r choice || true
+  choice=${choice:-1}
+
+  if [[ "$choice" == "2" ]]; then
+    tag_current
+    return
+  fi
+
+  printf "> 选择版本类型 [patch/minor/major] 或输入精确版本 (默认 patch): "
+  IFS= read -r rt || true
+  rt=${rt:-patch}
+  if [[ "$rt" =~ ^(patch|minor|major)$ || "$rt" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+    local_release "$rt"
+  else
+    err "输入无效：$rt"
+    exit 1
+  fi
+}
+
 local_release() {
   local release_type="$1"; shift || true
 
@@ -168,8 +192,12 @@ case "$MODE" in
     tag_current
     ;;
   "")
-    err "用法：bash scripts/release.sh [patch|minor|major|<version>]"
-    exit 1
+    if [ -t 0 ] && [ -t 1 ]; then
+      prompt_mode
+    else
+      err "用法：bash scripts/release.sh [patch|minor|major|<version>|tag]"
+      exit 1
+    fi
     ;;
   *)
     # 指定明确版本号，如 1.2.3

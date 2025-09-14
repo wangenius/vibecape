@@ -57,7 +57,7 @@ local_release() {
   # npm run build
 
   # 版本升级与打 tag（npm version 会同时提交并打 tag）
-  info "版本升级：$release_type（tag 前缀：$TAG_PREFIX）"
+  info "版本升级：${release_type} (tag 前缀: ${TAG_PREFIX})"
   npm version "$release_type" \
     --tag-version-prefix "$TAG_PREFIX" \
     -m "chore(release): ${TAG_PREFIX}%s"

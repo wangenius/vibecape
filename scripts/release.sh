@@ -20,6 +20,8 @@ warn() { color 33 "[WARN] $*"; }
 err()  { color 31 "[ERR ] $*"; }
 
 MODE="${1:-}"
+# 可覆盖：用于 npm 打 tag 的前缀（默认使用包名约定），例如 vibecape@1.2.3
+TAG_PREFIX="${TAG_PREFIX:-vibecape@}"
 
 # 安全检查：确保 node 和 npm 可用
 command -v node >/dev/null 2>&1 || { err "需要 Node.js"; exit 1; }
@@ -55,10 +57,13 @@ local_release() {
   # npm run build
 
   # 版本升级与打 tag（npm version 会同时提交并打 tag）
-  info "版本升级：$release_type"
-  npm version "$release_type" -m "chore(release): v%s"
+  info "版本升级：$release_type（tag 前缀：$TAG_PREFIX）"
+  npm version "$release_type" \
+    --tag-version-prefix "$TAG_PREFIX" \
+    -m "chore(release): ${TAG_PREFIX}%s"
 
-  info "推送提交与标签"
+  info "同步远端并推送提交与标签"
+  git fetch --tags --prune
   git push
   git push --tags
 
@@ -100,4 +105,3 @@ case "$MODE" in
     fi
     ;;
 esac
-

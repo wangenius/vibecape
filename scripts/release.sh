@@ -43,18 +43,6 @@ setup_npm_auth() {
 }
 
 prompt_mode() {
-  info "请选择发布操作："
-  echo "1) 版本号提升并打标签（patch/minor/major）"
-  echo "2) 仅为当前版本打标签"
-  printf "> 选择 [1/2] (默认 1): "
-  IFS= read -r choice || true
-  choice=${choice:-1}
-
-  if [[ "$choice" == "2" ]]; then
-    tag_current
-    return
-  fi
-
   printf "> 选择版本类型 [patch/minor/major] 或输入精确版本 (默认 patch): "
   IFS= read -r rt || true
   rt=${rt:-patch}
@@ -136,66 +124,15 @@ local_release() {
   info "发布完成：${tag_name}"
 }
 
-tag_current() {
-  # 工作区检查：如有未提交改动，提示用户提交（交互式）
-  if ! git diff-index --quiet HEAD --; then
-    warn "检测到未提交改动"
-    if [ -t 0 ] && [ -t 1 ]; then
-      info "按回车直接提交，或输入自定义 commit message 后回车"
-      printf "> 提交说明（默认：chore: release prep）: "
-      IFS= read -r COMMIT_MSG || true
-      COMMIT_MSG=${COMMIT_MSG:-"chore: release prep"}
-      info "提交中：${COMMIT_MSG}"
-      git add -A
-      if git commit -m "${COMMIT_MSG}"; then
-        info "已提交工作区改动"
-      else
-        warn "没有可提交的改动或提交失败，继续发布流程"
-      fi
-    else
-      err "检测到未提交改动，且当前为非交互环境。请先提交后再发布。"
-      exit 1
-    fi
-  fi
-
-  local branch
-  branch="$(git rev-parse --abbrev-ref HEAD)"
-  if [[ "$branch" != "main" && "$branch" != "master" ]]; then
-    if [[ "$ALLOW_NON_MAIN" != "true" ]]; then
-      warn "当前分支为 $branch，建议在 main/master 分支发布（可用 ALLOW_NON_MAIN=true 跳过）"
-    fi
-  fi
-
-  local new_version tag_name
-  new_version=$(node -p "require('./package.json').version")
-  tag_name="${TAG_PREFIX}${new_version}"
-
-  if git rev-parse -q --verify "refs/tags/${tag_name}" >/dev/null; then
-    warn "标签已存在：${tag_name}（跳过创建）"
-  else
-    info "创建标签：${tag_name}"
-    git tag -a "${tag_name}" -m "chore(release): ${tag_name}"
-  fi
-
-  info "同步远端并推送提交与关联标签"
-  git fetch --tags --prune "$REMOTE"
-  git push --follow-tags "$REMOTE" "HEAD:${branch}"
-
-  info "发布完成：${tag_name}"
-}
-
 case "$MODE" in
   patch|minor|major)
     local_release "$MODE"
-    ;;
-  tag|current)
-    tag_current
     ;;
   "")
     if [ -t 0 ] && [ -t 1 ]; then
       prompt_mode
     else
-      err "用法：bash scripts/release.sh [patch|minor|major|<version>|tag]"
+      err "用法：bash scripts/release.sh [patch|minor|major|<version>]"
       exit 1
     fi
     ;;

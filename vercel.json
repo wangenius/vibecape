@@ -1,5 +1,4 @@
 {
-  "buildCommand": "npm -w homepage run build",
+  "buildCommand": "cd homepage && npm run build",
   "outputDirectory": "homepage/out"
 }
-

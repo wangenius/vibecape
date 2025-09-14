@@ -5,6 +5,11 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem, DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
+import {
   Sheet,
   SheetContent,
   SheetHeader,
@@ -53,6 +58,44 @@ export function Navbar() {
                   Docs
                 </Button>
               </Link>
+
+              {/* Templates 下拉菜单 */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="text-sm font-medium">
+                    Templates
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start">
+                  <Link
+                    href="https://vibetake.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <DropdownMenuItem className="text-sm font-medium">
+                      vibetake
+                    </DropdownMenuItem>
+                  </Link>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="text-sm font-medium">
+                    Lesson
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start">
+                  <Link
+                    href="https://vibemeet.ai"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <DropdownMenuItem className="text-sm font-medium">
+                      vibemeet: AI producting lesson
+                    </DropdownMenuItem>
+                  </Link>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
 
@@ -130,6 +173,30 @@ export function Navbar() {
                         className="w-full justify-start text-sm font-medium"
                       >
                         Docs
+                      </Button>
+                    </Link>
+
+                    {/* Templates 折叠项（移动端用简单链接代替下拉）*/}
+                    <Link href="/docs/templates">
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start text-sm font-medium"
+                      >
+                        Templates
+                      </Button>
+                    </Link>
+
+                    {/* vibetake 外链 */}
+                    <Link
+                      href="https://vibetake.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start text-sm font-medium"
+                      >
+                        vibetake
                       </Button>
                     </Link>
 

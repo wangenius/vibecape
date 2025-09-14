@@ -1,12 +1,12 @@
-import type { Template } from './core/template-manager';
+import type { Template } from "./core/template-manager";
 
 export const templates: Record<string, Template> = {
   PackageOnNPMJS: {
-    description: 'NPMJS Node Template',
-    url: 'https://github.com/wangenius/npmjs-template.git',
+    description: "NPMJS Node Template",
+    url: "https://github.com/wangenius/npmjs-template.git",
   },
-  NextTemplate: {
-    description: 'Next.js Template',
-    url: 'https://github.com/wangenius/next-template.git',
+  vibetake: {
+    description: "Next.js Template",
+    url: "https://github.com/wangenius/vibetake.git",
   },
 };

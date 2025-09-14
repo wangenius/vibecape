@@ -108,16 +108,29 @@ local_release() {
   new_version=$(node -p "require('./package.json').version")
   tag_name="${TAG_PREFIX}${new_version}"
 
-  # 兼容兜底：若全局 npmrc 关闭了 git-tag-version，则手动创建注解标签
-  if ! git rev-parse -q --verify "refs/tags/${tag_name}" >/dev/null; then
-    warn "未检测到标签 ${tag_name}，可能因 npmrc 关闭了 git-tag-version。将手动创建标签。"
+  # 若 npmrc 禁用了自动提交/打标，进行兜底处理
+  if ! git diff-index --quiet HEAD --; then
+    warn "检测到版本变更未提交，进行兜底提交"
+    git add package.json ./package.json 2>/dev/null || true
+    git add -A
+    git commit -m "chore(release): ${tag_name}" || true
+  fi
+
+  # 确保存在指向 HEAD 的注解标签
+  if git rev-parse -q --verify "refs/tags/${tag_name}" >/dev/null; then
+    if ! git tag --points-at HEAD | grep -qx "${tag_name}"; then
+      warn "标签 ${tag_name} 未指向当前提交，强制更新为注解标签"
+      git tag -fa "${tag_name}" -m "chore(release): ${tag_name}"
+    fi
+  else
+    info "创建标签：${tag_name}"
     git tag -a "${tag_name}" -m "chore(release): ${tag_name}"
   fi
 
-  info "同步远端并推送提交与关联标签"
+  info "同步远端并推送提交与标签"
   git fetch --tags --prune "$REMOTE"
-  # --follow-tags 仅推送提交引用到的注解标签，避免推送历史所有标签
-  git push --follow-tags "$REMOTE" "HEAD:${branch}"
+  git push "$REMOTE" "HEAD:${branch}"
+  git push "$REMOTE" "${tag_name}"
 
   # npm 发布（默认关闭，由 CI 处理）
   if [[ "${PUBLISH:-false}" == "true" ]]; then

@@ -9,7 +9,10 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
-cd "$REPO_ROOT"
+CLI_DIR="${REPO_ROOT}/package"
+
+# 进入 CLI 包目录，确保 npm version/publish 作用在正确的 package.json 上
+cd "$CLI_DIR"
 
 color() { local c=$1; shift; printf "\033[%sm%s\033[0m\n" "$c" "$*"; }
 info() { color 36 "[INFO] $*"; }
@@ -97,5 +100,4 @@ case "$MODE" in
     fi
     ;;
 esac
-
 

@@ -1,0 +1,417 @@
+---
+title: create
+---
+
+# 创建项目详解
+
+本指南将深入介绍如何使用 Vibe CLI 创建不同类型的 SaaS 项目，包括各种配置选项和最佳实践。
+
+## 🎯 创建方式
+
+### 1. 交互式创建（推荐）
+
+最简单的方式是使用交互式命令，系统会引导你完成所有配置：
+
+```bash
+vibe create
+```
+
+系统会逐步询问：
+
+```bash
+? 项目名称: my-awesome-saas
+? 项目描述: 我的第一个 SaaS 应用
+? 选择项目模板: 
+  ❯ AI SaaS Template - AI 驱动的 SaaS 应用
+    Basic SaaS Template - 通用 SaaS 应用
+    E-commerce Template - 电商应用
+? 选择包管理器: 
+  ❯ npm
+    yarn
+    pnpm
+? 启用 TypeScript: Yes
+? 启用 Tailwind CSS: Yes
+? 启用 ESLint: Yes
+? 初始化 Git 仓库: Yes
+```
+
+### 2. 命令行直接创建
+
+如果你已经明确知道要什么配置，可以直接指定参数：
+
+```bash
+vibe create my-saas-app \
+  --template=ai-saas \
+  --package-manager=npm \
+  --typescript \
+  --tailwind \
+  --eslint \
+  --git
+```
+
+### 3. 使用配置文件
+
+创建一个配置文件来预设项目参数：
+
+```json title="project-config.json"
+{
+  "name": "my-saas-app",
+  "template": "ai-saas",
+  "packageManager": "npm",
+  "typescript": true,
+  "tailwind": true,
+  "eslint": true,
+  "git": true,
+  "integrations": [
+    {
+      "type": "auth",
+      "provider": "clerk"
+    },
+    {
+      "type": "payments",
+      "provider": "stripe"
+    }
+  ]
+}
+```
+
+```bash
+vibe create --config=project-config.json
+```
+
+## 📦 项目模板选择
+
+### AI SaaS 模板
+
+适合构建 AI 驱动的 SaaS 应用：
+
+```bash
+vibe create ai-writing-tool --template=ai-saas
+```
+
+**包含功能：**
+- OpenAI/Anthropic API 集成
+- 用户认证系统 (Clerk)
+- 订阅付费系统 (Stripe)
+- 使用量统计和限制
+- 现代化 UI 组件
+
+**适用场景：**
+- AI 写作助手
+- 图片生成工具
+- 代码生成器
+- 智能客服系统
+
+### 基础 SaaS 模板
+
+通用的 SaaS 应用基础架构：
+
+```bash
+vibe create project-manager --template=basic-saas
+```
+
+**包含功能：**
+- 用户管理系统
+- 多租户架构
+- 仪表板界面
+- 通知系统
+- 团队协作功能
+
+**适用场景：**
+- 项目管理工具
+- CRM 系统
+- 团队协作平台
+- 数据分析工具
+
+### 电商模板
+
+完整的电商解决方案：
+
+```bash
+vibe create online-store --template=e-commerce
+```
+
+**包含功能：**
+- 商品管理系统
+- 购物车和结账流程
+- 订单管理
+- 用户账户系统
+- 支付集成
+
+**适用场景：**
+- 在线商店
+- 数字产品销售
+- 订阅服务
+- B2B 电商平台
+
+## 🔧 配置选项详解
+
+### TypeScript 支持
+
+启用 TypeScript 可以提供更好的类型安全和开发体验：
+
+```bash
+vibe create my-app --typescript
+```
+
+**优势：**
+- 编译时类型检查
+- 更好的 IDE 支持
+- 减少运行时错误
+- 更好的代码可维护性
+
+### Tailwind CSS
+
+现代化的 CSS 框架，提供快速样式开发：
+
+```bash
+vibe create my-app --tailwind
+```
+
+**包含配置：**
+- Tailwind CSS 核心库
+- 响应式设计工具类
+- 暗色模式支持
+- 自定义设计令牌
+
+### ESLint 代码检查
+
+保证代码质量和一致性：
+
+```bash
+vibe create my-app --eslint
+```
+
+**包含规则：**
+- JavaScript/TypeScript 最佳实践
+- React Hooks 规则
+- 无障碍性检查
+- 性能优化建议
+
+### 包管理器选择
+
+支持多种包管理器：
+
+```bash
+# 使用 npm
+vibe create my-app --package-manager=npm
+
+# 使用 yarn
+vibe create my-app --package-manager=yarn
+
+# 使用 pnpm
+vibe create my-app --package-manager=pnpm
+```
+
+## 📁 项目结构详解
+
+创建完成后的项目结构：
+
+```
+my-saas-app/
+├── 📁 client/                    # 前端应用
+│   ├── 📁 components/            # React 组件
+│   │   ├── ui/                   # 基础 UI 组件
+│   │   ├── forms/                # 表单组件
+│   │   └── layout/               # 布局组件
+│   ├── 📁 pages/                 # 页面文件 (Next.js)
+│   │   ├── api/                  # API 路由
+│   │   ├── auth/                 # 认证页面
+│   │   └── dashboard/            # 仪表板页面
+│   ├── 📁 hooks/                 # 自定义 React Hooks
+│   ├── 📁 services/              # 前端服务
+│   ├── 📁 utils/                 # 工具函数
+│   └── 📁 styles/                # 样式文件
+├── 📁 server/                    # 后端应用 (可选)
+│   ├── 📁 routes/                # API 路由
+│   ├── 📁 middleware/            # 中间件
+│   ├── 📁 services/              # 业务逻辑
+│   └── 📁 database/              # 数据库配置
+├── 📁 types/                     # TypeScript 类型定义
+├── 📁 config/                    # 配置文件
+├── 📄 vibe.config.json           # Vibe CLI 配置
+├── 📄 package.json               # 项目依赖
+├── 📄 tsconfig.json              # TypeScript 配置
+├── 📄 tailwind.config.js         # Tailwind 配置
+├── 📄 .env.example               # 环境变量示例
+└── 📄 README.md                  # 项目说明
+```
+
+## 🚀 创建后的后续步骤
+
+### 1. 安装依赖
+
+```bash
+cd my-saas-app
+npm install
+```
+
+### 2. 配置环境变量
+
+```bash
+cp .env.example .env.local
+# 编辑 .env.local 文件，填入你的 API 密钥
+```
+
+### 3. 启动开发服务器
+
+```bash
+npm run dev
+```
+
+### 4. 访问应用
+
+打开浏览器访问 [http://localhost:3000](http://localhost:3000)
+
+## 🔧 高级配置
+
+### 自定义模板
+
+你可以创建自己的项目模板：
+
+```bash
+# 创建自定义模板目录
+mkdir ~/.vibe/templates/my-template
+
+# 将模板文件复制到目录中
+cp -r my-template-files/* ~/.vibe/templates/my-template/
+
+# 使用自定义模板
+vibe create my-app --template=my-template
+```
+
+### 预设集成
+
+在创建项目时同时安装集成：
+
+```bash
+vibe create my-app \
+  --template=ai-saas \
+  --with-auth=clerk \
+  --with-payments=stripe \
+  --with-database=supabase
+```
+
+### 批量创建
+
+使用配置文件批量创建多个项目：
+
+```json title="batch-config.json"
+{
+  "projects": [
+    {
+      "name": "frontend-app",
+      "template": "basic-saas",
+      "integrations": ["auth", "payments"]
+    },
+    {
+      "name": "admin-dashboard", 
+      "template": "admin",
+      "integrations": ["auth", "database"]
+    }
+  ]
+}
+```
+
+```bash
+vibe create --batch=batch-config.json
+```
+
+## 💡 最佳实践
+
+### 1. 项目命名
+
+- 使用小写字母和连字符
+- 避免特殊字符和空格
+- 选择有意义的名称
+
+```bash
+# ✅ 好的命名
+vibe create ai-writing-assistant
+vibe create project-management-tool
+
+# ❌ 避免的命名
+vibe create "My App"
+vibe create myApp123!
+```
+
+### 2. 模板选择
+
+根据你的项目需求选择合适的模板：
+
+- **AI 应用** → `ai-saas`
+- **通用 SaaS** → `basic-saas`
+- **电商应用** → `e-commerce`
+- **内容管理** → `cms`
+
+### 3. 依赖管理
+
+推荐使用的包管理器：
+
+- **npm** - 最广泛支持
+- **yarn** - 更快的安装速度
+- **pnpm** - 节省磁盘空间
+
+### 4. 开发环境
+
+确保开发环境配置正确：
+
+```bash
+# 检查 Node.js 版本
+node --version  # >= 16.0.0
+
+# 检查包管理器
+npm --version   # >= 8.0.0
+yarn --version  # >= 1.22.0
+pnpm --version  # >= 7.0.0
+```
+
+## 🐛 常见问题
+
+### 创建失败
+
+如果项目创建失败，尝试以下解决方案：
+
+```bash
+# 清除 npm 缓存
+npm cache clean --force
+
+# 更新 Vibe CLI
+npm update -g vibecape
+
+# 检查网络连接
+npm config get registry
+```
+
+### 权限问题
+
+在某些系统上可能遇到权限问题：
+
+```bash
+# macOS/Linux
+sudo npm install -g vibecape
+
+# 或者使用 npx（推荐）
+npx vibecape create my-app
+```
+
+### 模板不存在
+
+如果提示模板不存在：
+
+```bash
+# 查看可用模板
+vibe templates list
+
+# 更新模板列表
+vibe templates update
+```
+
+## 🎉 下一步
+
+项目创建完成后，你可以：
+
+- [添加用户认证](../integrations/auth) - 集成认证服务
+- [配置支付系统](../integrations/payments) - 添加付费功能
+- [设置数据库](../integrations/database) - 配置数据存储
+- [部署应用](../deployment/) - 将应用部署到生产环境 

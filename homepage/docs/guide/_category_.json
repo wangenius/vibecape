@@ -1,8 +1,0 @@
-{
-  "label": "指南",
-  "position": 2,
-  "link": {
-    "type": "generated-index",
-    "description": "学习如何使用 Vibe CLI 快速搭建 SaaS 应用"
-  }
-} 

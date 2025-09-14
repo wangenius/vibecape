@@ -1,0 +1,404 @@
+---
+title: CLI
+---
+
+# 命令行接口
+
+Vibe CLI 提供了一套完整的命令行工具，帮助你快速搭建和管理 SaaS 项目。
+
+## 全局选项
+
+所有命令都支持以下全局选项：
+
+```bash
+-V, --version     显示版本号
+-h, --help        显示帮助信息
+--verbose         显示详细日志
+--silent          静默模式，不显示输出
+```
+
+## `vibe create`
+
+创建新的 SaaS 项目。
+
+### 语法
+
+```bash
+vibe create [项目名称] [选项]
+```
+
+### 参数
+
+- `项目名称` - 可选，项目的名称。如果不提供，会以交互式方式询问。
+
+### 选项
+
+```bash
+-t, --template <template>   指定项目模板
+--typescript               启用 TypeScript
+--tailwind                 启用 Tailwind CSS
+--eslint                   启用 ESLint
+--package-manager <pm>     指定包管理器 (npm|yarn|pnpm)
+```
+
+### 示例
+
+```bash
+# 交互式创建项目
+vibe create
+
+# 指定项目名称
+vibe create my-saas-app
+
+# 使用特定模板和配置
+vibe create my-app --template=ai-saas --typescript --tailwind
+
+# 指定包管理器
+vibe create my-app --package-manager=yarn
+```
+
+### 可用模板
+
+| 模板名称 | 描述 |
+|---------|------|
+| `ai-saas` | AI 驱动的 SaaS 应用模板 |
+| `basic-saas` | 基础 SaaS 应用模板 |
+| `e-commerce` | 电商应用模板 |
+
+## `vibe install`
+
+安装和集成中间件服务。
+
+### 语法
+
+```bash
+vibe install [集成类型] [选项]
+```
+
+### 参数
+
+- `集成类型` - 可选，要安装的集成类型。如果不提供，会显示可用选项。
+
+### 选项
+
+```bash
+-p, --provider <provider>   指定服务提供商
+--config <config>          额外配置参数 (JSON 格式)
+--skip-install             跳过依赖包安装
+--dry-run                  预览模式，不实际执行安装
+```
+
+### 支持的集成类型
+
+| 类型 | 描述 | 可用提供商 |
+|------|------|-----------|
+| `auth` | 用户认证系统 | clerk, nextauth, supabase |
+| `payments` | 支付系统 | stripe, paddle, lemonsqueezy |
+| `i18n` | 国际化支持 | next-intl, react-i18next |
+| `database` | 数据库配置 | supabase, planetscale, neon |
+| `email` | 邮件服务 | resend, sendgrid, mailgun |
+| `storage` | 文件存储 | cloudinary, s3, supabase |
+| `analytics` | 分析监控 | mixpanel, posthog, ga4 |
+
+### 示例
+
+```bash
+# 交互式安装认证
+vibe install auth
+
+# 指定提供商
+vibe install auth --provider=clerk
+
+# 指定配置
+vibe install payments --provider=stripe --config='{"subscription":true}'
+
+# 预览模式
+vibe install i18n --provider=next-intl --dry-run
+```
+
+## `vibe config`
+
+管理项目配置。
+
+### 子命令
+
+#### `vibe config list`
+
+显示当前项目的所有配置。
+
+```bash
+vibe config list
+```
+
+#### `vibe config get`
+
+获取特定配置项的值。
+
+```bash
+vibe config get <键名>
+```
+
+**示例：**
+```bash
+vibe config get project.name
+vibe config get settings.typescript
+```
+
+#### `vibe config set`
+
+设置配置项的值。
+
+```bash
+vibe config set --key=<键名> --value=<值>
+```
+
+**选项：**
+- `-k, --key <key>` - 配置键名（必需）
+- `-v, --value <value>` - 配置值（必需）
+
+**示例：**
+```bash
+vibe config set --key=settings.packageManager --value=yarn
+vibe config set --key=project.description --value="我的 SaaS 项目"
+```
+
+## `vibe health`
+
+检查项目健康状态。
+
+### 语法
+
+```bash
+vibe health [选项]
+```
+
+### 选项
+
+```bash
+--fix                 自动修复可修复的问题
+--report              生成详细的健康报告
+```
+
+### 检查项目
+
+- Node.js 版本兼容性
+- package.json 文件存在性
+- Vibe 配置文件完整性
+- Git 仓库状态
+- 依赖包安装情况
+- 环境变量配置
+- 集成服务状态
+
+### 示例
+
+```bash
+# 基础健康检查
+vibe health
+
+# 自动修复问题
+vibe health --fix
+
+# 生成详细报告
+vibe health --report
+```
+
+## `vibe templates`
+
+管理项目模板。
+
+### 子命令
+
+#### `vibe templates list`
+
+列出所有可用的项目模板。
+
+```bash
+vibe templates list
+```
+
+#### `vibe templates info`
+
+显示特定模板的详细信息。
+
+```bash
+vibe templates info <模板名称>
+```
+
+### 示例
+
+```bash
+# 列出所有模板
+vibe templates list
+
+# 查看 AI SaaS 模板信息
+vibe templates info ai-saas
+```
+
+## `vibe update`
+
+更新已安装的集成和依赖。
+
+### 语法
+
+```bash
+vibe update [选项]
+```
+
+### 选项
+
+```bash
+--all                 更新所有集成
+--integration <name>  更新特定集成
+--check-only          仅检查更新，不执行
+```
+
+### 示例
+
+```bash
+# 更新所有集成
+vibe update --all
+
+# 更新特定集成
+vibe update --integration=auth
+
+# 检查可用更新
+vibe update --check-only
+```
+
+## `vibe revise`
+
+修改现有项目的配置。
+
+### 语法
+
+```bash
+vibe revise [选项]
+```
+
+### 选项
+
+```bash
+--add <feature>       添加新功能
+--remove <feature>    移除功能
+--upgrade <feature>   升级功能
+```
+
+### 示例
+
+```bash
+# 添加 TypeScript 支持
+vibe revise --add=typescript
+
+# 移除 ESLint
+vibe revise --remove=eslint
+
+# 升级支付集成
+vibe revise --upgrade=payments
+```
+
+## 退出代码
+
+Vibe CLI 使用标准的退出代码：
+
+| 代码 | 含义 |
+|------|------|
+| 0 | 成功 |
+| 1 | 一般错误 |
+| 2 | 参数错误 |
+| 3 | 网络错误 |
+| 4 | 文件系统错误 |
+| 5 | 配置错误 |
+
+## 环境变量
+
+Vibe CLI 支持以下环境变量：
+
+| 变量名称 | 描述 | 默认值 |
+|---------|------|-------|
+| `VIBE_CONFIG_DIR` | 配置文件目录 | `~/.vibe` |
+| `VIBE_CACHE_DIR` | 缓存目录 | `~/.vibe/cache` |
+| `VIBE_LOG_LEVEL` | 日志级别 | `info` |
+| `VIBE_NO_UPDATE_CHECK` | 禁用更新检查 | `false` |
+
+## 配置文件
+
+### 项目配置文件 (`vibe.config.json`)
+
+```json
+{
+  "name": "my-saas-app",
+  "version": "1.0.0",
+  "template": "ai-saas",
+  "settings": {
+    "typescript": true,
+    "tailwind": true,
+    "eslint": true,
+    "packageManager": "npm"
+  },
+  "integrations": {
+    "auth": {
+      "provider": "clerk",
+      "config": {
+        "socialLogin": true
+      }
+    },
+    "payments": {
+      "provider": "stripe",
+      "config": {
+        "subscription": true
+      }
+    }
+  }
+}
+```
+
+### 全局配置文件 (`~/.vibe/config.json`)
+
+```json
+{
+  "defaultTemplate": "basic-saas",
+  "defaultPackageManager": "npm",
+  "autoUpdateCheck": true,
+  "telemetry": true
+}
+```
+
+## 故障排除
+
+### 常见错误和解决方案
+
+#### 命令未找到
+
+```bash
+# 错误：vibe: command not found
+# 解决：重新安装 Vibe CLI
+npm install -g vibecape
+```
+
+#### 权限错误
+
+```bash
+# 错误：EACCES: permission denied
+# 解决：使用 sudo 或配置 npm 权限
+sudo npm install -g vibecape
+```
+
+#### 网络连接问题
+
+```bash
+# 检查网络连接
+vibe health --network
+
+# 使用不同的 npm 源
+npm config set registry https://registry.npmmirror.com/
+```
+
+#### 项目配置错误
+
+```bash
+# 检查项目健康状态
+vibe health
+
+# 自动修复配置问题
+vibe health --fix
+``` 

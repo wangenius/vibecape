@@ -20,8 +20,14 @@ warn() { color 33 "[WARN] $*"; }
 err()  { color 31 "[ERR ] $*"; }
 
 MODE="${1:-}"
-# 可覆盖：用于 npm 打 tag 的前缀（默认使用包名约定），例如 vibecape@1.2.3
-TAG_PREFIX="${TAG_PREFIX:-vibecape@}"
+# Git 远端与分支检测
+REMOTE="${REMOTE:-origin}"
+ALLOW_NON_MAIN="${ALLOW_NON_MAIN:-false}"
+
+# 根据包名默认生成 tag 前缀（name@），可用 TAG_PREFIX 覆盖
+PKG_NAME="$(node -p "require('./package.json').name" 2>/dev/null || echo 'package')"
+DEFAULT_TAG_PREFIX="${PKG_NAME}@"
+TAG_PREFIX="${TAG_PREFIX:-$DEFAULT_TAG_PREFIX}"
 
 # 安全检查：确保 node 和 npm 可用
 command -v node >/dev/null 2>&1 || { err "需要 Node.js"; exit 1; }
@@ -39,16 +45,33 @@ setup_npm_auth() {
 local_release() {
   local release_type="$1"; shift || true
 
-  # 工作区检查
+  # 工作区检查：如有未提交改动，提示用户提交（交互式）
   if ! git diff-index --quiet HEAD --; then
-    err "当前工作区有未提交改动，请先提交或清理后再发布"
-    exit 1
+    warn "检测到未提交改动"
+    if [ -t 0 ] && [ -t 1 ]; then
+      info "按回车直接提交，或输入自定义 commit message 后回车"
+      printf "> 提交说明（默认：chore: release prep）: "
+      IFS= read -r COMMIT_MSG || true
+      COMMIT_MSG=${COMMIT_MSG:-"chore: release prep"}
+      info "提交中：${COMMIT_MSG}"
+      git add -A
+      if git commit -m "${COMMIT_MSG}"; then
+        info "已提交工作区改动"
+      else
+        warn "没有可提交的改动或提交失败，继续发布流程"
+      fi
+    else
+      err "检测到未提交改动，且当前为非交互环境。请先提交后再发布。"
+      exit 1
+    fi
   fi
 
   local branch
   branch="$(git rev-parse --abbrev-ref HEAD)"
   if [[ "$branch" != "main" && "$branch" != "master" ]]; then
-    warn "当前分支为 $branch，建议在 main/master 分支进行发布"
+    if [[ "$ALLOW_NON_MAIN" != "true" ]]; then
+      warn "当前分支为 $branch，建议在 main/master 分支发布（可用 ALLOW_NON_MAIN=true 跳过）"
+    fi
   fi
 
   # info "安装依赖"
@@ -62,10 +85,15 @@ local_release() {
     --tag-version-prefix "$TAG_PREFIX" \
     -m "chore(release): ${TAG_PREFIX}%s"
 
-  info "同步远端并推送提交与标签"
-  git fetch --tags --prune
-  git push
-  git push --tags
+  # 读取新版本与将要推送的 tag 名称
+  local new_version tag_name
+  new_version=$(node -p "require('./package.json').version")
+  tag_name="${TAG_PREFIX}${new_version}"
+
+  info "同步远端并推送提交与关联标签"
+  git fetch --tags --prune "$REMOTE"
+  # --follow-tags 仅推送提交引用到的注解标签，避免推送历史所有标签
+  git push --follow-tags "$REMOTE" "HEAD:${branch}"
 
   # npm 发布（默认关闭，由 CI 处理）
   if [[ "${PUBLISH:-false}" == "true" ]]; then
@@ -81,9 +109,7 @@ local_release() {
     warn "已跳过 npm publish（PUBLISH=false）"
   fi
 
-  local new_version
-  new_version=$(node -p "require('./package.json').version")
-  info "发布完成：v${new_version}"
+  info "发布完成：${tag_name}"
 }
 
 case "$MODE" in

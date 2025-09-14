@@ -23,6 +23,17 @@ jobs:
         with:
           node-version: '20'
           registry-url: 'https://registry.npmjs.org/'
+          always-auth: true
+
+      - name: Configure npm auth
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > ~/.npmrc
+
+      - name: Verify npm auth
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm whoami
 
       - name: Install dependencies
         run: npm i

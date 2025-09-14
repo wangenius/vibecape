@@ -10,7 +10,7 @@
     "build": "npm -w package run build && npm -w homepage run build",
     "build:cli": "npm -w package run build",
     "build:site": "npm -w homepage run build",
-    "release": "bash ./scripts/release.sh"
+    "release": "bash ./scripts/release.sh patch"
   },
   "engines": {
     "node": ">=18.18.0"

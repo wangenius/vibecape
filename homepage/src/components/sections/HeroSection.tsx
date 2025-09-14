@@ -1,6 +1,7 @@
 "use client";
 import { FC, useState } from "react";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 const BASH_COMMAND = "npm i -g vibecape";
 
@@ -32,7 +33,7 @@ export const HeroSection: FC = () => {
 
           <div className="flex flex-col sm:flex-row gap-4">
             <Button size="lg" className="w-full sm:w-auto" asChild>
-              <a href="/docs">Start Now</a>
+              <Link href="/docs">Start Now</Link>
             </Button>
             <Button
               variant="outline"

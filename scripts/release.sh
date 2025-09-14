@@ -99,6 +99,7 @@ local_release() {
   # 版本升级与打 tag（npm version 会同时提交并打 tag）
   info "版本升级：${release_type} (tag 前缀: ${TAG_PREFIX})"
   npm version "$release_type" \
+    --git-tag-version "true" \
     --tag-version-prefix "$TAG_PREFIX" \
     -m "chore(release): ${TAG_PREFIX}%s"
 
@@ -106,6 +107,12 @@ local_release() {
   local new_version tag_name
   new_version=$(node -p "require('./package.json').version")
   tag_name="${TAG_PREFIX}${new_version}"
+
+  # 兼容兜底：若全局 npmrc 关闭了 git-tag-version，则手动创建注解标签
+  if ! git rev-parse -q --verify "refs/tags/${tag_name}" >/dev/null; then
+    warn "未检测到标签 ${tag_name}，可能因 npmrc 关闭了 git-tag-version。将手动创建标签。"
+    git tag -a "${tag_name}" -m "chore(release): ${tag_name}"
+  fi
 
   info "同步远端并推送提交与关联标签"
   git fetch --tags --prune "$REMOTE"

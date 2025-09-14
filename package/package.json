@@ -18,7 +18,7 @@
   },
   "files": [
     "dist",
-    "README.md"
+    "../README.md"
   ],
   "preferGlobal": true,
   "publishConfig": {

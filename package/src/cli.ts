@@ -8,7 +8,6 @@ import pkg from "../package.json";
 import { configCommand } from "./commands/config";
 import { createCommand } from "./commands/create";
 import { healthCommand } from "./commands/health";
-import { templatesCommand } from "./commands/templates";
 import { upgradeCommand } from "./commands/upgrade";
 
 const program = new Command();
@@ -32,7 +31,6 @@ program
   .addCommand(createCommand)
   .addCommand(configCommand)
   .addCommand(healthCommand)
-  .addCommand(templatesCommand)
   .addCommand(upgradeCommand);
 
 // 解析命令行参数

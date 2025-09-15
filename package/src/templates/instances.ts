@@ -1,42 +1,15 @@
-import inquirer from "inquirer";
 import * as fs from "fs-extra";
+import * as path from "path";
 import { createTemplate } from "./TemplateManager";
 
 createTemplate({
   name: "blank",
   description: "A blank template with minimal setup",
-  execute: async (path: string) => {
-    const res = await inquirer.prompt([
-      {
-        type: "input",
-        name: "readme",
-        message:
-          "do you want to set up a README.md file?(yes/no, default: yes)",
-        default: "yes",
-        validate(input) {
-          const val = input.toLowerCase();
-          if (val === "yes" || val === "no") {
-            return true;
-          }
-          return 'please enter "yes" or "no"';
-        },
-      },
-    ]);
-
-    if (res.readme === "yes") {
-      fs.writeFile(
-        path + "/README.md",
-        `# ${path.split("/").pop()}\n\nThis is a blank project created with vibecape.\n`,
-        (err) => {
-          if (err) {
-            console.error("Error creating README.md:", err);
-          } else {
-            console.log("README.md created successfully.");
-          }
-        }
-      );
-    }
-    return;
+  execute: async (dirpath: string) => {
+    // For the blank template, avoid extra prompts to prevent conflicts with spinners.
+    const projectName = path.basename(dirpath);
+    const content = `# ${projectName}\n\nThis is a blank project created with vibecape.\n`;
+    await fs.writeFile(dirpath + "/README.md", content);
   },
 });
 

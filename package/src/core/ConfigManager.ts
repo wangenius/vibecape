@@ -7,7 +7,7 @@ export interface VibeConfig {
     version: string;
     template: string;
   };
-  integrations: Record<string, any>;
+  integrations: Record<string, IntegrationConfig>;
   settings: {
     packageManager: string;
     typescript: boolean;
@@ -16,6 +16,15 @@ export interface VibeConfig {
   };
 }
 
+export interface IntegrationConfig {
+  provider: string;
+  version: string;
+  // Free-form provider-specific configuration object
+  config: Record<string, unknown>;
+}
+
+
+// ConfigManager
 export class ConfigManager {
   private configPath: string;
 
@@ -45,43 +54,47 @@ export class ConfigManager {
     };
   }
 
-  async setConfig(key: string, value: any): Promise<void> {
+  async setConfig(key: string, value: unknown): Promise<void> {
     const config = await this.getConfig();
     
     // 支持嵌套键，如 'project.name'
     const keys = key.split('.');
-    let current: any = config;
+    let current: Record<string, unknown> | unknown = config as unknown as Record<string, unknown>;
     
     for (let i = 0; i < keys.length - 1; i++) {
-      if (!current[keys[i]]) {
-        current[keys[i]] = {};
+      if (typeof current !== 'object' || current === null) break;
+      const obj = current as Record<string, unknown>;
+      if (!(keys[i] in obj) || typeof obj[keys[i]] !== 'object' || obj[keys[i]] === null) {
+        obj[keys[i]] = {} as Record<string, unknown>;
       }
-      current = current[keys[i]];
+      current = (obj[keys[i]] as Record<string, unknown>);
     }
     
-    current[keys[keys.length - 1]] = value;
+    if (typeof current === 'object' && current !== null) {
+      (current as Record<string, unknown>)[keys[keys.length - 1]] = value;
+    }
     
     await fs.writeJson(this.configPath, config, { spaces: 2 });
   }
 
-  async getConfigValue(key: string): Promise<any> {
+  async getConfigValue<T = unknown>(key: string): Promise<T | undefined> {
     const config = await this.getConfig();
     
     const keys = key.split('.');
-    let current: any = config;
+    let current: unknown = config;
     
     for (const k of keys) {
-      if (current && typeof current === 'object' && k in current) {
-        current = current[k];
+      if (current && typeof current === 'object' && k in (current as Record<string, unknown>)) {
+        current = (current as Record<string, unknown>)[k];
       } else {
         return undefined;
       }
     }
     
-    return current;
+    return current as T;
   }
 
-  async addIntegration(type: string, provider: string, config: any): Promise<void> {
+  async addIntegration(type: string, provider: string, config: Record<string, unknown>): Promise<void> {
     const vibeConfig = await this.getConfig();
     
     vibeConfig.integrations[type] = {
@@ -92,4 +105,4 @@ export class ConfigManager {
     
     await fs.writeJson(this.configPath, vibeConfig, { spaces: 2 });
   }
-} 
+}

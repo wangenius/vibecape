@@ -2,8 +2,8 @@ import { Command } from "commander";
 import inquirer from "inquirer";
 import chalk from "chalk";
 import ora from "ora";
-import { ProjectCreator } from "../core/project-creator";
-import { templates } from "../const";
+import { ProjectCreator } from "../core/ProjectCreator";
+import { TemplateManager } from "../templates/TemplateManager";
 
 export const createCommand = new Command("create")
   .description("create a new project")
@@ -34,11 +34,17 @@ export const createCommand = new Command("create")
         projectName = answers.projectName;
       }
 
-      // 选择模板（交互式）
+      const templates = TemplateManager.getAllTemplates();
       const availableTemplateNames = Object.keys(templates);
+
       if (availableTemplateNames.length === 0) {
-        throw new Error("no template configured");
+        console.log(chalk.red("no templates available to create project"));
+        process.exit(1);
       }
+
+      // 选择模板
+
+
       const { template } = await inquirer.prompt([
         {
           type: "list",

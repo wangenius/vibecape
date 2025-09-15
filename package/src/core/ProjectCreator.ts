@@ -1,6 +1,6 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { TemplateManager } from './template-manager';
+import { TemplateManager } from '../templates/TemplateManager';
 
 export class ProjectCreator {
   private templateManager: TemplateManager;

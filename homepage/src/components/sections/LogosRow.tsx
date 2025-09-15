@@ -16,7 +16,7 @@ export const LogosRow: FC = () => {
     <section className="py-10 border-t">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <p className="text-center text-sm text-muted-foreground mb-5">
-          轻松集成主流服务
+          First‑class integrations. One command to set up.
         </p>
         <div className="flex flex-wrap items-center justify-center gap-3">
           {providers.map((name) => (
@@ -31,4 +31,3 @@ export const LogosRow: FC = () => {
 };
 
 export default LogosRow;
-

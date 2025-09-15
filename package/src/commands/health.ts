@@ -1,6 +1,6 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
-import { HealthChecker } from '../core/health-checker';
+import { HealthChecker } from '../core/HealthChecker';
 
 export const healthCommand = new Command('health')
   .description('check project health')

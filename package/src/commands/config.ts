@@ -1,6 +1,6 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
-import { ConfigManager } from '../core/config-manager';
+import { ConfigManager } from '../core/ConfigManager';
 
 export const configCommand = new Command('config')
   .description('管理项目配置')

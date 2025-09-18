@@ -1,14 +1,8 @@
+"use client";
 import { RootProvider } from "fumadocs-ui/provider";
-import type { Metadata } from "next";
 
-import "@/styles/globals.css";
-import { Navbar } from "@/components/sections/navbar";
+import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
-
-export const metadata: Metadata = {
-  title: "vibecape",
-  description: "the cape of your vibe journey",
-};
 
 export default function RootLayout({
   children,

@@ -32,7 +32,7 @@ export function Navbar() {
 
   return (
     <header
-      className={`sticky top-0 z-50 w-full transition-colors duration-200 ${scrolled ? "bg-white border-b" : "bg-transparent"}`}
+      className={`sticky top-0 z-50 w-full transition-colors duration-200 ${scrolled ? "bg-background border-b" : "bg-transparent"}`}
     >
       <div className="container mx-auto px-6 lg:px-8 py-3">
         {/* 桌面端导航 */}
@@ -52,7 +52,7 @@ export function Navbar() {
             </Link>
 
             {/* 导航链接 */}
-            <div className="flex items-center space-x-6">
+            <div className="flex items-center space-x-2">
               <Link href="/docs">
                 <Button variant="ghost" className="text-sm font-medium">
                   Docs

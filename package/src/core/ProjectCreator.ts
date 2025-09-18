@@ -1,6 +1,6 @@
-import * as fs from 'fs-extra';
-import * as path from 'path';
-import { TemplateManager } from '../templates/TemplateManager';
+import * as fs from "fs-extra";
+import * as path from "path";
+import { TemplateManager } from "../templates/TemplateManager";
 
 export class ProjectCreator {
   private templateManager: TemplateManager;
@@ -30,11 +30,11 @@ export class ProjectCreator {
 
   private async updateProjectFiles(): Promise<void> {
     // 更新 package.json
-    const packageJsonPath = path.join(this.projectPath, 'package.json');
+    const packageJsonPath = path.join(this.projectPath, "package.json");
     if (await fs.pathExists(packageJsonPath)) {
       const packageJson = await fs.readJson(packageJsonPath);
       packageJson.name = this.projectName;
-      packageJson.version = '1.0.0';
+      packageJson.version = "1.0.0";
       await fs.writeJson(packageJsonPath, packageJson, { spaces: 2 });
     }
   }
@@ -44,12 +44,12 @@ export class ProjectCreator {
     const vibeConfig = {
       project: {
         name: this.projectName,
-        version: '1.0.0',
-        template: 'default',
+        version: "1.0.0",
+        template: "default",
       },
       integrations: {},
       settings: {
-        packageManager: 'npm',
+        packageManager: "npm",
         typescript: true,
         tailwind: true,
         eslint: true,
@@ -57,7 +57,7 @@ export class ProjectCreator {
     };
 
     await fs.writeJson(
-      path.join(this.projectPath, 'vibe.config.json'),
+      path.join(this.projectPath, "vibe.config.json"),
       vibeConfig,
       {
         spaces: 2,

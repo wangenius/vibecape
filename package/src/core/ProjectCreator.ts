@@ -2,14 +2,16 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import { TemplateManager } from "../templates/TemplateManager";
 
+/**
+ * 项目创建器
+ * 负责根据模板创建项目
+ */
 export class ProjectCreator {
-  private templateManager: TemplateManager;
+  // 模板管理器
   private projectName: string;
   private projectPath: string;
 
   constructor(projectName: string) {
-    this.templateManager = new TemplateManager();
-
     this.projectName = projectName;
     this.projectPath = path.resolve(process.cwd(), projectName);
   }
@@ -19,7 +21,7 @@ export class ProjectCreator {
     await fs.ensureDir(this.projectPath);
 
     // 复制模板文件
-    await this.templateManager.copyTemplate(template, this.projectPath);
+    await TemplateManager.copy(template, this.projectPath);
 
     // 更新项目配置
     await this.updateProjectFiles();

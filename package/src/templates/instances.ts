@@ -5,11 +5,11 @@ import { createTemplate } from "./TemplateManager";
 createTemplate({
   name: "blank",
   description: "A blank template with minimal setup",
-  execute: async (dirpath: string) => {
+  execute: async (params) => {
     // For the blank template, avoid extra prompts to prevent conflicts with spinners.
-    const projectName = path.basename(dirpath);
+    const projectName = path.basename(params.path);
     const content = `# ${projectName}\n\nThis is a blank project created with vibecape.\n`;
-    await fs.writeFile(dirpath + "/README.md", content);
+    await fs.writeFile(params.path + "/README.md", content);
   },
 });
 
@@ -21,6 +21,6 @@ createTemplate({
 
 createTemplate({
   name: "vibetake",
-  description: "Next.js Template",
+  description: "vibetake 是 vibecape 默认的 Next.js Template",
   url: "https://github.com/wangenius/vibetake.git",
 });

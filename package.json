@@ -6,7 +6,7 @@
     "homepage"
   ],
   "scripts": {
-    "page":"npm -w homepage run dev",
+    "page": "npm -w homepage run dev",
     "build": "npm -w package run build && npm -w homepage run build",
     "build:cli": "npm -w package run build",
     "build:site": "npm -w homepage run build",
@@ -15,5 +15,11 @@
   },
   "engines": {
     "node": ">=18.18.0"
+  },
+  "dependencies": {
+    "shelljs": "^0.10.0"
+  },
+  "devDependencies": {
+    "@types/shelljs": "^0.8.17"
   }
 }

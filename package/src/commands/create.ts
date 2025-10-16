@@ -34,7 +34,7 @@ export const createCommand = new Command("create")
         projectName = answers.projectName;
       }
 
-      const templates = TemplateManager.getAllTemplates();
+      const templates = TemplateManager.getAll();
       const availableTemplateNames = Object.keys(templates);
 
       if (availableTemplateNames.length === 0) {

@@ -7,7 +7,6 @@ import { Command } from "commander";
 import pkg from "../package.json";
 import { configCommand } from "./commands/config";
 import { createCommand } from "./commands/create";
-import { healthCommand } from "./commands/health";
 import { upgradeCommand } from "./commands/upgrade";
 
 const program = new Command();
@@ -30,7 +29,6 @@ vibecape : welcome to vibecape world!
 program
   .addCommand(createCommand)
   .addCommand(configCommand)
-  .addCommand(healthCommand)
   .addCommand(upgradeCommand);
 
 // 解析命令行参数

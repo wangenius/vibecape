@@ -27,4 +27,4 @@ export const jsonb = <T>() =>
   });
 
 export const timestamp = (name: string) =>
-  integer(name, { mode: "timestamp_ms" }).$defaultFn(() => Date.now());
+  integer(name, { mode: "number" }).$defaultFn(() => Date.now());

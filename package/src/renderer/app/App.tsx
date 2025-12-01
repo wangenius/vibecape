@@ -1,15 +1,15 @@
 import { useEffect } from "react";
-import { DocsSidebar } from "./components/DocsSidebar";
-import { DocWorkspace } from "./components/DocWorkspace";
+import { VibecapeSidebar } from "./components/VibecapeSidebar";
+import { VibecapeWorkspace } from "./components/VibecapeWorkspace";
 import { Header } from "./components/Header";
 import { Baybar } from "./components/Baybar";
-import { useDocsStore } from "./useDocsStore";
+import { useVibecapeStore } from "./useVibecapeStore";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useTheme } from "@/hook/app/useTheme";
 import { useChatInputFocus } from "@/hook/shortcuts/useChatInputFocus";
 
 const App = () => {
-  const bootstrap = useDocsStore((state) => state.bootstrap);
+  const bootstrap = useVibecapeStore((state) => state.bootstrap);
   useTheme();
   useChatInputFocus(true, true);
 
@@ -29,9 +29,9 @@ const App = () => {
 
         {/* Content Layer - Full Height */}
         <div className="w-full h-full flex overflow-hidden">
-          <DocsSidebar />
+          <VibecapeSidebar />
           <div className="flex-1 h-full pt-8 overflow-hidden">
-            <DocWorkspace />
+            <VibecapeWorkspace />
           </div>
           <Baybar />
         </div>

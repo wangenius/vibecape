@@ -21,6 +21,7 @@ export const SETTINGS_DEFAULTS: SettingsData = {
       url: "",
     },
     docsRoot: "",
+    vibecapeRoot: "",
   },
 };
 

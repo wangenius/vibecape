@@ -43,6 +43,7 @@ export const settings = sqliteTable("settings", {
           url: "",
         },
         docsRoot: "",
+        vibecapeRoot: "",
       },
     }),
 });
@@ -67,6 +68,7 @@ export type SettingsData = {
       url: string;
     };
     docsRoot: string;
+    vibecapeRoot: string;
   };
 };
 

@@ -8,6 +8,7 @@ import "./handler/app/SettingsHandler";
 import "./handler/app/ModelHandler";
 import "./handler/chat/ChatHandler";
 import "./handler/docs/DocsHandler";
+import "./handler/docs/VibecapeHandler";
 
 function createWindow(): void {
   // Create the browser window.

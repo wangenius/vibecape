@@ -60,6 +60,26 @@ const api = {
     stream: (payload: any) => ipcRenderer.invoke("chat:stream", payload),
     cancel: (id: string) => ipcRenderer.invoke("chat:cancel", id),
   },
+  vibecape: {
+    // 工作区管理
+    getWorkspace: () => ipcRenderer.invoke("vibecape:getWorkspace"),
+    createWorkspace: () => ipcRenderer.invoke("vibecape:createWorkspace"),
+    openWorkspace: () => ipcRenderer.invoke("vibecape:openWorkspace"),
+    pickDocsFolder: () => ipcRenderer.invoke("vibecape:pickDocsFolder"),
+    initWorkspace: (docsDir: string) =>
+      ipcRenderer.invoke("vibecape:initWorkspace", docsDir),
+    // 文档树
+    getTree: () => ipcRenderer.invoke("vibecape:getTree"),
+    // 文档 CRUD
+    getDoc: (id: string) => ipcRenderer.invoke("vibecape:getDoc", id),
+    createDoc: (data: any) => ipcRenderer.invoke("vibecape:createDoc", data),
+    updateDoc: (id: string, data: any) =>
+      ipcRenderer.invoke("vibecape:updateDoc", { id, data }),
+    deleteDoc: (id: string) => ipcRenderer.invoke("vibecape:deleteDoc", id),
+    // 同步
+    importFromDocs: () => ipcRenderer.invoke("vibecape:importFromDocs"),
+    exportToDocs: () => ipcRenderer.invoke("vibecape:exportToDocs"),
+  },
 };
 
 if (process.contextIsolated) {

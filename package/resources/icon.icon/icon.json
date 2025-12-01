@@ -1,0 +1,32 @@
+{
+  "fill": {
+    "automatic-gradient": "extended-srgb:0.00000,0.53333,1.00000,1.00000"
+  },
+  "groups": [
+    {
+      "layers": [
+        {
+          "hidden": false,
+          "image-name": "icon-macOS-Default-1024x1024@2x.png",
+          "name": "icon",
+          "position": {
+            "scale": 0.32,
+            "translation-in-points": [-0.21492701555657054, 23.65540464917362]
+          }
+        }
+      ],
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0.5
+      },
+      "translucency": {
+        "enabled": true,
+        "value": 0.5
+      }
+    }
+  ],
+  "supported-platforms": {
+    "circles": ["watchOS"],
+    "squares": "shared"
+  }
+}

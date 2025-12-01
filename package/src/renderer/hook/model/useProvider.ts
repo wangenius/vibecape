@@ -48,7 +48,9 @@ export function useProviders<T = ProviderMap>(
 }
 
 export function useProviderList() {
-  return useProvidersStore((state) => Object.values(state.providers));
+  const providers = useProvidersStore((state) => state.providers);
+  // 使用 useMemo 避免每次渲染创建新数组
+  return Object.values(providers);
 }
 
 export function useProvider(id: string) {

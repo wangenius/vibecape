@@ -38,8 +38,17 @@ import {
   refreshModels,
   type ModelCategoryKey,
 } from "@/hook/model/useModel";
+import {
+  useProviders,
+  createProvider,
+  updateProvider,
+  deleteProvider,
+  fetchRemoteModels,
+  refreshProviders,
+  type RemoteModel,
+} from "@/hook/model/useProvider";
 import { BsStars } from "react-icons/bs";
-import { MoreVertical } from "lucide-react";
+import { MoreVertical, Plus, RefreshCw, Server } from "lucide-react";
 
 const THEME_OPTIONS = [
   { value: "default", label: "默认" },
@@ -156,10 +165,26 @@ export const GeneralSettings = () => {
   );
 };
 
+// Provider 表单类型
+type ProviderForm = {
+  name: string;
+  base_url: string;
+  api_key: string;
+  models_path: string;
+};
+
+const createEmptyProviderForm = (): ProviderForm => ({
+  name: "",
+  base_url: "",
+  api_key: "",
+  models_path: "/models",
+});
+
 // 模型表单类型
 type ModelForm = {
   name: string;
   model: string;
+  provider_id: string;
   base_url: string;
   api_key: string;
   type: "text" | "img" | "video";
@@ -172,6 +197,7 @@ const MODEL_TYPES: ModelForm["type"][] = ["text", "img", "video"];
 const createEmptyForm = (): ModelForm => ({
   name: "",
   model: "",
+  provider_id: "",
   base_url: "",
   api_key: "",
   type: "text",
@@ -183,12 +209,25 @@ const createEmptyForm = (): ModelForm => ({
 export const ModelSettings = () => {
   const models = useModels();
   const defaultModels = useDefaultModels();
+  const providersMap = useProviders();
+  const providers = useMemo(() => Object.values(providersMap), [providersMap]);
+  
+  // Model 状态
   const [refreshing, setRefreshing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [form, setForm] = useState<ModelForm | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
+  
+  // Provider 状态
+  const [providerForm, setProviderForm] = useState<ProviderForm | null>(null);
+  const [editingProviderId, setEditingProviderId] = useState<string | null>(null);
+  const [providerSheetOpen, setProviderSheetOpen] = useState(false);
+  const [savingProvider, setSavingProvider] = useState(false);
+  const [fetchingModels, setFetchingModels] = useState<string | null>(null);
+  const [remoteModels, setRemoteModels] = useState<RemoteModel[]>([]);
+  const [lastFetchedProviderId, setLastFetchedProviderId] = useState<string | null>(null);
 
   const modelList = useMemo(() => Object.values(models), [models]);
 
@@ -203,8 +242,116 @@ export const ModelSettings = () => {
 
   useEffect(() => {
     setRefreshing(true);
-    void refreshModels().finally(() => setRefreshing(false));
+    Promise.all([refreshModels(), refreshProviders()]).finally(() => setRefreshing(false));
   }, []);
+  
+  // Provider 操作
+  const startCreateProvider = () => {
+    setProviderForm(createEmptyProviderForm());
+    setEditingProviderId("__new");
+    setProviderSheetOpen(true);
+  };
+
+  const startEditProvider = (provider: (typeof providers)[0]) => {
+    setProviderForm({
+      name: provider.name,
+      base_url: provider.base_url,
+      api_key: provider.api_key,
+      models_path: provider.models_path,
+    });
+    setEditingProviderId(provider.id);
+    setProviderSheetOpen(true);
+  };
+
+  const cancelEditProvider = () => {
+    setProviderForm(null);
+    setEditingProviderId(null);
+    setProviderSheetOpen(false);
+    setRemoteModels([]);
+  };
+
+  const handleProviderChange = <K extends keyof ProviderForm>(
+    key: K,
+    value: ProviderForm[K]
+  ) => {
+    setProviderForm((prev) => (prev ? { ...prev, [key]: value } : prev));
+  };
+
+  const handleSaveProvider = async () => {
+    if (!providerForm) return;
+    const trimmed = {
+      ...providerForm,
+      name: providerForm.name.trim(),
+      base_url: providerForm.base_url.trim(),
+      api_key: providerForm.api_key.trim(),
+      models_path: providerForm.models_path.trim() || "/models",
+    };
+
+    if (!trimmed.name || !trimmed.base_url || !trimmed.api_key) {
+      toast.error("请填写完整的 Provider 信息");
+      return;
+    }
+
+    try {
+      setSavingProvider(true);
+      if (editingProviderId === "__new") {
+        await createProvider(trimmed);
+        toast.success("添加 Provider 成功");
+      } else if (editingProviderId) {
+        await updateProvider(editingProviderId, trimmed);
+        toast.success("更新 Provider 成功");
+      }
+      cancelEditProvider();
+    } catch (error: any) {
+      toast.error(error?.message ?? "保存 Provider 失败");
+    } finally {
+      setSavingProvider(false);
+    }
+  };
+
+  const handleDeleteProvider = async (id: string, name: string) => {
+    if (!window.confirm(`确定要删除 Provider "${name}" 吗？`)) return;
+    try {
+      await deleteProvider(id);
+      toast.success("Provider 删除成功");
+    } catch (error: any) {
+      toast.error(error?.message ?? "删除 Provider 失败");
+    }
+  };
+
+  const handleFetchModels = async (providerId: string) => {
+    try {
+      setFetchingModels(providerId);
+      const models = await fetchRemoteModels(providerId);
+      setRemoteModels(models);
+      setLastFetchedProviderId(providerId);
+      toast.success(`获取到 ${models.length} 个模型`);
+    } catch (error: any) {
+      toast.error(error?.message ?? "获取模型列表失败");
+      setRemoteModels([]);
+      setLastFetchedProviderId(null);
+    } finally {
+      setFetchingModels(null);
+    }
+  };
+
+  const handleAddModelFromProvider = async (provider: (typeof providers)[0], remoteModel: RemoteModel) => {
+    try {
+      await createModel({
+        name: remoteModel.id,
+        model: remoteModel.id,
+        provider_id: provider.id,
+        base_url: provider.base_url,
+        api_key: provider.api_key,
+        type: "text",
+        json: false,
+        reasoner: false,
+      });
+      toast.success(`模型 ${remoteModel.id} 添加成功`);
+    } catch (error: any) {
+      toast.error(error?.message ?? "添加模型失败");
+    }
+  };
 
   const startCreate = () => {
     setForm(createEmptyForm());
@@ -216,6 +363,7 @@ export const ModelSettings = () => {
     setForm({
       name: model.name,
       model: model.model,
+      provider_id: model.provider_id || "",
       base_url: model.base_url,
       api_key: model.api_key,
       type: (model.type as ModelForm["type"]) || "text",
@@ -291,6 +439,126 @@ export const ModelSettings = () => {
 
   return (
     <div className="space-y-6">
+      {/* Provider 管理 */}
+      <section className="space-y-4">
+        <div className="flex items-end justify-between">
+          <header>
+            <h3 className="text-base font-semibold">API Provider</h3>
+            <p className="text-sm text-muted-foreground mt-1">
+              管理 API 提供商，可从 Provider 获取模型列表
+            </p>
+          </header>
+          <Button size="sm" onClick={startCreateProvider}>
+            <Plus className="h-4 w-4 mr-1" />
+            添加 Provider
+          </Button>
+        </div>
+
+        {providers.length === 0 ? (
+          <div className="text-sm text-muted-foreground text-center py-6 bg-muted/30 rounded-lg">
+            还没有配置 Provider，点击"添加 Provider"开始吧
+          </div>
+        ) : (
+          <div className="space-y-1">
+            {providers.map((provider) => (
+              <div
+                key={provider.id}
+                className="flex items-center justify-between gap-4 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors group"
+              >
+                <div className="flex items-center gap-3">
+                  <Server className="h-4 w-4 text-primary" />
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium">{provider.name}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {provider.base_url}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-2 text-xs"
+                    onClick={() => handleFetchModels(provider.id)}
+                    disabled={fetchingModels === provider.id}
+                  >
+                    <RefreshCw className={`h-3 w-3 mr-1 ${fetchingModels === provider.id ? 'animate-spin' : ''}`} />
+                    {fetchingModels === provider.id ? "获取中..." : "获取模型"}
+                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => startEditProvider(provider)}>
+                        编辑
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        className="text-destructive focus:text-destructive"
+                        onClick={() => handleDeleteProvider(provider.id, provider.name)}
+                      >
+                        删除
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* 远程模型列表 */}
+        {remoteModels.length > 0 && lastFetchedProviderId && (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <h4 className="text-sm font-medium text-muted-foreground">
+                可用模型 ({providers.find(p => p.id === lastFetchedProviderId)?.name})
+              </h4>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 px-2 text-xs"
+                onClick={() => {
+                  setRemoteModels([]);
+                  setLastFetchedProviderId(null);
+                }}
+              >
+                清除
+              </Button>
+            </div>
+            <div className="grid gap-1 max-h-48 overflow-y-auto">
+              {remoteModels.map((rm) => {
+                const provider = providers.find(p => p.id === lastFetchedProviderId);
+                return (
+                  <div
+                    key={rm.id}
+                    className="flex items-center justify-between p-2 text-sm rounded bg-muted/20 hover:bg-muted/40"
+                  >
+                    <span className="truncate">{rm.id}</span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 px-2 text-xs"
+                      onClick={() => provider && handleAddModelFromProvider(provider, rm)}
+                    >
+                      <Plus className="h-3 w-3 mr-1" />
+                      添加
+                    </Button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </section>
+
       {/* 模型管理 */}
       <section className="space-y-4">
         <div className="flex items-end justify-between">
@@ -489,6 +757,39 @@ export const ModelSettings = () => {
               </div>
 
               <div className="space-y-2">
+                <Label>Provider（可选）</Label>
+                <Select
+                  value={form.provider_id || "__none__"}
+                  onValueChange={(v) => {
+                    const pid = v === "__none__" ? "" : v;
+                    handleChange("provider_id", pid);
+                    // 自动填充 base_url 和 api_key
+                    const provider = providers.find(p => p.id === pid);
+                    if (provider) {
+                      handleChange("base_url", provider.base_url);
+                      handleChange("api_key", provider.api_key);
+                    }
+                  }}
+                  disabled={saving}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="选择 Provider 或手动填写" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">手动填写</SelectItem>
+                    {providers.map((p) => (
+                      <SelectItem key={p.id} value={p.id}>
+                        {p.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  选择 Provider 可自动填充 API 配置
+                </p>
+              </div>
+
+              <div className="space-y-2">
                 <Label>API Base URL</Label>
                 <Input
                   value={form.base_url}
@@ -545,6 +846,75 @@ export const ModelSettings = () => {
             </Button>
             <Button onClick={handleSave} disabled={saving}>
               {saving ? "保存中..." : "保存"}
+            </Button>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
+
+      {/* Provider 编辑 Sheet */}
+      <Sheet open={providerSheetOpen} onOpenChange={(open) => !open && cancelEditProvider()}>
+        <SheetContent className="sm:max-w-md overflow-y-auto flex flex-col">
+          <SheetHeader>
+            <SheetTitle>
+              {editingProviderId === "__new" ? "添加 Provider" : "编辑 Provider"}
+            </SheetTitle>
+            <SheetDescription>配置 API 提供商信息</SheetDescription>
+          </SheetHeader>
+
+          {providerForm && (
+            <div className="flex-1 space-y-4 py-4">
+              <div className="space-y-2">
+                <Label>名称</Label>
+                <Input
+                  value={providerForm.name}
+                  onChange={(e) => handleProviderChange("name", e.target.value)}
+                  placeholder="例如 OpenAI、302.ai"
+                  disabled={savingProvider}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Base URL</Label>
+                <Input
+                  value={providerForm.base_url}
+                  onChange={(e) => handleProviderChange("base_url", e.target.value)}
+                  placeholder="例如 https://api.openai.com/v1"
+                  disabled={savingProvider}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>API Key</Label>
+                <Input
+                  value={providerForm.api_key}
+                  onChange={(e) => handleProviderChange("api_key", e.target.value)}
+                  placeholder="访问 API 所需的密钥"
+                  disabled={savingProvider}
+                  type="password"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Models 路径</Label>
+                <Input
+                  value={providerForm.models_path}
+                  onChange={(e) => handleProviderChange("models_path", e.target.value)}
+                  placeholder="/models"
+                  disabled={savingProvider}
+                />
+                <p className="text-xs text-muted-foreground">
+                  获取模型列表的 API 路径，默认 /models
+                </p>
+              </div>
+            </div>
+          )}
+
+          <SheetFooter className="mt-4">
+            <Button variant="outline" onClick={cancelEditProvider} disabled={savingProvider}>
+              取消
+            </Button>
+            <Button onClick={handleSaveProvider} disabled={savingProvider}>
+              {savingProvider ? "保存中..." : "保存"}
             </Button>
           </SheetFooter>
         </SheetContent>

@@ -17,7 +17,7 @@ export async function ensureSchema(
       name TEXT NOT NULL,
       base_url TEXT NOT NULL,
       api_key TEXT NOT NULL,
-      models_path TEXT NOT NULL DEFAULT '/v1/models',
+      models_path TEXT NOT NULL DEFAULT '/models',
       enabled INTEGER NOT NULL DEFAULT 1
     );`,
     // Models 表

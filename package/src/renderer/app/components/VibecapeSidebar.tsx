@@ -736,7 +736,7 @@ const SettingsSidebar = () => {
 
   return (
     <div className="h-full w-[360px] flex flex-col bg-accent overflow-hidden pt-10">
-      <div className="p-3 border-b border-border/30">
+      <div className="p-3">
         <div className="text-sm font-medium">设置</div>
       </div>
       <div className="flex-1 p-2 space-y-1">

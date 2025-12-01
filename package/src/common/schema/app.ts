@@ -8,7 +8,7 @@ export const providers = sqliteTable("providers", {
   name: text("name").notNull(),
   base_url: text("base_url").notNull(),
   api_key: text("api_key").notNull(),
-  models_path: text("models_path").notNull().default("/v1/models"),
+  models_path: text("models_path").notNull().default("/models"),
   enabled: integer("enabled", { mode: "boolean" }).notNull().default(true),
 });
 

@@ -14,8 +14,6 @@ export const docs = sqliteTable(
     id: id("id"),
     /** 父节点 ID (null 表示根节点) */
     parent_id: text("parent_id"),
-    /** 文档名称 (用于生成文件名，如 "getting-started") */
-    slug: text("slug").notNull(),
     /** 显示标题 */
     title: text("title").notNull().default(""),
     /** Tiptap JSONContent 格式内容 */
@@ -35,8 +33,12 @@ export const docs = sqliteTable(
   ]
 );
 
+/** 文档完整数据 (从 Drizzle schema 推导) */
 export type Doc = typeof docs.$inferSelect;
+/** 文档插入数据 */
 export type DocInsert = typeof docs.$inferInsert;
+/** 文档数据 (不含时间戳) */
+export type DocData = Omit<Doc, "created_at" | "updated_at">;
 
 /**
  * 工作区设置表 - 存储 vibecape 工作区配置
@@ -51,31 +53,13 @@ export const workspace_settings = sqliteTable("workspace_settings", {
 export type WorkspaceSetting = typeof workspace_settings.$inferSelect;
 export type WorkspaceSettingInsert = typeof workspace_settings.$inferInsert;
 
-// ==================== Types ====================
+// ==================== 派生类型 ====================
 
 /**
  * 文档树节点 (用于前端展示，有子节点即为文件夹)
  */
-export type DocTreeNode = {
-  id: string;
-  slug: string;
-  title: string;
-  order: number;
+export type DocTreeNode = Pick<Doc, "id" | "title" | "order" | "metadata"> & {
   children?: DocTreeNode[];
-  metadata?: Record<string, any>;
-};
-
-/**
- * 完整文档数据 (包含内容)
- */
-export type DocData = {
-  id: string;
-  parent_id: string | null;
-  slug: string;
-  title: string;
-  content: JSONContent;
-  metadata: Record<string, any>;
-  order: number;
 };
 
 /**

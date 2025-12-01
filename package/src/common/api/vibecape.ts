@@ -39,7 +39,6 @@ export interface VibecapeAPI {
   /** 创建文档 */
   createDoc: (data: {
     parent_id?: string | null;
-    slug: string;
     title: string;
     content?: JSONContent;
     metadata?: Record<string, any>;
@@ -49,7 +48,6 @@ export interface VibecapeAPI {
   updateDoc: (
     id: string,
     data: Partial<{
-      slug: string;
       title: string;
       content: JSONContent;
       metadata: Record<string, any>;

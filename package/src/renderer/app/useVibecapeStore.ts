@@ -42,7 +42,6 @@ type VibecapeActions = {
   // 创建文档
   createDoc: (data: {
     parent_id?: string | null;
-    slug: string;
     title: string;
   }) => Promise<DocData>;
   // 删除文档

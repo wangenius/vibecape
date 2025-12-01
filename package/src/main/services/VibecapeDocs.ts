@@ -310,7 +310,6 @@ export class VibecapeDocsService {
     for (const doc of allDocs) {
       nodeMap.set(doc.id, {
         id: doc.id,
-        slug: doc.slug,
         title: doc.title,
         order: doc.order,
         metadata: doc.metadata,
@@ -357,7 +356,6 @@ export class VibecapeDocsService {
     return {
       id: doc.id,
       parent_id: doc.parent_id,
-      slug: doc.slug,
       title: doc.title,
       content: doc.content,
       metadata: doc.metadata,
@@ -370,7 +368,6 @@ export class VibecapeDocsService {
    */
   static async createDoc(data: {
     parent_id?: string | null;
-    slug: string;
     title: string;
     content?: JSONContent;
     metadata?: Record<string, any>;
@@ -391,7 +388,6 @@ export class VibecapeDocsService {
       .insert(docs)
       .values({
         parent_id: data.parent_id ?? null,
-        slug: data.slug,
         title: data.title,
         content: data.content || { type: "doc", content: [{ type: "paragraph" }] },
         metadata: data.metadata || {},
@@ -405,7 +401,6 @@ export class VibecapeDocsService {
     return {
       id: doc.id,
       parent_id: doc.parent_id,
-      slug: doc.slug,
       title: doc.title,
       content: doc.content,
       metadata: doc.metadata,
@@ -419,7 +414,6 @@ export class VibecapeDocsService {
   static async updateDoc(
     id: string,
     data: Partial<{
-      slug: string;
       title: string;
       content: JSONContent;
       metadata: Record<string, any>;
@@ -444,7 +438,6 @@ export class VibecapeDocsService {
     return {
       id: doc.id,
       parent_id: doc.parent_id,
-      slug: doc.slug,
       title: doc.title,
       content: doc.content,
       metadata: doc.metadata,
@@ -585,7 +578,6 @@ export class VibecapeDocsService {
           const now = Date.now();
           await db.insert(docs).values({
             parent_id: null,
-            slug: "index",
             title: parsed.metadata.title || "首页",
             content: markdownToJSONContent(parsed.body),
             metadata: parsed.metadata,
@@ -623,7 +615,6 @@ export class VibecapeDocsService {
             .insert(docs)
             .values({
               parent_id: parentId,
-              slug: entry.name,
               title,
               content,
               metadata,
@@ -641,13 +632,12 @@ export class VibecapeDocsService {
           // 非 index 的文档文件
           const fileContent = await fs.readFile(fullPath, "utf-8");
           const parsed = parseFrontmatter(fileContent);
-          const slug = entry.name.replace(/\.(md|mdx|mdoc)$/i, "");
+          const baseName = entry.name.replace(/\.(md|mdx|mdoc)$/i, "");
 
           const now = Date.now();
           await db.insert(docs).values({
             parent_id: parentId,
-            slug,
-            title: parsed.metadata.title || slug,
+            title: parsed.metadata.title || baseName,
             content: markdownToJSONContent(parsed.body),
             metadata: parsed.metadata,
             order: order++,
@@ -695,8 +685,8 @@ export class VibecapeDocsService {
       const children = allDocs.filter((d) => d.parent_id === doc.id);
 
       if (children.length > 0) {
-        // 有子节点，创建目录
-        const dirPath = path.join(parentPath, doc.slug);
+        // 有子节点，创建目录 (使用 id 作为目录名)
+        const dirPath = path.join(parentPath, doc.id);
         await fs.mkdir(dirPath, { recursive: true });
 
         // 写入 index 文件
@@ -713,14 +703,14 @@ export class VibecapeDocsService {
           await exportDoc(child, dirPath);
         }
       } else {
-        // 叶子节点，直接写文件
+        // 叶子节点，直接写文件 (使用 id 作为文件名)
         const markdown = jsonContentToMarkdown(doc.content);
         const content = stringifyFrontmatter(markdown, {
           title: doc.title,
           ...doc.metadata,
         });
         await fs.writeFile(
-          path.join(parentPath, `${doc.slug}.mdx`),
+          path.join(parentPath, `${doc.id}.mdx`),
           content,
           "utf-8"
         );

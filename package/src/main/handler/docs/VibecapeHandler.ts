@@ -42,7 +42,6 @@ ipcMain.handle(
     _event,
     payload: {
       parent_id?: string | null;
-      slug: string;
       title: string;
       content?: JSONContent;
       metadata?: Record<string, any>;
@@ -57,7 +56,6 @@ ipcMain.handle(
     payload: {
       id: string;
       data: Partial<{
-        slug: string;
         title: string;
         content: JSONContent;
         metadata: Record<string, any>;

@@ -26,7 +26,6 @@ async function ensureDocsSchema(client: Client): Promise<void> {
     `CREATE TABLE IF NOT EXISTS docs (
       id TEXT PRIMARY KEY,
       parent_id TEXT,
-      slug TEXT NOT NULL,
       title TEXT NOT NULL DEFAULT '',
       content TEXT NOT NULL,
       metadata TEXT NOT NULL DEFAULT '{}',

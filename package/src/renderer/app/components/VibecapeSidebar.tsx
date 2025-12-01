@@ -410,45 +410,42 @@ const DocTreeView = () => {
   // 新建文档
   const handleCreateDoc = useCallback(
     (parentId: string | null) => {
-      let slug = "";
       let title = "";
       dialog({
         title: "新建文档",
-        content: () => (
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">文件名 (slug)</label>
-              <Input
-                placeholder="例如: getting-started"
-                onChange={(e) => (slug = e.target.value)}
-                autoFocus
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">标题</label>
-              <Input
-                placeholder="例如: 快速开始"
-                onChange={(e) => (title = e.target.value)}
-              />
-            </div>
-          </div>
+        className: "max-w-sm",
+        content: (
+          <Input
+            placeholder="输入文档名称"
+            onChange={(e) => (title = e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && title.trim()) {
+                e.preventDefault();
+                const btn = document.querySelector(
+                  "[data-create-child-btn]"
+                ) as HTMLButtonElement;
+                btn?.click();
+              }
+            }}
+          />
         ),
         footer: (close) => (
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={close}>
+            <Button variant="ghost" size="sm" onClick={close}>
               取消
             </Button>
             <Button
+              size="sm"
+              data-create-child-btn
               onClick={async () => {
-                if (!slug.trim()) {
-                  toast.error("请输入文件名");
+                if (!title.trim()) {
+                  toast.error("请输入文档名称");
                   return;
                 }
                 try {
                   await createDoc({
                     parent_id: parentId,
-                    slug: slug.trim(),
-                    title: title.trim() || slug.trim(),
+                    title: title.trim(),
                   });
                   toast.success("文档已创建");
                   close();
@@ -461,7 +458,6 @@ const DocTreeView = () => {
             </Button>
           </div>
         ),
-        className: "max-w-md",
       });
     },
     [createDoc]
@@ -555,18 +551,6 @@ const DocTreeView = () => {
   );
 };
 
-// 生成 slug：中文转拼音首字母，英文转 kebab-case
-const generateSlug = (title: string): string => {
-  return title
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, "-")
-    .replace(/[^a-z0-9\u4e00-\u9fa5-]/g, "")
-    .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "")
-    || `doc-${Date.now()}`;
-};
-
 // 新建文档对话框
 const useCreateDocDialog = () => {
   const createDoc = useVibecapeStore((state) => state.createDoc);
@@ -608,7 +592,6 @@ const useCreateDocDialog = () => {
                 try {
                   await createDoc({
                     parent_id: parentId,
-                    slug: generateSlug(title),
                     title: title.trim(),
                   });
                   toast.success("文档已创建");

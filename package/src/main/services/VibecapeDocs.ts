@@ -247,29 +247,36 @@ export class VibecapeDocsService {
 
   /**
    * 初始化指定目录的工作区
+   * 返回初始化结果，包括是否需要导入
    */
-  static async initWorkspace(docsDir: string): Promise<VibecapeWorkspace> {
+  static async initWorkspace(docsDir: string): Promise<{
+    workspace: VibecapeWorkspace;
+    needsImport: boolean;
+  }> {
     let workspace = getWorkspaceInfo(docsDir);
+    let needsImport = false;
 
     // 如果工作区不存在，自动初始化
     if (!workspace.initialized) {
       const { workspace: newWorkspace } = await initVibecapeWorkspace(docsDir);
       workspace = newWorkspace;
+      needsImport = true; // 新工作区需要导入
     }
 
     await SettingsService.update(["general", "vibecapeRoot"], docsDir);
     this.currentWorkspace = workspace;
 
-    return workspace;
+    return { workspace, needsImport };
   }
 
   /**
-   * 打开或创建工作区（组合方法）
+   * 打开或创建工作区（组合方法，已废弃，使用 pickDocsFolder + initWorkspace）
    */
   static async openWorkspace(): Promise<VibecapeWorkspace | null> {
     const docsDir = await this.pickDocsFolder();
     if (!docsDir) return null;
-    return this.initWorkspace(docsDir);
+    const { workspace } = await this.initWorkspace(docsDir);
+    return workspace;
   }
 
   /**
@@ -478,6 +485,74 @@ export class VibecapeDocsService {
   // ==================== 同步功能 ====================
 
   /**
+   * 重新排序文档（同级）
+   */
+  static async reorderDoc(activeId: string, overId: string): Promise<void> {
+    const db = await this.getDb();
+    
+    // 获取两个文档
+    const [activeDoc] = await db.select().from(docs).where(eq(docs.id, activeId));
+    const [overDoc] = await db.select().from(docs).where(eq(docs.id, overId));
+    
+    if (!activeDoc || !overDoc) {
+      throw new Error("文档不存在");
+    }
+
+    // 必须是同一个父级
+    if (activeDoc.parent_id !== overDoc.parent_id) {
+      throw new Error("只能在同级之间排序");
+    }
+
+    // 获取同级所有文档
+    const siblings = await db
+      .select()
+      .from(docs)
+      .where(
+        activeDoc.parent_id 
+          ? eq(docs.parent_id, activeDoc.parent_id)
+          : isNull(docs.parent_id)
+      )
+      .orderBy(asc(docs.order));
+
+    // 重新计算顺序
+    const activeIndex = siblings.findIndex(d => d.id === activeId);
+    const overIndex = siblings.findIndex(d => d.id === overId);
+    
+    if (activeIndex === -1 || overIndex === -1) return;
+
+    // 移动元素
+    const [removed] = siblings.splice(activeIndex, 1);
+    siblings.splice(overIndex, 0, removed);
+
+    // 更新所有顺序
+    for (let i = 0; i < siblings.length; i++) {
+      await db.update(docs).set({ order: i }).where(eq(docs.id, siblings[i].id));
+    }
+  }
+
+  /**
+   * 移动文档到新的父级
+   */
+  static async moveDoc(docId: string, newParentId: string | null): Promise<void> {
+    const db = await this.getDb();
+    
+    // 获取目标父级下的最大 order
+    const siblings = await db
+      .select()
+      .from(docs)
+      .where(newParentId ? eq(docs.parent_id, newParentId) : isNull(docs.parent_id))
+      .orderBy(asc(docs.order));
+
+    const maxOrder = siblings.length > 0 ? siblings[siblings.length - 1].order + 1 : 0;
+
+    // 更新文档的父级和顺序
+    await db
+      .update(docs)
+      .set({ parent_id: newParentId, order: maxOrder })
+      .where(eq(docs.id, docId));
+  }
+
+  /**
    * 从 docs 目录导入到数据库 (覆盖)
    */
   static async importFromDocs(): Promise<{ imported: number }> {
@@ -493,13 +568,35 @@ export class VibecapeDocsService {
 
     // 递归扫描并导入
     let imported = 0;
-    const importDir = async (dirPath: string, parentId: string | null) => {
+    const importDir = async (dirPath: string, parentId: string | null, isRoot = false) => {
       const entries = await fs.readdir(dirPath, { withFileTypes: true });
 
       // 按名称排序
       entries.sort((a, b) => a.name.localeCompare(b.name));
 
       let order = 0;
+
+      // 对于根目录，先处理 index 文件
+      if (isRoot) {
+        const rootIndexFile = await findIndexFile(dirPath);
+        if (rootIndexFile) {
+          const fileContent = await fs.readFile(rootIndexFile, "utf-8");
+          const parsed = parseFrontmatter(fileContent);
+          const now = Date.now();
+          await db.insert(docs).values({
+            parent_id: null,
+            slug: "index",
+            title: parsed.metadata.title || "首页",
+            content: markdownToJSONContent(parsed.body),
+            metadata: parsed.metadata,
+            order: order++,
+            created_at: now,
+            updated_at: now,
+          });
+          imported++;
+        }
+      }
+
       for (const entry of entries) {
         if (entry.name.startsWith(".")) continue;
 
@@ -538,8 +635,8 @@ export class VibecapeDocsService {
 
           imported++;
           
-          // 递归处理子目录（排除 index 文件）
-          await importDir(fullPath, result[0].id);
+          // 递归处理子目录
+          await importDir(fullPath, result[0].id, false);
         } else if (isDocFile(entry.name) && !isIndexFile(entry.name)) {
           // 非 index 的文档文件
           const fileContent = await fs.readFile(fullPath, "utf-8");
@@ -563,7 +660,7 @@ export class VibecapeDocsService {
       }
     };
 
-    await importDir(workspace.docsPath, null);
+    await importDir(workspace.docsPath, null, true);
 
     return { imported };
   }

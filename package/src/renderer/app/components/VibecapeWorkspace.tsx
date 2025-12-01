@@ -2,15 +2,35 @@ import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useVibecapeStore } from "../useVibecapeStore";
 import { VibecapeEditor } from "./VibecapeEditor";
-import {
-  FolderOpen,
-  Download,
-  Upload,
-  Loader2,
-  FileText,
-  Sparkles,
-} from "lucide-react";
+import { FolderOpen, Loader2, FileText, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import { useViewManager } from "@/hook/app/useViewManager";
+import { GeneralSettings, ModelSettings, AboutSettings } from "./SettingsModal";
+
+// 初始化进度对话框
+const InitProgressDialog = () => {
+  const initProgress = useVibecapeStore((state) => state.initProgress);
+
+  if (!initProgress) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+      <div className="bg-background rounded-lg p-6 shadow-lg max-w-sm w-full mx-4">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <div className="text-center space-y-1">
+            <p className="font-medium">初始化工作区</p>
+            <p className="text-sm text-muted-foreground">{initProgress}</p>
+          </div>
+          {/* 进度条 */}
+          <div className="w-full h-1 bg-muted rounded-full overflow-hidden">
+            <div className="h-full bg-primary animate-pulse w-full" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 // 欢迎页面 - 未打开工作区时显示
 const WelcomePage = () => {
@@ -106,99 +126,53 @@ const EmptyDocState = () => (
   </div>
 );
 
-// 工具栏
-const Toolbar = ({
-  title,
-  onImport,
-  onExport,
-  loading,
-}: {
-  title: string;
-  onImport: () => void;
-  onExport: () => void;
-  loading: boolean;
-}) => (
-  <div className="flex items-center gap-2 px-4 py-2 border-b bg-muted/30">
-    <span className="text-sm text-muted-foreground flex-1 truncate">
-      {title}
-    </span>
-    <Button
-      variant="ghost"
-      size="sm"
-      onClick={onImport}
-      disabled={loading}
-      className="h-7 text-xs"
-    >
-      {loading ? (
-        <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-      ) : (
-        <Download className="h-3 w-3 mr-1" />
-      )}
-      导入
-    </Button>
-    <Button
-      variant="ghost"
-      size="sm"
-      onClick={onExport}
-      disabled={loading}
-      className="h-7 text-xs"
-    >
-      {loading ? (
-        <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-      ) : (
-        <Upload className="h-3 w-3 mr-1" />
-      )}
-      导出
-    </Button>
-  </div>
-);
-
 export const VibecapeWorkspace = () => {
   const workspace = useVibecapeStore((state) => state.workspace);
   const activeDoc = useVibecapeStore((state) => state.activeDoc);
-  const loading = useVibecapeStore((state) => state.loading);
   const bootstrap = useVibecapeStore((state) => state.bootstrap);
   const saveDoc = useVibecapeStore((state) => state.saveDoc);
-  const importFromDocs = useVibecapeStore((state) => state.importFromDocs);
-  const exportToDocs = useVibecapeStore((state) => state.exportToDocs);
+  const activeSidebarPanel = useViewManager((state) => state.activeSidebarPanel);
+  const settingsSection = useViewManager((state) => state.previewCosmosId);
 
   useEffect(() => {
     bootstrap();
   }, [bootstrap]);
 
-  const handleImport = async () => {
-    try {
-      const result = await importFromDocs();
-      toast.success(`成功导入 ${result.imported} 个文档`);
-    } catch (error) {
-      toast.error((error as Error).message);
-    }
-  };
+  // 设置模式 - 显示设置页面
+  if (activeSidebarPanel === "settings") {
+    const renderSettings = () => {
+      switch (settingsSection) {
+        case "models":
+          return <ModelSettings />;
+        case "about":
+          return <AboutSettings />;
+        case "general":
+        default:
+          return <GeneralSettings />;
+      }
+    };
 
-  const handleExport = async () => {
-    try {
-      const result = await exportToDocs();
-      toast.success(`成功导出 ${result.exported} 个文档`);
-    } catch (error) {
-      toast.error((error as Error).message);
-    }
-  };
+    return (
+      <div className="h-full overflow-auto p-6">
+        <div className="max-w-3xl mx-auto">{renderSettings()}</div>
+      </div>
+    );
+  }
 
   // 未初始化工作区 - 显示欢迎页面
   if (!workspace?.initialized) {
-    return <WelcomePage />;
+    return (
+      <>
+        <InitProgressDialog />
+        <WelcomePage />
+      </>
+    );
   }
 
   // 未选择文档
   if (!activeDoc) {
     return (
       <div className="flex-1 flex flex-col h-full">
-        <Toolbar
-          title={workspace.root.split("/").pop() || "工作区"}
-          onImport={handleImport}
-          onExport={handleExport}
-          loading={loading}
-        />
         <EmptyDocState />
       </div>
     );
@@ -206,40 +180,6 @@ export const VibecapeWorkspace = () => {
 
   return (
     <div className="flex-1 flex flex-col h-full">
-      {/* 工具栏 */}
-      <div className="flex items-center gap-2 p-4 border-b">
-        <span className="text-sm text-muted-foreground flex-1 truncate">
-          {activeDoc.slug}
-        </span>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleImport}
-          disabled={loading || !workspace.docsPath}
-          title={workspace.docsPath ? "从 docs 目录导入" : "未找到 docs 目录"}
-        >
-          {loading ? (
-            <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-          ) : (
-            <Download className="h-4 w-4 mr-1" />
-          )}
-          导入
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleExport}
-          disabled={loading}
-        >
-          {loading ? (
-            <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-          ) : (
-            <Upload className="h-4 w-4 mr-1" />
-          )}
-          导出
-        </Button>
-      </div>
-
       {/* 编辑器 */}
       <VibecapeEditor doc={activeDoc} onSave={saveDoc} />
     </div>

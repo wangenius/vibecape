@@ -76,6 +76,10 @@ const api = {
     updateDoc: (id: string, data: any) =>
       ipcRenderer.invoke("vibecape:updateDoc", { id, data }),
     deleteDoc: (id: string) => ipcRenderer.invoke("vibecape:deleteDoc", id),
+    reorderDoc: (activeId: string, overId: string) =>
+      ipcRenderer.invoke("vibecape:reorderDoc", activeId, overId),
+    moveDoc: (docId: string, newParentId: string | null) =>
+      ipcRenderer.invoke("vibecape:moveDoc", docId, newParentId),
     // 同步
     importFromDocs: () => ipcRenderer.invoke("vibecape:importFromDocs"),
     exportToDocs: () => ipcRenderer.invoke("vibecape:exportToDocs"),

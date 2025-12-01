@@ -17,6 +17,8 @@ type VibecapeState = {
   activeDoc: DocData | null;
   // 加载状态
   loading: boolean;
+  // 初始化进度信息
+  initProgress: string | null;
   error?: string;
 };
 
@@ -57,6 +59,7 @@ export const useVibecapeStore = create<VibecapeState & VibecapeActions>(
     activeDocId: null,
     activeDoc: null,
     loading: false,
+    initProgress: null,
     error: undefined,
 
     bootstrap: async () => {
@@ -94,20 +97,28 @@ export const useVibecapeStore = create<VibecapeState & VibecapeActions>(
       const docsDir = await window.api.vibecape.pickDocsFolder();
       if (!docsDir) return false;
 
-      // 第二步：初始化工作区（显示 loading）
-      set({ loading: true, error: undefined });
+      // 第二步：初始化工作区（显示 loading 和进度）
+      set({ loading: true, initProgress: "正在创建数据库...", error: undefined });
       try {
-        const workspace = await window.api.vibecape.initWorkspace(docsDir);
+        const { workspace, needsImport } = await window.api.vibecape.initWorkspace(docsDir);
         set({ workspace, activeDocId: null, activeDoc: null });
-        // 初始化完成后刷新树
+
+        // 如果是新工作区，自动导入现有 MDX 文件
+        if (needsImport) {
+          set({ initProgress: "正在解析 MDX 文档..." });
+          await window.api.vibecape.importFromDocs();
+        }
+
+        // 加载文档树
+        set({ initProgress: "正在加载文档树..." });
         const tree = await window.api.vibecape.getTree();
-        set({ tree });
+        set({ tree, initProgress: null });
         return true;
       } catch (error) {
-        set({ error: (error as Error).message });
+        set({ error: (error as Error).message, initProgress: null });
         throw error;
       } finally {
-        set({ loading: false });
+        set({ loading: false, initProgress: null });
       }
     },
 

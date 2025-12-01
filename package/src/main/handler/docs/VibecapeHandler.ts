@@ -72,6 +72,18 @@ ipcMain.handle("vibecape:deleteDoc", (_event, id: string) =>
   VibecapeDocsService.deleteDoc(id)
 );
 
+ipcMain.handle(
+  "vibecape:reorderDoc",
+  (_event, activeId: string, overId: string) =>
+    VibecapeDocsService.reorderDoc(activeId, overId)
+);
+
+ipcMain.handle(
+  "vibecape:moveDoc",
+  (_event, docId: string, newParentId: string | null) =>
+    VibecapeDocsService.moveDoc(docId, newParentId)
+);
+
 // ==================== 同步 ====================
 
 ipcMain.handle("vibecape:importFromDocs", () =>

@@ -21,7 +21,10 @@ export interface VibecapeAPI {
   pickDocsFolder: () => Promise<string | null>;
   
   /** 初始化指定目录的工作区 */
-  initWorkspace: (docsDir: string) => Promise<VibecapeWorkspace>;
+  initWorkspace: (docsDir: string) => Promise<{
+    workspace: VibecapeWorkspace;
+    needsImport: boolean;
+  }>;
 
   // ==================== 文档树 ====================
   
@@ -57,6 +60,12 @@ export interface VibecapeAPI {
   
   /** 删除文档 */
   deleteDoc: (id: string) => Promise<void>;
+  
+  /** 重新排序文档 */
+  reorderDoc: (activeId: string, overId: string) => Promise<void>;
+  
+  /** 移动文档到新父级 */
+  moveDoc: (docId: string, newParentId: string | null) => Promise<void>;
 
   // ==================== 同步 ====================
   

@@ -10,6 +10,7 @@ import { useChatInputFocus } from "@/hook/shortcuts/useChatInputFocus";
 
 const App = () => {
   const bootstrap = useVibecapeStore((state) => state.bootstrap);
+
   useTheme();
   useChatInputFocus(true, true);
 

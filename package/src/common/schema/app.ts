@@ -1,6 +1,20 @@
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { id, jsonb } from "./custom.type";
 
+// ==================== Providers ====================
+
+export const providers = sqliteTable("providers", {
+  id: id("id", { length: 24 }),
+  name: text("name").notNull(),
+  base_url: text("base_url").notNull(),
+  api_key: text("api_key").notNull(),
+  models_path: text("models_path").notNull().default("/v1/models"),
+  enabled: integer("enabled", { mode: "boolean" }).notNull().default(true),
+});
+
+export type Provider = typeof providers.$inferSelect;
+export type ProviderInsert = typeof providers.$inferInsert;
+
 // ==================== Models ====================
 
 export const models = sqliteTable("models", {
@@ -8,6 +22,7 @@ export const models = sqliteTable("models", {
   name: text("name").notNull(),
   description: text("description").notNull().default(""),
   model: text("model").notNull(),
+  provider_id: text("provider_id").notNull().default(""),
   base_url: text("base_url").notNull(),
   api_key: text("api_key").notNull(),
   type: text("type").notNull().default("text"),

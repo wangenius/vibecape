@@ -1,13 +1,13 @@
 import { app, shell, BrowserWindow, ipcMain, nativeImage } from "electron";
 import { join } from "path";
-import icon from "../../resources/icon-macOS-Default-1024x1024@2x.png?asset";
+import icon from "../../resources/new-macOS-Default-1024x1024@2x.png?asset";
 import { ensureDatabaseReady } from "./db/client";
 
 // 自动注册 IPC handlers（副作用导入）
 import "./handler/app/SettingsHandler";
 import "./handler/app/ModelHandler";
+import "./handler/app/ProviderHandler";
 import "./handler/chat/ChatHandler";
-import "./handler/docs/DocsHandler";
 import "./handler/docs/VibecapeHandler";
 
 function createWindow(): void {
@@ -81,6 +81,16 @@ app.whenReady().then(async () => {
   try {
     // Initialize Global Databases
     await ensureDatabaseReady();
+
+    // 数据库就绪后初始化服务
+    const { SettingsService } = await import("./services/Settings");
+    const { Model } = await import("./services/Model");
+    const { Provider } = await import("./services/Provider");
+    await Promise.all([
+      SettingsService.init(),
+      Model.init(),
+      Provider.init(),
+    ]);
   } catch (error) {
     console.error("Failed to initialize databases:", error);
   }

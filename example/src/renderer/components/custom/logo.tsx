@@ -11,7 +11,7 @@ export const Logo = (props: HTMLAttributes<HTMLDivElement>) => {
       )}
     >
       <img
-        src="/icon-macOS-Default-1024x1024@2x.png"
+        src="/new-macOS-Default-1024x1024@2x.png"
         alt="logo"
         className={"w-full h-full"}
       />

@@ -10,11 +10,19 @@ import { Editor } from "@tiptap/core";
 import { cn } from "@/lib/utils";
 import {
   CheckSquare,
-  Sparkles,
+  Heading1,
+  Heading2,
+  Heading3,
+  List,
+  ListOrdered,
+  Quote,
+  Code,
+  Minus,
   Wand2,
+  Sparkles,
 } from "lucide-react";
 
-export type SlashMenuCategory = "ai" | "insert";
+export type SlashMenuCategory = "ai" | "heading" | "list" | "insert";
 
 export interface SlashMenuItem {
   title: string;
@@ -28,6 +36,10 @@ const getCategoryLabel = (category: SlashMenuCategory) => {
   switch (category) {
     case "ai":
       return "AI";
+    case "heading":
+      return "标题";
+    case "list":
+      return "列表";
     case "insert":
       return "插入";
   }
@@ -37,15 +49,19 @@ const getCategoryColor = (category: SlashMenuCategory) => {
   switch (category) {
     case "ai":
       return "text-violet-600 dark:text-violet-400";
-    case "insert":
+    case "heading":
+      return "text-blue-600 dark:text-blue-400";
+    case "list":
       return "text-emerald-600 dark:text-emerald-400";
+    case "insert":
+      return "text-orange-600 dark:text-orange-400";
   }
 };
 
 export const SLASH_MENU_ITEMS: SlashMenuItem[] = [
   {
-    title: "AI改写",
-    description: "使用AI改写或生成内容",
+    title: "AI 改写",
+    description: "使用 AI 改写或生成内容",
     icon: <Wand2 className="size-4" />,
     category: "ai",
     command: ({ editor }) => {
@@ -53,25 +69,97 @@ export const SLASH_MENU_ITEMS: SlashMenuItem[] = [
     },
   },
   {
-    title: "续写",
-    description: "AI帮你续写内容",
+    title: "AI 续写",
+    description: "AI 帮你续写内容",
     icon: <Sparkles className="size-4" />,
     category: "ai",
     command: ({ editor }) => {
       editor.chain().focus().run();
-      const event = new CustomEvent('tiptap:ai-continue', {
-        detail: { editor }
+      const event = new CustomEvent("tiptap:ai-continue", {
+        detail: { editor },
       });
       window.dispatchEvent(event);
     },
   },
   {
+    title: "一级标题",
+    description: "大标题",
+    icon: <Heading1 className="size-4" />,
+    category: "heading",
+    command: ({ editor }) => {
+      editor.chain().focus().toggleHeading({ level: 1 }).run();
+    },
+  },
+  {
+    title: "二级标题",
+    description: "中标题",
+    icon: <Heading2 className="size-4" />,
+    category: "heading",
+    command: ({ editor }) => {
+      editor.chain().focus().toggleHeading({ level: 2 }).run();
+    },
+  },
+  {
+    title: "三级标题",
+    description: "小标题",
+    icon: <Heading3 className="size-4" />,
+    category: "heading",
+    command: ({ editor }) => {
+      editor.chain().focus().toggleHeading({ level: 3 }).run();
+    },
+  },
+  {
+    title: "无序列表",
+    description: "创建无序列表",
+    icon: <List className="size-4" />,
+    category: "list",
+    command: ({ editor }) => {
+      editor.chain().focus().toggleBulletList().run();
+    },
+  },
+  {
+    title: "有序列表",
+    description: "创建有序列表",
+    icon: <ListOrdered className="size-4" />,
+    category: "list",
+    command: ({ editor }) => {
+      editor.chain().focus().toggleOrderedList().run();
+    },
+  },
+  {
     title: "待办列表",
-    description: "创建一个待办列表",
+    description: "创建待办列表",
     icon: <CheckSquare className="size-4" />,
-    category: "insert",
+    category: "list",
     command: ({ editor }) => {
       editor.chain().focus().toggleTaskList().run();
+    },
+  },
+  {
+    title: "引用",
+    description: "创建引用块",
+    icon: <Quote className="size-4" />,
+    category: "insert",
+    command: ({ editor }) => {
+      editor.chain().focus().toggleBlockquote().run();
+    },
+  },
+  {
+    title: "代码块",
+    description: "创建代码块",
+    icon: <Code className="size-4" />,
+    category: "insert",
+    command: ({ editor }) => {
+      editor.chain().focus().toggleCodeBlock().run();
+    },
+  },
+  {
+    title: "分割线",
+    description: "插入分割线",
+    icon: <Minus className="size-4" />,
+    category: "insert",
+    command: ({ editor }) => {
+      editor.chain().focus().setHorizontalRule().run();
     },
   },
 ];

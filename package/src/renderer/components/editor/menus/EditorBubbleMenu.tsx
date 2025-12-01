@@ -1,13 +1,12 @@
 /**
  * Editor Bubble Menu 组件
- * 选中文本时弹出的工具栏：引用和润色
+ * 选中文本时弹出的格式化工具栏
  */
 
 import { Editor } from "@tiptap/react";
 import { cn } from "@/lib/utils";
-import { Quote, Sparkles } from "lucide-react";
+import { Bold, Italic, Underline, Strikethrough, Code, Highlighter, Link, Sparkles } from "lucide-react";
 import { useCallback, useEffect, useState, useRef } from "react";
-import { openBayBar } from "@/hook/app/useViewManager";
 
 interface EditorBubbleMenuProps {
   editor: Editor | null;
@@ -34,7 +33,7 @@ const ToolbarButton = ({
       disabled={disabled}
       title={title}
       className={cn(
-        "p-2 rounded hover:bg-accent transition-colors",
+        "p-1.5 rounded hover:bg-accent transition-colors",
         active && "bg-accent text-accent-foreground",
         disabled && "opacity-50 cursor-not-allowed"
       )}
@@ -59,6 +58,13 @@ export const EditorBubbleMenu = ({ editor }: EditorBubbleMenuProps) => {
 
       // 如果没有选中文本，隐藏菜单
       if (empty) {
+        setVisible(false);
+        return;
+      }
+
+      // 获取选中的文本内容，检查是否只有空白字符
+      const selectedText = state.doc.textBetween(from, to, "\n");
+      if (!selectedText.trim()) {
         setVisible(false);
         return;
       }
@@ -88,48 +94,19 @@ export const EditorBubbleMenu = ({ editor }: EditorBubbleMenuProps) => {
     };
   }, [editor]);
 
-  // 处理引用按钮
-  const handleQuote = useCallback(() => {
+  const handleLink = useCallback(() => {
     if (!editor) return;
-
-    const { state } = editor;
-    const { from, to } = state.selection;
-    const selectedText = state.doc.textBetween(from, to, "\n");
-
-    // 打开 BayBar
-    openBayBar();
-
-    // 延迟一下，等待 BayBar 动画完成后再设置引用
-    setTimeout(() => {
-      const textarea = document.querySelector<HTMLTextAreaElement>(
-        "textarea[name='message']"
-      );
-      if (textarea) {
-        // 通过 ChatInput 的 ref 来设置引用
-        const chatInputElement = textarea.closest('[data-chat-input]');
-        if (chatInputElement) {
-          // 触发自定义事件来设置引用
-          const event = new CustomEvent("set-quote", {
-            detail: { text: selectedText }
-          });
-          window.dispatchEvent(event);
-        }
-      }
-    }, 350);
-
-    // 清除选择
-    editor.commands.blur();
-  }, [editor]);
-
-  // 处理润色按钮 - 插入 AI 润色节点
-  const handlePolish = useCallback(() => {
-    if (!editor) return;
-
-    // 插入 AI 润色节点（会自动给选中文字添加 mark）
-    editor.commands.insertAIPolish();
     
-    // 隐藏菜单
-    setVisible(false);
+    const previousUrl = editor.getAttributes("link").href;
+    const url = window.prompt("输入链接地址", previousUrl);
+    
+    if (url === null) return;
+    
+    if (url === "") {
+      editor.chain().focus().extendMarkRange("link").unsetLink().run();
+    } else {
+      editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
+    }
   }, [editor]);
 
   if (!editor || !visible) return null;
@@ -143,16 +120,57 @@ export const EditorBubbleMenu = ({ editor }: EditorBubbleMenuProps) => {
         left: `${position.left}px`,
       }}
     >
-      <div className="p-1 flex gap-1">
+      <div className="p-1 flex gap-0.5">
         <ToolbarButton
-          onClick={handleQuote}
-          icon={<Quote className="w-4 h-4" />}
-          title="引用到对话"
+          onClick={() => editor.chain().focus().toggleBold().run()}
+          active={editor.isActive("bold")}
+          icon={<Bold className="w-4 h-4" />}
+          title="加粗"
         />
         <ToolbarButton
-          onClick={handlePolish}
+          onClick={() => editor.chain().focus().toggleItalic().run()}
+          active={editor.isActive("italic")}
+          icon={<Italic className="w-4 h-4" />}
+          title="斜体"
+        />
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleUnderline().run()}
+          active={editor.isActive("underline")}
+          icon={<Underline className="w-4 h-4" />}
+          title="下划线"
+        />
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleStrike().run()}
+          active={editor.isActive("strike")}
+          icon={<Strikethrough className="w-4 h-4" />}
+          title="删除线"
+        />
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleCode().run()}
+          active={editor.isActive("code")}
+          icon={<Code className="w-4 h-4" />}
+          title="行内代码"
+        />
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleHighlight().run()}
+          active={editor.isActive("highlight")}
+          icon={<Highlighter className="w-4 h-4" />}
+          title="高亮"
+        />
+        <ToolbarButton
+          onClick={handleLink}
+          active={editor.isActive("link")}
+          icon={<Link className="w-4 h-4" />}
+          title="链接"
+        />
+        <div className="w-px h-4 bg-border mx-0.5" />
+        <ToolbarButton
+          onClick={() => {
+            editor.commands.insertAIPolish();
+            setVisible(false);
+          }}
           icon={<Sparkles className="w-4 h-4" />}
-          title="润色"
+          title="AI 润色"
         />
       </div>
     </div>

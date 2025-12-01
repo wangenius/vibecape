@@ -7,7 +7,7 @@
       "layers": [
         {
           "hidden": false,
-          "image-name": "icon-macOS-Default-1024x1024@2x.png",
+          "image-name": "new-macOS-Default-1024x1024@2x.png",
           "name": "icon",
           "position": {
             "scale": 0.32,

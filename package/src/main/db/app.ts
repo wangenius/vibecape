@@ -2,13 +2,15 @@ import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
 import fs from "fs";
 import path from "path";
-import { models, settings } from "@common/schema/app";
+import os from "os";
+import { models, settings, providers } from "@common/schema/app";
 import { SETTINGS_DEFAULTS } from "@common/config/settings";
 import { ensureSchema } from "./ensure-schema";
 
-// 全局设置数据库路径
-const settingsPath = path.join(process.cwd(), "data", "app.db");
-fs.mkdirSync(path.dirname(settingsPath), { recursive: true });
+// 全局设置数据库路径 - 存储到用户目录 ~/.vibecape/
+const vibecapeDir = path.join(os.homedir(), ".vibecape");
+const settingsPath = path.join(vibecapeDir, "app.db");
+fs.mkdirSync(vibecapeDir, { recursive: true });
 
 const client = createClient({
   url: `file:${settingsPath}`,
@@ -18,6 +20,7 @@ const client = createClient({
 const appSchema = {
   models,
   settings,
+  providers,
 };
 
 export const appDb = drizzle(client, { schema: appSchema });
@@ -35,6 +38,7 @@ export async function initSettingsDatabase(): Promise<void> {
     await ensureSchema(settingsClient, appDb, {
       models,
       settings,
+      providers,
     });
 
     // 初始化默认设置

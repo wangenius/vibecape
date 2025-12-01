@@ -116,5 +116,4 @@ export class SettingsService {
   }
 }
 
-// Preload cache on startup
-void SettingsService.init();
+// 延迟初始化 - 等待数据库就绪后由 main/index.ts 触发

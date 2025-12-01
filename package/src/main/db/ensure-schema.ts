@@ -11,17 +11,31 @@ export async function ensureSchema(
   _schema: Record<string, any>
 ): Promise<void> {
   const sqls = [
+    // Providers 表
+    `CREATE TABLE IF NOT EXISTS providers (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      base_url TEXT NOT NULL,
+      api_key TEXT NOT NULL,
+      models_path TEXT NOT NULL DEFAULT '/v1/models',
+      enabled INTEGER NOT NULL DEFAULT 1
+    );`,
+    // Models 表
     `CREATE TABLE IF NOT EXISTS models (
       id TEXT PRIMARY KEY,
       name TEXT NOT NULL,
       description TEXT NOT NULL DEFAULT '',
       model TEXT NOT NULL,
+      provider_id TEXT NOT NULL DEFAULT '',
       base_url TEXT NOT NULL,
       api_key TEXT NOT NULL,
       type TEXT NOT NULL DEFAULT 'text',
       json INTEGER NOT NULL DEFAULT 0,
       reasoner INTEGER NOT NULL DEFAULT 0
     );`,
+    // 迁移：添加 provider_id 列（如果表已存在但缺少该列）
+    `ALTER TABLE models ADD COLUMN provider_id TEXT NOT NULL DEFAULT '';`,
+    // Settings 表
     `CREATE TABLE IF NOT EXISTS settings (
       key TEXT PRIMARY KEY,
       value TEXT NOT NULL
@@ -49,7 +63,15 @@ export async function ensureSchema(
   ];
 
   for (const sql of sqls) {
-    await client.execute(sql);
+    try {
+      await client.execute(sql);
+    } catch (error: any) {
+      // 忽略 "duplicate column" 错误（ALTER TABLE 添加已存在的列）
+      if (error?.message?.includes("duplicate column")) {
+        continue;
+      }
+      throw error;
+    }
   }
 }
 

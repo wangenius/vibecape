@@ -1,4 +1,4 @@
-import { Model, ModelInsert, SettingsData } from "@common/schema";
+import { Model, ModelInsert, Provider, ProviderInsert, SettingsData } from "@common/schema";
 import type { Shape } from "@common/lib/shape";
 
 export interface SettingsAPI {
@@ -6,6 +6,28 @@ export interface SettingsAPI {
   get: () => Promise<SettingsData>;
   /** 更新设置 */
   update: (path: Shape, value: unknown) => Promise<SettingsData>;
+}
+
+/** Provider 远程模型 */
+export interface RemoteModel {
+  id: string;
+  object?: string;
+}
+
+/** Provider 管理 */
+export interface ProviderAPI {
+  /** 获取 Provider 列表 */
+  list: () => Promise<Provider[]>;
+  /** 获取单个 Provider */
+  get: (id: string) => Promise<Provider | null>;
+  /** 创建 Provider */
+  create: (payload: ProviderInsert) => Promise<Provider>;
+  /** 更新 Provider */
+  update: (id: string, changes: Partial<ProviderInsert>) => Promise<Provider>;
+  /** 删除 Provider */
+  delete: (id: string) => Promise<{ success: boolean }>;
+  /** 获取 Provider 远程模型列表 */
+  fetchModels: (providerId: string) => Promise<RemoteModel[]>;
 }
 
 /** 模型管理 */

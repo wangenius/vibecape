@@ -38,8 +38,6 @@ import {
   refreshModels,
   type ModelCategoryKey,
 } from "@/hook/model/useModel";
-import { cn } from "@/lib/utils";
-import { TbSettings, TbBox, TbInfoCircle } from "react-icons/tb";
 import { BsStars } from "react-icons/bs";
 import { MoreVertical } from "lucide-react";
 
@@ -49,12 +47,6 @@ const THEME_OPTIONS = [
   { value: "forest", label: "森林" },
   { value: "ocean", label: "海洋" },
   { value: "sunset", label: "日落" },
-];
-
-const NAV_ITEMS = [
-  { key: "general", label: "通用", icon: TbSettings },
-  { key: "models", label: "模型", icon: TbBox },
-  { key: "about", label: "关于", icon: TbInfoCircle },
 ];
 
 // 通用设置
@@ -586,55 +578,6 @@ export const AboutSettings = () => {
           </div>
         </div>
       </section>
-    </div>
-  );
-};
-
-// 设置内容组件，用于 dialog
-export const SettingsContent = () => {
-  const [activeSection, setActiveSection] = useState("general");
-
-  const renderSettingsContent = () => {
-    switch (activeSection) {
-      case "models":
-        return <ModelSettings />;
-      case "about":
-        return <AboutSettings />;
-      case "general":
-      default:
-        return <GeneralSettings />;
-    }
-  };
-
-  return (
-    <div className="flex">
-      {/* 左侧导航 */}
-      <div className="w-44 border-r border-border/40 p-3 space-y-1 bg-muted/20">
-        {NAV_ITEMS.map((item) => {
-          const Icon = item.icon;
-          const isActive = activeSection === item.key;
-          return (
-            <button
-              key={item.key}
-              onClick={() => setActiveSection(item.key)}
-              className={cn(
-                "w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors",
-                isActive
-                  ? "bg-primary/10 text-primary font-medium"
-                  : "text-muted-foreground hover:bg-muted-foreground/10 hover:text-foreground"
-              )}
-            >
-              <Icon className="size-4" />
-              <span>{item.label}</span>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* 右侧内容 */}
-      <div className="flex-1 overflow-auto p-6">
-        {renderSettingsContent()}
-      </div>
     </div>
   );
 };

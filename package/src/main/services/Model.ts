@@ -181,5 +181,4 @@ export class Model {
   }
 }
 
-// 自动初始化
-void Model.init();
+// 延迟初始化 - 等待数据库就绪后由 main/index.ts 触发

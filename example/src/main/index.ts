@@ -1,6 +1,6 @@
 import { app, shell, BrowserWindow, ipcMain, nativeImage } from "electron";
 import { join } from "path";
-import icon from "../../resources/icon-macOS-Default-1024x1024@2x.png?asset";
+import icon from "../../resources/new-macOS-Default-1024x1024@2x.png?asset";
 import { ensureDatabaseReady } from "./db/client";
 // import { initStatsDatabase } from "./db/stats";
 

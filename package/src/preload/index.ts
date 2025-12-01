@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer } from "electron";
 import { electronAPI } from "@electron-toolkit/preload";
-import { ModelInsert } from "@common/schema";
+import { ModelInsert, ProviderInsert } from "@common/schema";
 import type { Shape } from "@common/lib/shape";
 
 const api = {
@@ -37,6 +37,17 @@ const api = {
       ipcRenderer.invoke("docs:moveDoc", { storyId, sourceId, targetFolderId }),
   },
   app: {
+    provider: {
+      list: () => ipcRenderer.invoke("provider:list"),
+      get: (id: string) => ipcRenderer.invoke("provider:get", id),
+      create: (payload: ProviderInsert) =>
+        ipcRenderer.invoke("provider:create", payload),
+      update: (id: string, changes: Partial<ProviderInsert>) =>
+        ipcRenderer.invoke("provider:update", { id, changes }),
+      delete: (id: string) => ipcRenderer.invoke("provider:delete", id),
+      fetchModels: (providerId: string) =>
+        ipcRenderer.invoke("provider:fetchModels", providerId),
+    },
     model: {
       list: () => ipcRenderer.invoke("model:list"),
       create: (payload: ModelInsert) =>

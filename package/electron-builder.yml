@@ -3,7 +3,7 @@ productName: "jezzlab"
 electronVersion: "38.1.2"
 directories:
   buildResources: build
-icon: build/icon-macOS-Default-1024x1024@2x.png
+icon: build/new-macOS-Default-1024x1024@2x.png
 files:
   - "!**/.vscode/*"
   - "!src/*"

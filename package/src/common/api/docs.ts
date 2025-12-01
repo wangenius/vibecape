@@ -30,4 +30,10 @@ export interface DocsAPI {
     storyId: string,
     payload: { tree: DocNavNode[]; rawMeta: Record<string, any> }
   ) => Promise<DocStory>;
+  /** 删除文档或文件夹 */
+  deleteDoc: (storyId: string, docPath: string) => Promise<void>;
+  /** 重排序文档（保存到 meta.json 的 pages 字段） */
+  reorderDoc: (storyId: string, activeId: string, overId: string) => Promise<void>;
+  /** 移动文档到目标文件夹 */
+  moveDoc: (storyId: string, sourceId: string, targetFolderId: string) => Promise<void>;
 }

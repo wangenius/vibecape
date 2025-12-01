@@ -109,21 +109,10 @@ export const useDocsStore = create<DocsState & DocsActions>((set, get) => ({
 
     try {
       const stories = await window.api.docs.listStories();
-      set((state) => {
-        const activeExists = state.activeStoryId
-          ? stories.some((s) => s.id === state.activeStoryId)
-          : false;
-        return {
-          stories,
-          activeStoryId: activeExists ? state.activeStoryId : null,
-          activeStory: activeExists ? state.activeStory : null,
-          doc: activeExists ? state.doc : null,
-          activePath: activeExists ? state.activePath : null,
-        };
-      });
+      set({ stories });
 
-      const currentActive = get().activeStoryId;
-      if (!currentActive && stories[0]) {
+      // 自动打开根目录 story
+      if (stories.length > 0) {
         await get().openStory(stories[0].id);
       }
     } catch (error) {

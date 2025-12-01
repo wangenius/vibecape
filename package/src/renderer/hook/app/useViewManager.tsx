@@ -5,7 +5,6 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { useCosmos } from "@/hook/cosmos/useCosmos";
 
 // ==================== 类型定义 ====================
 
@@ -402,102 +401,7 @@ export function openCosmosTab(cosmosId?: string, title: string = "世界观") {
   });
 }
 
-/**
- * 打开项目/世界观详情页（编辑模式）
- */
-export function openCosmosDetailTab() {
-  const cosmos = useCosmos.getState().current_meta;
-
-  if (!cosmos) {
-    console.warn("没有打开的世界观");
-    return;
-  }
-
-  return useViewManagerStore.getState().openTab({
-    type: "cosmos",
-    contentId: cosmos.id,
-    title: cosmos.name || "世界观详情",
-    closable: true,
-    meta: { view: "detail" },
-  });
-}
-
-/**
- * 打开项目/世界观统计页面
- */
-export function openCosmosStatsTab() {
-  const cosmos = useCosmos.getState().current_meta;
-
-  if (!cosmos) {
-    console.warn("没有打开的世界观");
-    return;
-  }
-
-  return useViewManagerStore.getState().openTab({
-    type: "cosmos",
-    contentId: cosmos.id,
-    title: "统计数据",
-    closable: true,
-    meta: { view: "stats" },
-  });
-}
-
-/**
- * 打开项目/世界观图谱页面
- */
-export function openCosmosGraphTab() {
-  const cosmos = useCosmos.getState().current_meta;
-
-  if (!cosmos) {
-    console.warn("没有打开的世界观");
-    return;
-  }
-
-  return useViewManagerStore.getState().openTab({
-    type: "cosmos",
-    contentId: cosmos.id,
-    title: cosmos.name ? `${cosmos.name} · 角色图谱` : "角色图谱",
-    closable: true,
-    meta: { view: "graph" },
-  });
-}
-
-/**
- * 打开项目/世界观剧情图谱页面
- */
-export function openCosmosStoryGraphTab() {
-  const cosmos = useCosmos.getState().current_meta;
-
-  if (!cosmos) {
-    console.warn("没有打开的世界观");
-    return;
-  }
-
-  return useViewManagerStore.getState().openTab({
-    type: "cosmos",
-    contentId: cosmos.id,
-    title: cosmos.name ? `${cosmos.name} · 剧情图谱` : "剧情图谱",
-    closable: true,
-    meta: { view: "story-graph" },
-  });
-}
-
-/**
- * 打开创建新项目页面 (模态框)
- */
-export function openCosmosNewTab() {
-  import("@/components/custom/DialogModal").then(({ dialog }) => {
-    import("@/pages/viewport/cosmos/NewCosmosView").then(
-      ({ NewCosmosView }) => {
-        dialog({
-          title: "创建世界观",
-          content: (close) => <NewCosmosView onClose={close} />,
-          className: "max-w-xl",
-        });
-      }
-    );
-  });
-}
+// Cosmos-related functions removed for docs app
 
 /**
  * 打开小说/作品编辑页面
@@ -551,26 +455,8 @@ export function openStatsTab() {
 
 /**
  * 关闭标签
- * 注意：这只是关闭标签页（UI操作），不会关闭世界观或作品（数据操作）
- * 关闭世界观应该通过侧边栏的"关闭"按钮，会显式调用 closeCosmos()
  */
-export async function closeTab(tabId: string) {
-  const tab = useViewManagerStore.getState().tabs.find((t) => t.id === tabId);
-  if (!tab) return;
-
-  // 执行清理操作
-  try {
-    // 只有小说标签需要在关闭时清理状态
-    // cosmos 标签关闭不应该关闭世界观，世界观由侧边栏的"关闭"按钮控制
-    if (tab.type === "novel" && tab.contentId) {
-      const { closeNovel } = await import("@/hook/novel/useNovel");
-      await closeNovel();
-    }
-  } catch (error) {
-    console.error(`Failed to cleanup tab ${tabId}:`, error);
-  }
-
-  // 关闭标签
+export function closeTab(tabId: string) {
   useViewManagerStore.getState().closeTab(tabId);
 }
 

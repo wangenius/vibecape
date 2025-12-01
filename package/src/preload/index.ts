@@ -29,6 +29,12 @@ const api = {
       tree: any,
       rawMeta: Record<string, any>
     ) => ipcRenderer.invoke("docs:saveMeta", { storyId, tree, rawMeta }),
+    deleteDoc: (storyId: string, docPath: string) =>
+      ipcRenderer.invoke("docs:deleteDoc", { storyId, docPath }),
+    reorderDoc: (storyId: string, activeId: string, overId: string) =>
+      ipcRenderer.invoke("docs:reorderDoc", { storyId, activeId, overId }),
+    moveDoc: (storyId: string, sourceId: string, targetFolderId: string) =>
+      ipcRenderer.invoke("docs:moveDoc", { storyId, sourceId, targetFolderId }),
   },
   app: {
     model: {

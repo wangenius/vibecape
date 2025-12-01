@@ -1,55 +1,129 @@
-import { BookOpen, FolderOpen, RefreshCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useDocsStore } from "../useDocsStore";
+import { cn } from "@/lib/utils";
+import {
+  useViewManager,
+  setViewManager,
+  toggleBayBar,
+} from "@/hook/app/useViewManager";
+import {
+  BsLayoutSidebar,
+  BsLayoutSidebarInset,
+  BsLayoutSidebarInsetReverse,
+  BsLayoutSidebarReverse,
+} from "react-icons/bs";
+import { motion } from "framer-motion";
+import { TbSettings } from "react-icons/tb";
+import { ModelSelector } from "./ModelSelector";
 
-export const Header = () => {
-  const root = useDocsStore((state) => state.root);
-  const activeStory = useDocsStore((state) => state.activeStory);
-  const chooseRoot = useDocsStore((state) => state.chooseRoot);
-  const refreshStories = useDocsStore((state) => state.refreshStories);
-  const loading = useDocsStore((state) => state.loading);
+export function Header() {
+  const isSidebarCollapsed = useViewManager(
+    (selector) => selector.isSidebarCollapsed
+  );
+  const isBayBarOpen = useViewManager((selector) => selector.isBayBarOpen);
+  const activeSidebarPanel = useViewManager(
+    (selector) => selector.activeSidebarPanel
+  );
+
+  const isSettingsMode = activeSidebarPanel === "settings";
+
+  const toggleSidebar = () => {
+    setViewManager({ isSidebarCollapsed: !isSidebarCollapsed });
+  };
+
+  const toggleSettings = () => {
+    if (isSettingsMode) {
+      setViewManager({ activeSidebarPanel: "story" });
+    } else {
+      setViewManager({
+        activeSidebarPanel: "settings",
+        isSidebarCollapsed: false,
+      });
+    }
+  };
 
   return (
-    <header className="h-12 flex items-center justify-between px-4 border-b border-border/60 bg-background/80 backdrop-blur z-10">
-      <div className="flex items-center gap-3">
-        <div className="h-9 w-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
-          <BookOpen className="h-5 w-5" />
-        </div>
-        <div className="flex flex-col">
-          <div className="text-sm font-semibold tracking-wide">
-            Local MDX Studio
-          </div>
-          <div className="text-xs text-muted-foreground max-w-md truncate">
-            {root || "请选择 Fumadocs story 目录"}
-          </div>
-        </div>
-      </div>
-
-      <div className="flex items-center gap-2">
-        {activeStory ? (
-          <span className="text-xs px-2 py-1 rounded-full bg-muted text-muted-foreground">
-            {activeStory.title}
-          </span>
-        ) : null}
+    <header
+      id="body-header"
+      className="flex items-center bg-transparent pr-1 pl-20 h-8 flex-none"
+    >
+      <motion.div
+        id="sidebar-header"
+        className="flex-none flex items-center gap-1"
+        initial={false}
+        animate={{
+          width: isSidebarCollapsed ? 64 : 336,
+        }}
+        transition={{
+          duration: 0.3,
+          ease: [0.4, 0, 0.2, 1],
+        }}
+      >
         <Button
           variant="ghost"
-          size="sm"
-          onClick={() => void refreshStories()}
-          disabled={loading}
+          size="icon"
+          onClick={toggleSidebar}
+          className={cn(
+            "size-7 hover:bg-muted-foreground/10",
+            isSidebarCollapsed
+              ? "bg-transparent hover:bg-muted-foreground/10"
+              : "bg-muted-foreground/10"
+          )}
+          title={isSidebarCollapsed ? "展开侧边栏" : "折叠侧边栏"}
         >
-          <RefreshCcw className="h-4 w-4" />
-          刷新
+          {isSidebarCollapsed ? (
+            <BsLayoutSidebar className="size-4" />
+          ) : (
+            <BsLayoutSidebarInset className="size-4" />
+          )}
         </Button>
         <Button
-          variant="primary"
-          size="sm"
-          onClick={() => void chooseRoot()}
-          disabled={loading}
+          variant="ghost"
+          size="icon"
+          onClick={toggleSettings}
+          className={cn(
+            "size-7 hover:bg-muted-foreground/10",
+            isSettingsMode && "bg-muted-foreground/10"
+          )}
+          title="设置"
         >
-          <FolderOpen className="h-4 w-4" />
-          选择目录
+          <TbSettings className="size-4" />
+        </Button>
+      </motion.div>
+
+      {/* 中间：标题 + 拖拽区域 */}
+      <div
+        id="viewport-header"
+        className="flex-1 flex items-center gap-2 min-w-0 overflow-hidden"
+      >
+        {/* 拖拽区域 */}
+        <div id="header-drag-region" className="flex-1 h-full"></div>
+      </div>
+
+      {/* 右侧：模型选择器 + AI对话 */}
+      <div
+        id="baybar-header"
+        className="flex items-center gap-1 flex-none pr-1"
+      >
+        <ModelSelector />
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="AI 对话"
+          onClick={() => toggleBayBar()}
+          className={cn(
+            "size-7 hover:bg-muted-foreground/10",
+            isBayBarOpen
+              ? "bg-muted-foreground/10"
+              : "bg-transparent hover:bg-muted-foreground/10"
+          )}
+        >
+          {isBayBarOpen ? (
+            <BsLayoutSidebarInsetReverse className="size-4" />
+          ) : (
+            <BsLayoutSidebarReverse className="size-4" />
+          )}
         </Button>
       </div>
     </header>
   );
-};
+}

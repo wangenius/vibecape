@@ -1,0 +1,35 @@
+import type { SettingsData } from "@common/schema/app";
+import { createShape } from "@common/lib/shape";
+
+export const SETTINGS_DEFAULTS: SettingsData = {
+  ui: {
+    theme: "default",
+    mode: "light",
+    language: "zh-CN",
+    showChapterList: true,
+  },
+  model: {
+    primary: "",
+    fast: "",
+    image: "",
+    video: "",
+    voice: "",
+  },
+  novel: {
+    autoInfer: true,
+    enableContext: true,
+    selectedNovelStyleId: "default",
+  },
+  general: {
+    proxy: {
+      enabled: false,
+      url: "",
+    },
+  },
+};
+
+export const settingsShape = createShape<SettingsData>(
+  SETTINGS_DEFAULTS as SettingsData
+);
+
+// Deprecated helpers intentionally removed to favor direct shape path usage

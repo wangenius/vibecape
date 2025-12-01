@@ -3,6 +3,7 @@
 @source "../../plugins";
 @import "tailwindcss";
 @plugin "tailwindcss-animate";
+@plugin "@tailwindcss/typography";
 @import "./theme/default.css";
 @import "./theme/dim.css";
 @import "./theme/forest.css";
@@ -95,6 +96,72 @@
     background-color: var(--muted);
     padding: 0.2em 0.4em;
     border-radius: 0.25rem;
+    font-size: 0.875em;
+  }
+
+  .prose pre {
+    background-color: var(--muted);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    overflow-x: auto;
+  }
+
+  .prose pre code {
+    background-color: transparent;
+    padding: 0;
+    border-radius: 0;
+    font-size: 0.875em;
+  }
+
+  .prose blockquote {
+    border-left: 4px solid var(--border);
+    padding-left: 1rem;
+    margin-left: 0;
+    color: color-mix(in srgb, var(--foreground) 80%, transparent);
+    font-style: italic;
+  }
+
+  .prose ul {
+    list-style-type: disc;
+    padding-left: 1.5rem;
+  }
+
+  .prose ol {
+    list-style-type: decimal;
+    padding-left: 1.5rem;
+  }
+
+  .prose li {
+    margin-top: 0.25rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .prose hr {
+    border-color: var(--border);
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .prose img {
+    border-radius: 0.5rem;
+    max-width: 100%;
+  }
+
+  .prose table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .prose th,
+  .prose td {
+    border: 1px solid var(--border);
+    padding: 0.5rem 1rem;
+    text-align: left;
+  }
+
+  .prose th {
+    background-color: var(--muted);
+    font-weight: 600;
   }
 
   /* Tiptap Placeholder 样式 */

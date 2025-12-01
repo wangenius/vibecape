@@ -1,0 +1,128 @@
+@import "./base.css";
+@import "./utils.css";
+@source "../../plugins";
+@import "tailwindcss";
+@plugin "tailwindcss-animate";
+@import "./theme/default.css";
+@import "./theme/dim.css";
+@import "./theme/forest.css";
+@import "./theme/graph.css";
+@import "./theme/haze.css";
+@import "./theme/mono.css";
+@import "./theme/ocean.css";
+@import "./theme/sunset.css";
+@import "./theme/vercel.css";
+
+/* 全局样式重置 */
+@layer base {
+  * {
+    font-family: var(--font-sans);
+  }
+
+  body {
+    font-family: var(--font-sans);
+    color: var(--foreground);
+    background-color: var(--background);
+  }
+
+  /* 标题样式 - 确保优先级 */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-sans);
+    font-weight: 600;
+    color: var(--foreground);
+  }
+
+  /* 等宽字体 */
+  code,
+  kbd,
+  pre {
+    font-family: var(--font-mono);
+  }
+
+  /* 边框颜色 */
+  .border,
+  .border-t,
+  .border-b,
+  .border-l,
+  .border-r {
+    border-color: var(--border);
+  }
+
+  /* 字体工具类 */
+  .font-sans {
+    font-family: var(--font-sans);
+  }
+
+  .font-serif {
+    font-family: var(--font-serif);
+  }
+
+  .font-mono {
+    font-family: var(--font-mono);
+  }
+
+  /* Prose 组件样式 */
+  .prose h1,
+  .prose h2,
+  .prose h3,
+  .prose h4,
+  .prose h5,
+  .prose h6 {
+    color: var(--foreground);
+    font-weight: 600;
+  }
+
+  .prose p {
+    color: color-mix(in srgb, var(--foreground) 90%, transparent);
+  }
+
+  .prose a {
+    color: var(--primary);
+  }
+
+  .prose strong {
+    color: var(--foreground);
+    font-weight: 600;
+  }
+
+  .prose code {
+    color: var(--foreground);
+    background-color: var(--muted);
+    padding: 0.2em 0.4em;
+    border-radius: 0.25rem;
+  }
+
+  /* Tiptap Placeholder 样式 */
+  .tiptap p.is-editor-empty:first-child::before {
+    color: var(--muted-foreground);
+    content: attr(data-placeholder);
+    float: left;
+    height: 0;
+    pointer-events: none;
+  }
+
+  /* Tiptap Task List 样式 */
+  .tiptap ul[data-type="taskList"] {
+    list-style: none;
+    padding: 0;
+  }
+
+  .tiptap ul[data-type="taskList"] li {
+    display: flex;
+    align-items: flex-start;
+  }
+
+  .tiptap ul[data-type="taskList"] li > label {
+    margin-right: 0.5rem;
+    user-select: none;
+  }
+
+  .tiptap ul[data-type="taskList"] li > div {
+    flex: 1;
+  }
+}

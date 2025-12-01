@@ -3,16 +3,14 @@ import { defineConfig, externalizeDepsPlugin } from "electron-vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { readFileSync } from "fs";
-import { fileURLToPath } from "url";
 
-const pkgPath = fileURLToPath(new URL("./package.json", import.meta.url));
-const packageJson = JSON.parse(readFileSync(pkgPath, "utf-8"));
+const packageJson = JSON.parse(readFileSync("./package.json", "utf-8"));
 
 export default defineConfig({
   main: {
     plugins: [
       externalizeDepsPlugin({
-        exclude: ["@electron-toolkit/utils"],
+        exclude: [],
       }),
     ],
     resolve: {

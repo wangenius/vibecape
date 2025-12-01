@@ -51,11 +51,8 @@ function createWindow(): void {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(async () => {
-  // 动态导入 @electron-toolkit/utils，避免在 app 初始化前导入
-  const { electronApp, optimizer } = await import("@electron-toolkit/utils");
-
   // Set app user model id for windows
-  electronApp.setAppUserModelId("com.electron");
+  app.setAppUserModelId("com.electron");
 
   // Set app icon for macOS dock
   if (process.platform === "darwin" && app.dock) {
@@ -65,11 +62,19 @@ app.whenReady().then(async () => {
     app.dock.setIcon(resizedIcon);
   }
 
-  // Default open or close DevTools by F12 in development
-  // and ignore CommandOrControl + R in production.
-  // see https://github.com/alex8088/electron-toolkit/tree/master/packages/utils
+  // Handle dev shortcuts: F12 for DevTools, ignore Ctrl+R in production
   app.on("browser-window-created", (_, window) => {
-    optimizer.watchWindowShortcuts(window);
+    window.webContents.on("before-input-event", (event, input) => {
+      if (input.key === "F12") {
+        window.webContents.toggleDevTools();
+        event.preventDefault();
+      }
+      // Ignore refresh in production
+      if (!app.isPackaged) return;
+      if ((input.control || input.meta) && input.key.toLowerCase() === "r") {
+        event.preventDefault();
+      }
+    });
   });
 
   try {

@@ -46,3 +46,21 @@ ipcMain.handle(
     }
   ) => DocsService.saveMeta(payload)
 );
+
+ipcMain.handle(
+  "docs:deleteDoc",
+  (_event, payload: { storyId: string; docPath: string }) =>
+    DocsService.deleteDoc(payload.storyId, payload.docPath)
+);
+
+ipcMain.handle(
+  "docs:reorderDoc",
+  (_event, payload: { storyId: string; activeId: string; overId: string }) =>
+    DocsService.reorderDoc(payload.storyId, payload.activeId, payload.overId)
+);
+
+ipcMain.handle(
+  "docs:moveDoc",
+  (_event, payload: { storyId: string; sourceId: string; targetFolderId: string }) =>
+    DocsService.moveDoc(payload.storyId, payload.sourceId, payload.targetFolderId)
+);

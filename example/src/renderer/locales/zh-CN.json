@@ -1,0 +1,241 @@
+{
+	"common": {
+		"new": "新建",
+		"newDesc": "从零开始创作你的故事",
+		"welcome": "欢迎使用",
+		"login": "登录",
+		"logout": "退出",
+		"settings": "设置",
+		"language": "语言",
+		"theme": "主题",
+		"appearance": "外观",
+		"customizeInterface": "自定义界面外观",
+		"chooseTheme": "选择您喜欢的显示主题",
+		"interfaceLanguage": "界面语言",
+		"selectLanguage": "选择界面显示语言",
+		"editor": "编辑器",
+		"editorSettings": "编辑器设置",
+		"fontSize": "字体大小",
+		"fontSizeDesc": "调整编辑器文字大小",
+		"fontFamily": "字体",
+		"fontFamilyDesc": "选择编辑器字体",
+		"lineHeight": "行高",
+		"lineHeightDesc": "调整编辑器行间距",
+		"general": "通用",
+		"basicSettings": "基本功能设置",
+		"autoSave": "自动保存",
+		"autoSaveDesc": "自动保存编辑内容",
+		"saveOnChange": "实时保存",
+		"saveOnChangeDesc": "编辑内容时立即保存",
+		"autoSaveInterval": "保存间隔",
+		"autoSaveIntervalDesc": "设置自动保存的时间间隔",
+		"minutes": "分钟",
+		"time": {
+			"justNow": "刚刚",
+			"minutesAgo": "{{count}}分钟前",
+			"today": "今天",
+			"yesterday": "昨天",
+			"futureTime": "未来时间",
+			"monthDay": "{{month}}月{{day}}日"
+		}
+	},
+	"sidebar": {
+		"home": "首页",
+		"works": "世界观",
+		"tools": "工具",
+		"tutorials": "教程专区",
+		"settings": "设置",
+		"books": "书籍",
+		"parseBook": "拆书",
+		"opus": "作品集"
+	},
+	"home": {
+		"title": "创作，从介子开始",
+		"subtitle": "上传您的小说文本文件，让 AI 助手帮您智能分析和拆解",
+		"uploadButton": "拆书创作",
+		"fileInfo": {
+			"size": "大小",
+			"wordCount": "字数"
+		},
+		"parseOptions": {
+			"story": {
+				"title": "拆解情节",
+				"description": "分析故事结构、关键情节点和故事发展脉络"
+			},
+			"actant": {
+				"title": "拆解角色",
+				"description": "拆解主要人物、组织、地点、核心物品等"
+			},
+		"lore": {
+			"title": "拆解设定",
+			"description": "拆解世界观、背景设定和核心规则体系"
+		}
+		},
+		"parsing": {
+			"start": "开始智能解析",
+			"inProgress": "正在解析...",
+			"completed": "解析完成",
+			"completedDesc": "AI 已完成文本分析，您可以开始创作了",
+			"startCreating": "开始创作"
+		},
+		"suggestions": {
+			"mythWorld": "基于神话体系构建的低魔奇幻世界",
+			"cthulhuStory": "一个克苏鲁神话末世废土求生故事"
+		},
+		"creation": {
+			"placeholder": "输入您想要创作的内容，或直接使用下方的快捷方式",
+			"brainstorm": "AI头脑风暴",
+			"brainstorming": "生成中...",
+			"type": "类型",
+			"createWork": "创建作品",
+			"creating": "创建中...",
+			"createWithoutAI": "不用AI?直接创建 →"
+		},
+		"typeSelection": {
+			"title": "选择类型",
+			"clearAll": "清除全部",
+			"category": "类别",
+			"time": "时间",
+			"genre": "题材",
+			"categories": {
+				"male": "男频",
+				"female": "女频"
+			},
+			"times": {
+				"modern": "现代",
+				"ancient": "古代",
+				"future": "未来",
+				"alternate_history": "架空历史",
+				"other_world": "异世界",
+				"multi_time": "多时空",
+				"interstellar": "星际之间"
+			},
+			"genres": {
+				"romance": "言情",
+				"fantasy": "玄幻",
+				"sci_fi": "科幻"
+			}
+		},
+		"parseBook": {
+			"title": "拆书！让创意无限可能",
+			"dropzone": {
+				"active": "释放以上传文件",
+				"inactive": "拖拽文件到这里或点击上传",
+				"supportText": "支持 .txt 格式的文本文件"
+			}
+		}
+	},
+	"works": {
+		"title": "创作中心",
+		"subtitle": "开启你的创作之旅",
+		"actions": {
+			"newTheme": {
+				"title": "新建作品",
+				"desc": "从零开始创作你的故事"
+			},
+			"newNovel": {
+				"title": "新建小说",
+				"desc": "开启一段全新的创作旅程"
+			},
+			"smartAnalysis": {
+				"title": "智能拆书",
+				"desc": "AI 助你解构经典作品"
+			}
+		},
+		"currentWork": {
+			"title": "当前作品",
+			"label": "当前作品"
+		},
+		"recentWorks": {
+			"title": "最近作品",
+			"count": "{{count}} 个世界观"
+		},
+		"cosmos": {
+			"delete": {
+				"title": "删除项目",
+				"confirm": "确定删除项目？"
+			},
+			"delete_action": "删除",
+			"noDesc": "暂无描述",
+			"updatedAt": "更新于 {{time}}"
+		},
+		"createCosmos": {
+			"title": "新建项目",
+			"nameLabel": "项目名称",
+			"namePlaceholder": "请输入项目名称",
+			"creating": "创建中...",
+			"confirm": "确认创建",
+			"tags": {
+				"title": "标签",
+				"count": "{{count}}/5",
+				"addCustom": "添加自定义标签",
+				"addButton": "添加",
+				"maxLimit": "最多只能选择 5 个标签",
+				"exists": "标签已存在",
+				"categories": {
+					"type": "类型",
+					"style": "风格",
+					"theme": "题材"
+				},
+				"types": [
+					"玄幻",
+					"奇幻",
+					"科幻",
+					"武侠",
+					"都市",
+					"历史",
+					"游戏",
+					"轻小说"
+				],
+				"styles": [
+					"轻松",
+					"搞笑",
+					"热血",
+					"治愈",
+					"黑暗",
+					"励志"
+				],
+				"themes": [
+					"恋爱",
+					"冒险",
+					"战斗",
+					"推理",
+					"校园",
+					"职场"
+				]
+			}
+		},
+		"createNovel": {
+			"title": "新建小说",
+			"description": "请输入小说名称",
+			"namePlaceholder": "请输入小说名称",
+			"creating": "创建中...",
+			"confirm": "确认创建"
+		}
+	},
+	"options": {
+		"fontSize": {
+			"small": "小",
+			"medium": "中",
+			"large": "大"
+		},
+		"fontFamily": {
+			"default": "默认",
+			"heiti": "黑体",
+			"fangsong": "仿宋"
+		},
+		"lineHeight": {
+			"small": "紧凑",
+			"medium": "适中",
+			"large": "宽松"
+		},
+		"theme": {
+			"light": "默认",
+			"graph": "图谱",
+			"ocean": "海洋",
+			"sunset": "落日",
+			"forest": "森林",
+			"dim": "黯淡"
+		}
+	}
+}

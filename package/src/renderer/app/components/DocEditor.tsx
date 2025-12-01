@@ -1,199 +1,229 @@
-import { useEffect, useMemo, useState } from "react";
-import ReactMarkdown from "react-markdown";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import type { DocFile } from "@common/types/docs";
 import { toast } from "sonner";
-import { Loader2, Save, ScrollText } from "lucide-react";
-import { BaseEditor } from "@/components/editor/BaseEditor";
-import {
-  DEFAULT_TIPTAP_CONTENT,
-  type TiptapContent,
-} from "@/components/editor/tiptap-types";
+import { Settings2 } from "lucide-react";
+import { useEditor, EditorContent, Extension } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import Placeholder from "@tiptap/extension-placeholder";
+import Link from "@tiptap/extension-link";
+import { Markdown } from "tiptap-markdown";
+import { AdmonitionExtension } from "./extensions/AdmonitionExtension";
+
+// Admonition 样式映射
+const admonitionStyles: Record<string, { bg: string; border: string; icon: string }> = {
+  info: { bg: "#eff6ff", border: "#3b82f6", icon: "ℹ️" },
+  warning: { bg: "#fefce8", border: "#eab308", icon: "⚠️" },
+  danger: { bg: "#fef2f2", border: "#ef4444", icon: "🚨" },
+  tip: { bg: "#f0fdf4", border: "#22c55e", icon: "💡" },
+  note: { bg: "#f9fafb", border: "#6b7280", icon: "📝" },
+};
+
+// 将 Markdown 中的 admonition 和链接转换为 HTML
+function preprocessMarkdown(markdown: string): string {
+  let result = markdown;
+  
+  // 1. 处理 admonition：匹配 :::type title="xxx" ... ::: 格式
+  const admonitionRegex = /:::(info|warning|danger|tip|note)(?:\s+title="([^"]*)")?\n([\s\S]*?):::/g;
+  result = result.replace(admonitionRegex, (_, type, title, content) => {
+    const style = admonitionStyles[type] || admonitionStyles.info;
+    const displayTitle = title || type.charAt(0).toUpperCase() + type.slice(1);
+    return `<div data-admonition="true" data-type="${type}" data-title="${displayTitle}" style="background:${style.bg};border-left:4px solid ${style.border};padding:12px 16px;margin:16px 0;border-radius:8px;"><div style="display:flex;align-items:center;gap:8px;font-weight:600;margin-bottom:8px;">${style.icon} ${displayTitle}</div><div>${content.trim()}</div></div>`;
+  });
+  
+  // 2. 处理 markdown 链接：[text](url) -> <a href="url">text</a>
+  const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+  result = result.replace(linkRegex, '<a href="$2">$1</a>');
+  
+  return result;
+}
+
+// 将 HTML 中的 admonition 转换回 Markdown
+function postprocessMarkdown(markdown: string): string {
+  // 这里的 markdown 输出已经是纯文本，admonition 会保持 HTML 格式
+  // 需要将 HTML admonition 转回 ::: 格式
+  const htmlAdmonitionRegex = /<div data-admonition="true" data-type="([^"]*)" data-title="([^"]*)"[^>]*>.*?<div[^>]*>([^<]*)<\/div><\/div>/g;
+  
+  return markdown.replace(htmlAdmonitionRegex, (_, type, title, content) => {
+    const defaultTitle = type.charAt(0).toUpperCase() + type.slice(1);
+    const titleAttr = title !== defaultTitle ? ` title="${title}"` : "";
+    return `:::${type}${titleAttr}\n${content.trim()}\n:::`;
+  });
+}
 
 type Props = {
-  storyTitle: string;
-  docPath: string;
   doc: DocFile;
   onSave: (content: string, metadata?: Record<string, any>) => Promise<DocFile>;
 };
 
-// 将纯文本转换成简单的 tiptap JSON（按空行分段）
-function textToTiptap(text: string): TiptapContent {
-  const paragraphs = text
-    .split(/\n{2,}/g)
-    .map((block) => block.trim())
-    .filter(Boolean)
-    .map((block) => ({
-      type: "paragraph",
-      content: [{ type: "text", text: block }],
-    }));
-
-  if (paragraphs.length === 0) {
-    return DEFAULT_TIPTAP_CONTENT;
-  }
-
-  return {
-    type: "doc",
-    content: paragraphs,
-  };
-}
-
-// 将 tiptap JSON 转回纯文本（简单拼段落）
-function tiptapToText(content: TiptapContent): string {
-  if (!content?.content) return "";
-  return content.content
-    .map((node) => {
-      if (node.type !== "paragraph" || !node.content) return "";
-      return node.content
-        .map((child: any) => (child.type === "text" ? child.text || "" : ""))
-        .join("");
-    })
-    .join("\n\n")
-    .trim();
-}
-
-export const DocEditor = ({ storyTitle, docPath, doc, onSave }: Props) => {
-  const [editorValue, setEditorValue] = useState<TiptapContent>(
-    textToTiptap(doc.content)
-  );
-  const [metaText, setMetaText] = useState(
-    JSON.stringify(doc.metadata ?? {}, null, 2)
-  );
+export const DocEditor = ({ doc, onSave }: Props) => {
+  const [title, setTitle] = useState(doc.metadata?.title ?? "");
   const [metaValue, setMetaValue] = useState<Record<string, any>>(
     doc.metadata ?? {}
   );
   const [metaError, setMetaError] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
 
+  // 用 ref 存储 save 函数，解决循环引用问题
+  const handleSaveRef = useRef<() => void>(() => {});
+
+  // 预处理后的内容
+  const processedContent = useMemo(
+    () => preprocessMarkdown(doc.content),
+    [doc.content]
+  );
+
+  // 创建 Tiptap 编辑器
+  const editor = useEditor({
+    extensions: [
+      StarterKit.configure({
+        hardBreak: false,
+      }),
+      Placeholder.configure({
+        placeholder: "开始书写你的内容...",
+        showOnlyWhenEditable: true,
+        showOnlyCurrent: true,
+      }),
+      Markdown.configure({
+        html: true,
+        linkify: true,
+        transformPastedText: true,
+        transformCopiedText: true,
+      }),
+      Link.configure({
+        openOnClick: true,
+        autolink: true,
+        HTMLAttributes: {
+          class: "text-primary underline cursor-pointer",
+        },
+      }),
+      AdmonitionExtension,
+      Extension.create({
+        name: "saveKeymap",
+        addKeyboardShortcuts() {
+          return {
+            "Mod-s": () => {
+              handleSaveRef.current();
+              return true;
+            },
+          };
+        },
+      }),
+    ],
+    content: processedContent,
+    editorProps: {
+      attributes: {
+        class:
+          "text-base overflow-x-hidden h-full focus:outline-none prose prose-sm dark:prose-invert max-w-none px-6 py-4",
+      },
+    },
+  });
+
+  // 更新编辑器内容当文档变化时
   useEffect(() => {
-    setEditorValue(textToTiptap(doc.content));
+    if (editor) {
+      editor.commands.setContent(processedContent);
+    }
+    setTitle(doc.metadata?.title ?? "");
     setMetaValue(doc.metadata ?? {});
-    setMetaText(JSON.stringify(doc.metadata ?? {}, null, 2));
     setMetaError(null);
-  }, [doc.path, doc.content, doc.metadata]);
+  }, [doc.path, processedContent, doc.metadata, editor]);
 
-  const isDirty = useMemo(() => {
-    const baseMeta = JSON.stringify(doc.metadata ?? {}, null, 2);
-    return tiptapToText(editorValue) !== doc.content || metaText !== baseMeta;
-  }, [editorValue, doc.content, doc.metadata, metaText]);
-
-  const handleMetaChange = (value: string) => {
-    setMetaText(value);
-    if (!value.trim()) {
-      setMetaValue({});
-      setMetaError(null);
-      return;
-    }
-
-    try {
-      const parsed = JSON.parse(value);
-      setMetaValue(parsed);
-      setMetaError(null);
-    } catch (error) {
-      setMetaError("元数据需要是有效的 JSON");
-    }
+  // 更新 title 时同步到 metaValue
+  const handleTitleChange = (value: string) => {
+    setTitle(value);
+    setMetaValue((prev) => ({ ...prev, title: value }));
   };
 
-  const handleSave = async () => {
+  // 更新其他元数据字段
+  const handleMetaFieldChange = (key: string, value: string) => {
+    setMetaValue((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleSave = useCallback(async () => {
+    if (!editor) return;
     if (metaError) {
-      toast.error("请先修复元数据 JSON");
+      toast.error("请先修复元数据");
       return;
     }
 
-    setSaving(true);
     try {
-      const text = tiptapToText(editorValue);
-      await onSave(text, metaValue);
-      toast.success("已保存");
+      const rawMarkdown = (editor.storage as any).markdown.getMarkdown();
+      const content = postprocessMarkdown(rawMarkdown);
+      await onSave(content, metaValue);
     } catch (error) {
       toast.error((error as Error).message || "保存失败");
-    } finally {
-      setSaving(false);
     }
-  };
+  }, [editor, metaError, metaValue, onSave]);
+
+  // 更新 ref
+  useEffect(() => {
+    handleSaveRef.current = handleSave;
+  }, [handleSave]);
+
+  // 获取除 title 外的其他元数据字段
+  const otherMetaKeys = Object.keys(metaValue).filter((k) => k !== "title");
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden">
-      <div className="border-b border-border/60 px-4 py-3 flex items-center justify-between gap-3">
-        <div>
-          <div className="text-xs text-muted-foreground">{storyTitle}</div>
-          <div className="text-sm font-medium">{docPath}</div>
-        </div>
-        <div className="flex items-center gap-3">
-          <span
-            className={`text-xs ${
-              isDirty ? "text-amber-500" : "text-muted-foreground"
-            }`}
-          >
-            {isDirty ? "未保存" : "已同步"}
-          </span>
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={handleSave}
-            disabled={saving}
-          >
-            {saving ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Save className="h-4 w-4" />
-            )}
-            保存
-          </Button>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4 px-4 py-3 h-full overflow-hidden">
-        <div className="flex flex-col h-full">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-muted-foreground">内容</span>
-            <span className="text-[11px] text-muted-foreground">
-              使用 SimpleEditor 编辑，保存写入 frontmatter 后的 MDX
-            </span>
-          </div>
-          <div className="flex-1 rounded-lg border border-border bg-background p-2 overflow-hidden">
-            <BaseEditor
-              key={doc.path}
-              defaultValue={editorValue}
-              onChange={setEditorValue}
-              className="prose prose-sm max-w-none dark:prose-invert min-h-[360px]"
-              placeholder="开始书写..."
-            />
-          </div>
-        </div>
-
-        <div className="flex flex-col h-full overflow-hidden">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-muted-foreground">预览</span>
-            <ScrollText className="h-4 w-4 text-muted-foreground" />
-          </div>
-          <div className="flex-1 overflow-auto rounded-lg border border-border bg-muted/20 p-4 prose prose-sm dark:prose-invert">
-            <ReactMarkdown>
-              {tiptapToText(editorValue) || "开始书写..."}
-            </ReactMarkdown>
-          </div>
-
-          <div className="mt-3">
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-xs text-muted-foreground">
-                元数据（JSON）
-              </span>
-              {metaError ? (
-                <span className="text-[11px] text-red-500">{metaError}</span>
+    <div className="flex-1 flex flex-col h-full overflow-hidden bg-background">
+      {/* 标题输入 + 元数据 Popover */}
+      <div className="px-6 pt-6 pb-2 flex items-center gap-2">
+        <Input
+          value={title}
+          onChange={(e) => handleTitleChange(e.target.value)}
+          placeholder="文档标题..."
+          className="text-xl font-semibold border-none shadow-none focus-visible:ring-0 px-0 h-auto"
+        />
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="ghost" size="icon" className="shrink-0">
+              <Settings2 className="h-4 w-4" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-80" align="end">
+            <div className="space-y-3">
+              <div className="text-sm font-medium">元数据</div>
+              {otherMetaKeys.length > 0 ? (
+                <div className="space-y-2">
+                  {otherMetaKeys.map((key) => (
+                    <div key={key} className="flex items-center gap-2">
+                      <span className="text-xs text-muted-foreground w-20 shrink-0">
+                        {key}
+                      </span>
+                      <Input
+                        value={String(metaValue[key] ?? "")}
+                        onChange={(e) =>
+                          handleMetaFieldChange(key, e.target.value)
+                        }
+                        className="h-8 text-xs"
+                      />
+                    </div>
+                  ))}
+                </div>
               ) : (
-                <span className="text-[11px] text-muted-foreground">
-                  保存时写入 frontmatter
-                </span>
+                <p className="text-xs text-muted-foreground">
+                  暂无其他元数据字段
+                </p>
+              )}
+              {metaError && (
+                <p className="text-xs text-red-500">{metaError}</p>
               )}
             </div>
-            <textarea
-              className="w-full h-32 rounded-lg border border-border bg-background p-3 font-mono text-xs leading-relaxed focus:outline-none focus:ring-2 focus:ring-primary/40"
-              value={metaText}
-              onChange={(e) => handleMetaChange(e.target.value)}
-              spellCheck={false}
-            />
-          </div>
-        </div>
+          </PopoverContent>
+        </Popover>
+      </div>
+
+      {/* 编辑器区域 */}
+      <div className="flex-1 overflow-auto">
+        <EditorContent
+          editor={editor}
+          className="w-full h-full flex-1 [&_p]:mb-2"
+        />
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import { TbHistory, TbSparkles, TbPlus, TbSquareRoundedX, TbRotateClockwise } from "react-icons/tb";
+import { TbHistory, TbSparkles, TbPlus, TbSquareRoundedX } from "react-icons/tb";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,8 +21,7 @@ import { useChat, useChatStore } from "@/hook/chat/useChat";
 import { useThread } from "@/hook/chat/useThread";
 import type { UIMessage } from "ai";
 import type { ChatThreadMeta } from "@common/schema/chat";
-import { Response } from "@/components/ai-elements/response";
-import { Message, MessageContent } from "@/components/ai-elements/message";
+import { MessageRenderer, ErrorMessage } from "./chat/MessageRenderer";
 
 interface ChatInputProps {
   onSubmit: (message: { text: string }) => void | Promise<void>;
@@ -214,7 +213,7 @@ const ThreadListItem: React.FC<ThreadListItemProps> = ({
 type TextPart = Extract<UIMessage["parts"][number], { type: "text" }>;
 const isTextPart = (part: UIMessage["parts"][number]): part is TextPart =>
   part.type === "text";
-const getMessageContent = (message: UIMessage) =>
+const getTextFromMessage = (message: UIMessage) =>
   message.parts
     .filter(isTextPart)
     .map((part) => part.text)
@@ -227,8 +226,7 @@ interface ChatCoreProps {
 }
 
 const ChatCore: React.FC<ChatCoreProps> = ({ chatId }) => {
-  const { messages, status, error, sendMessage, stop, regenerate, clearError } =
-    useChat(chatId);
+  const { messages, status, error, sendMessage, stop } = useChat(chatId);
 
   const isStreaming = status === "streaming" || status === "submitted";
 
@@ -252,11 +250,6 @@ const ChatCore: React.FC<ChatCoreProps> = ({ chatId }) => {
 
   const handleSuggestion = async (prompt: string) => {
     await sendMessage(prompt);
-  };
-
-  const handleRetry = () => {
-    clearError();
-    void regenerate();
   };
 
   const visibleMessages = messages.filter(
@@ -293,63 +286,20 @@ const ChatCore: React.FC<ChatCoreProps> = ({ chatId }) => {
               </div>
             </div>
           ) : (
-            visibleMessages.map((message, index) => {
-              const messageText = getMessageContent(message);
-              const isLastMessage = index === visibleMessages.length - 1;
-              const isStreamingMessage =
-                isStreaming && isLastMessage && message.role === "assistant";
-
-              return (
-                <Message key={message.id} from={message.role} className="w-full p-0">
-                  {message.role === "assistant" ? (
-                    <MessageContent variant="flat" className="w-full">
-                      <div className={cn(
-                        "text-xs leading-5 text-foreground/90 p-1.5",
-                        isStreamingMessage && !messageText && "animate-pulse"
-                      )}>
-                        {messageText ? (
-                          <Response>{messageText}</Response>
-                        ) : (
-                          isStreamingMessage && <span className="text-muted-foreground">思考中...</span>
-                        )}
-                      </div>
-                    </MessageContent>
-                  ) : (
-                    <MessageContent
-                      className="whitespace-pre-wrap text-xs leading-relaxed w-fit max-w-2xl px-3! py-2! rounded-2xl rounded-tr-none bg-muted-foreground/10 text-foreground ml-auto"
-                      variant="flat"
-                    >
-                      {messageText}
-                    </MessageContent>
-                  )}
-                </Message>
-              );
-            })
+            visibleMessages.map((message, index) => (
+              <MessageRenderer
+                key={message.id}
+                message={message}
+                index={index}
+                messages={visibleMessages}
+                isLastMessage={index === visibleMessages.length - 1}
+                isStreaming={isStreaming}
+                getTextFromMessage={getTextFromMessage}
+                onOptionSelect={() => {}}
+              />
+            ))
           )}
-          {error && (
-            <div className="rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive-foreground">
-              <div>生成出错：{error.message || "未知错误"}</div>
-              <div className="mt-2 flex gap-2">
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  className="h-7 px-2 text-xs"
-                  onClick={handleRetry}
-                >
-                  <TbRotateClockwise className="mr-1 h-3 w-3" />
-                  重试生成
-                </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-7 px-2 text-xs"
-                  onClick={clearError}
-                >
-                  忽略
-                </Button>
-              </div>
-            </div>
-          )}
+          {error && <ErrorMessage error={error} />}
         </ConversationContent>
         <ConversationScrollButton />
       </Conversation>

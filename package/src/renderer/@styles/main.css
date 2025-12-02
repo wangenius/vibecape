@@ -67,37 +67,6 @@
     font-family: var(--font-mono);
   }
 
-  /* Prose 组件样式 */
-  .prose h1,
-  .prose h2,
-  .prose h3,
-  .prose h4,
-  .prose h5,
-  .prose h6 {
-    color: var(--foreground);
-    font-weight: 600;
-  }
-
-  .prose p {
-    color: color-mix(in srgb, var(--foreground) 90%, transparent);
-  }
-
-  .prose a {
-    color: var(--primary);
-  }
-
-  .prose strong {
-    color: var(--foreground);
-    font-weight: 600;
-  }
-
-  .prose code {
-    color: var(--foreground);
-    background-color: var(--muted);
-    padding: 0.2em 0.4em;
-    border-radius: 0.25rem;
-    font-size: 0.875em;
-  }
 
   .prose pre {
     background-color: var(--muted);
@@ -173,6 +142,109 @@
     pointer-events: none;
   }
 
+  /* Tiptap 编辑器标题和文本颜色 - 使用变量防止暗色主题问题 */
+  .tiptap h1,
+  .tiptap h2,
+  .tiptap h3,
+  .tiptap h4,
+  .tiptap h5,
+  .tiptap h6 {
+    color: var(--foreground);
+    font-weight: 600;
+  }
+
+  .tiptap h1 {
+    font-size: 2em;
+    margin-top: 0.67em;
+    margin-bottom: 0.67em;
+  }
+
+  .tiptap h2 {
+    font-size: 1.5em;
+    margin-top: 0.83em;
+    margin-bottom: 0.83em;
+  }
+
+  .tiptap h3 {
+    font-size: 1.17em;
+    margin-top: 1em;
+    margin-bottom: 1em;
+  }
+
+  .tiptap p {
+    color: var(--foreground);
+  }
+
+  .tiptap strong {
+    color: var(--foreground);
+    font-weight: 600;
+  }
+
+  .tiptap em {
+    color: var(--foreground);
+  }
+
+  .tiptap a {
+    color: var(--primary);
+    text-decoration: underline;
+  }
+
+  .tiptap code {
+    color: var(--foreground);
+    background-color: var(--muted);
+    padding: 0.2em 0.4em;
+    border-radius: 0.25rem;
+    font-size: 0.875em;
+  }
+
+  .tiptap pre {
+    background-color: var(--muted);
+    color: var(--foreground);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    overflow-x: auto;
+  }
+
+  .tiptap pre code {
+    background-color: transparent;
+    padding: 0;
+    border-radius: 0;
+  }
+
+  .tiptap blockquote {
+    border-left: 4px solid var(--border);
+    padding-left: 1rem;
+    margin-left: 0;
+    color: color-mix(in srgb, var(--foreground) 80%, transparent);
+    font-style: italic;
+  }
+
+  .tiptap ul,
+  .tiptap ol {
+    color: var(--foreground);
+    padding-left: 1.5rem;
+  }
+
+  .tiptap ul {
+    list-style-type: disc;
+  }
+
+  .tiptap ol {
+    list-style-type: decimal;
+  }
+
+  .tiptap li {
+    color: var(--foreground);
+    margin-top: 0.25rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .tiptap hr {
+    border-color: var(--border);
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+  }
+
   /* Tiptap Task List 样式 */
   .tiptap ul[data-type="taskList"] {
     list-style: none;
@@ -192,4 +264,45 @@
   .tiptap ul[data-type="taskList"] li > div {
     flex: 1;
   }
+}
+
+/* Prose 样式覆盖 - 放在 layer 外部以提高优先级 */
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6 {
+  color: var(--foreground) !important;
+  font-weight: 600;
+}
+
+.prose p {
+  color: var(--foreground) !important;
+}
+
+.prose a {
+  color: var(--primary) !important;
+}
+
+.prose strong {
+  color: var(--foreground) !important;
+  font-weight: 600;
+}
+
+.prose em {
+  color: var(--foreground) !important;
+}
+
+.prose code {
+  color: var(--foreground) !important;
+  background-color: var(--muted);
+}
+
+.prose li {
+  color: var(--foreground) !important;
+}
+
+.prose blockquote {
+  color: color-mix(in srgb, var(--foreground) 80%, transparent) !important;
 }

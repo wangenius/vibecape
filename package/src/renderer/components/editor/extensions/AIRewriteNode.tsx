@@ -375,6 +375,7 @@ export const AIPolishMark = Mark.create({
           const markType = state.schema.marks[this.name];
           if (!markType) return false;
 
+          // 移除 mark
           state.doc.descendants((node, pos) => {
             if (node.isText) {
               const mark = node.marks.find(
@@ -386,6 +387,28 @@ export const AIPolishMark = Mark.create({
             }
             return true;
           });
+
+          // 删除关联的 aiRewrite 节点
+          const nodeType = state.schema.nodes.aiRewrite;
+          if (nodeType) {
+            const nodesToDelete: { pos: number; size: number }[] = [];
+            tr.doc.descendants((node, pos) => {
+              if (
+                node.type === nodeType &&
+                node.attrs.mode === "polish" &&
+                node.attrs.markId === id
+              ) {
+                nodesToDelete.push({ pos, size: node.nodeSize });
+              }
+              return true;
+            });
+            // 从后往前删除
+            nodesToDelete
+              .sort((a, b) => b.pos - a.pos)
+              .forEach(({ pos, size }) => {
+                tr.delete(pos, pos + size);
+              });
+          }
 
           if (dispatch) dispatch(tr);
           return true;
@@ -641,7 +664,7 @@ ${textBefore}
             placeholder={isPolishMode ? "润色需求..." : "输入指令..."}
             disabled={status === "loading"}
             className={cn(
-              "flex-1 bg-transparent text-sm resize-none outline-none",
+              "flex-1 bg-transparent text-sm resize-none outline-none text-foreground",
               "placeholder:text-muted-foreground/50",
               "min-h-5 max-h-[100px]",
               status === "loading" && "opacity-50"
@@ -675,7 +698,7 @@ ${textBefore}
         {/* 响应区域 */}
         {response && (
           <div className="p-1">
-            <div className="text-sm whitespace-pre-wrap select-text">
+            <div className="text-sm whitespace-pre-wrap select-text text-foreground">
               {response}
               {status === "loading" && (
                 <span className="inline-block w-0.5 h-3.5 bg-foreground/40 animate-pulse ml-0.5 align-middle" />

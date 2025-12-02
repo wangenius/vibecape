@@ -48,13 +48,18 @@ import {
 import { BsStars } from "react-icons/bs";
 import { MoreVertical, Plus, Server } from "lucide-react";
 import { RemoteModelsSheet } from "./RemoteModelsSheet";
+import iconImage from "@/assets/icon.png";
 
 const THEME_OPTIONS = [
   { value: "default", label: "默认" },
   { value: "dim", label: "微光" },
   { value: "forest", label: "森林" },
+  { value: "graph", label: "石墨" },
+  { value: "haze", label: "薄雾" },
+  { value: "mono", label: "黑白" },
   { value: "ocean", label: "海洋" },
   { value: "sunset", label: "日落" },
+  { value: "vercel", label: "极简" },
 ];
 
 // 通用设置
@@ -821,12 +826,19 @@ export const AboutSettings = () => {
   return (
     <div className="space-y-6">
       <section className="space-y-4">
-        <header>
-          <h3 className="text-base font-semibold">关于 Local MDX Studio</h3>
-          <p className="text-sm text-muted-foreground mt-1">
-            本地 MDX 文档编辑工具
-          </p>
-        </header>
+        <div className="flex items-center gap-4">
+          <img
+            src={iconImage}
+            alt="Vibecape"
+            className="w-16 h-16 rounded-xl"
+          />
+          <div>
+            <h3 className="text-xl font-semibold">Vibecape</h3>
+            <p className="text-sm text-muted-foreground mt-1">
+              本地优先的 MDX 文档编辑器
+            </p>
+          </div>
+        </div>
 
         <div className="rounded-lg bg-muted/30 p-4 space-y-3">
           <div className="flex items-center justify-between">
@@ -834,10 +846,26 @@ export const AboutSettings = () => {
             <span className="text-sm font-medium">1.0.0</span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">技术栈</span>
-            <span className="text-sm font-medium">
-              Electron + React + Tiptap
-            </span>
+            <span className="text-sm text-muted-foreground">创作者</span>
+            <a
+              href="https://wangenius.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm font-medium text-primary hover:underline"
+            >
+              wangenius
+            </a>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-muted-foreground">主页</span>
+            <a
+              href="https://vibecape.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm font-medium text-primary hover:underline"
+            >
+              vibecape.com
+            </a>
           </div>
         </div>
       </section>

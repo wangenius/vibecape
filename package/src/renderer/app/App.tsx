@@ -31,7 +31,7 @@ const App = () => {
         {/* Content Layer - Full Height */}
         <div className="w-full h-full flex overflow-hidden">
           <VibecapeSidebar />
-          <div className="flex-1 h-full pt-8 overflow-hidden">
+          <div className="flex-1 h-full overflow-hidden">
             <VibecapeWorkspace />
           </div>
           <Baybar />

@@ -29,6 +29,7 @@ type Props = {
 export const DocEditor = ({ doc, onChange, onSave }: Props) => {
   // 用 ref 存储 save 函数，解决循环引用问题
   const handleSaveRef = useRef<() => void>(() => {});
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // 创建 Slash Menu 配置
   const slashMenuConfig = useMemo(() => createSlashMenuPlugin(), []);
@@ -111,8 +112,24 @@ export const DocEditor = ({ doc, onChange, onSave }: Props) => {
     handleSaveRef.current = handleSave;
   }, [handleSave]);
 
+  // 点击底部空白区域时聚焦到编辑器末尾
+  const handleContainerClick = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (!editor) return;
+      // 只处理点击容器本身（底部 padding 区域）
+      if (e.target === containerRef.current) {
+        editor.commands.focus("end");
+      }
+    },
+    [editor]
+  );
+
   return (
-    <div className="flex-1 min-h-0">
+    <div
+      ref={containerRef}
+      className="flex-1 min-h-0 pb-[80vh] cursor-text"
+      onClick={handleContainerClick}
+    >
       <EditorContent
         editor={editor}
         className="w-full h-full [&_p]:mb-2 [&_.ProseMirror]:min-h-[400px]"

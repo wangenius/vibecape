@@ -135,7 +135,7 @@ const CodeBlockComponent = ({ node, updateAttributes }: NodeViewProps) => {
             </PopoverTrigger>
             <PopoverContent
               align="start"
-              className="p-1 max-h-52 overflow-y-auto w-32"
+              className="p-1 max-h-52 overflow-y-auto w-32 scrollbar-hide"
             >
               {LANGUAGES.map((lang) => (
                 <button
@@ -172,9 +172,9 @@ const CodeBlockComponent = ({ node, updateAttributes }: NodeViewProps) => {
           className="relative whitespace-pre-wrap"
           style={{
             fontFamily:
-              "ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace",
-            fontSize: "13px",
-            lineHeight: "21px",
+              "'Fira Code', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace",
+            fontSize: "14px",
+            lineHeight: "22px",
           }}
         >
           <NodeViewContent
@@ -201,7 +201,7 @@ const CodeBlockComponent = ({ node, updateAttributes }: NodeViewProps) => {
               contentEditable={false}
             >
               <div
-                className="[&_pre]:!bg-transparent [&_pre]:!m-0 [&_pre]:!p-0 [&_pre]:!whitespace-pre-wrap [&_pre]:![font-family:inherit] [&_pre]:![font-size:inherit] [&_pre]:![line-height:inherit] [&_code]:!whitespace-pre-wrap [&_code]:![font-family:inherit] [&_code]:![font-size:inherit] [&_code]:![line-height:inherit] [&_.line]:!contents [&_span]:![font-family:inherit] [&_span]:![font-size:inherit] [&_span]:![line-height:inherit]"
+                className="code-block-highlight"
                 dangerouslySetInnerHTML={{ __html: highlightedHtml }}
               />
             </div>

@@ -101,7 +101,7 @@ export const DocWorkspace = ({ doc, onSave }: Props) => {
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden bg-background">
       <div className="flex-1 overflow-auto">
-        <div className="max-w-3xl mx-auto px-6 py-8">
+        <div className="max-w-3xl mx-auto px-6 pt-8">
           <div className="mb-6">
             {/* 标题行 */}
             <div className="flex items-center gap-2">

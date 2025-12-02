@@ -15,8 +15,6 @@ import {
 } from "react";
 import { cn } from "@/lib/utils";
 import { TbScript, TbMoodNeutral, TbSwipe } from "react-icons/tb";
-import { useCosmos } from "@/hook/cosmos/useCosmos";
-import { Story, Actant, Lore } from "@common/schema/cosmos_bodies";
 
 export type MentionType = "story" | "actant" | "lore";
 
@@ -173,10 +171,9 @@ export const MentionMenuComponent = forwardRef<
   return (
     <div
       ref={containerRef}
-      className="bg-background border border-border rounded-2xl overflow-hidden w-64 max-h-80 overflow-y-auto py-1.5 animate-in fade-in slide-in-from-top-1 duration-150"
+      className="bg-background border border-border rounded-2xl overflow-hidden w-64 max-h-80 overflow-y-auto py-1.5 animate-in fade-in slide-in-from-top-1 duration-150 scrollbar-none"
       style={{
-        scrollbarWidth: "thin",
-        scrollbarColor: "hsl(var(--muted-foreground) / 0.3) transparent",
+        scrollbarWidth: "none",
       }}
     >
       {isLoading ? (
@@ -249,45 +246,6 @@ MentionMenuComponent.displayName = "MentionMenuComponent";
 /** 获取所有 Mention 数据 */
 function getAllMentionItems(): MentionItem[] {
   const items: MentionItem[] = [];
-
-  // 获取 stories
-  const stories = useCosmos.getState().stories;
-  Object.values(stories).forEach((story: Story) => {
-    items.push({
-      id: story.id,
-      label: story.name || "未命名剧情",
-      type: "story",
-    });
-  });
-
-  // 获取 actants
-  const actants = useCosmos.getState().actants;
-  Object.values(actants).forEach((actant: Actant) => {
-    items.push({
-      id: actant.id,
-      label: actant.name || "未命名角色",
-      type: "actant",
-      description: actant.description || "",
-    });
-  });
-
-  // 获取 lores
-  const lores = useCosmos.getState().lores;
-  Object.values(lores).forEach((lore: Lore) => {
-    items.push({
-      id: lore.id,
-      label: lore.name || "未命名设定",
-      type: "lore",
-      description: lore.description || "",
-    });
-  });
-
-  console.log("[MentionMenu] Loaded items:", {
-    stories: stories.length,
-    actants: actants.length,
-    lores: lores.length,
-    total: items.length,
-  });
 
   return items;
 }

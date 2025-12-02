@@ -1,0 +1,49 @@
+/* Fira Code 字体 */
+@font-face {
+  font-family: 'Fira Code';
+  src: url('../assets/fonts/FiraCode-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Fira Code';
+  src: url('../assets/fonts/FiraCode-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Fira Code';
+  src: url('../assets/fonts/FiraCode-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+}
+
+/* CodeBlock Shiki 高亮样式 */
+.code-block-highlight pre {
+  background-color: transparent !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  white-space: pre-wrap !important;
+  font-family: inherit !important;
+  font-size: inherit !important;
+  line-height: inherit !important;
+}
+
+.code-block-highlight code {
+  white-space: pre-wrap !important;
+  font-family: inherit !important;
+  font-size: inherit !important;
+  line-height: inherit !important;
+}
+
+.code-block-highlight .line {
+  display: contents !important;
+}
+
+.code-block-highlight span {
+  font-family: inherit !important;
+  font-size: inherit !important;
+  line-height: inherit !important;
+}

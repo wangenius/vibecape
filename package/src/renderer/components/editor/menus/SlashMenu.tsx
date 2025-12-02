@@ -256,7 +256,7 @@ export const SlashMenuComponent = forwardRef<SlashMenuRef, SlashMenuProps>(
     );
 
     const allGroupedItems: Array<{ category: SlashMenuCategory; items: SlashMenuItem[] }> = [];
-    (["ai", "insert"] as SlashMenuCategory[]).forEach((category) => {
+    (["ai", "heading", "list", "insert"] as SlashMenuCategory[]).forEach((category) => {
       if (groupedItems[category] && groupedItems[category].length > 0) {
         allGroupedItems.push({ category, items: groupedItems[category] });
       }
@@ -274,10 +274,9 @@ export const SlashMenuComponent = forwardRef<SlashMenuRef, SlashMenuProps>(
     return (
       <div
         ref={containerRef}
-        className="bg-background border border-border rounded-2xl overflow-hidden w-56 max-h-80 overflow-y-auto py-1.5 animate-in fade-in slide-in-from-top-1 duration-150"
+        className="bg-background border border-border rounded-2xl overflow-hidden w-56 max-h-80 overflow-y-auto py-1.5 animate-in fade-in slide-in-from-top-1 duration-150 scrollbar-none"
         style={{
-          scrollbarWidth: "thin",
-          scrollbarColor: "hsl(var(--muted-foreground) / 0.3) transparent",
+          scrollbarWidth: "none",
         }}
       >
         {items.length > 0 ? (

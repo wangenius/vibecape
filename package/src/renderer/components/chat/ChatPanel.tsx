@@ -21,7 +21,7 @@ import { useChat, useChatStore } from "@/hook/chat/useChat";
 import { useThread } from "@/hook/chat/useThread";
 import type { UIMessage } from "ai";
 import type { ChatThreadMeta } from "@common/schema/chat";
-import { MessageRenderer, ErrorMessage } from "./chat/MessageRenderer";
+import { MessageRenderer, ErrorMessage } from "./MessageRenderer";
 
 interface ChatInputProps {
   onSubmit: (message: { text: string }) => void | Promise<void>;

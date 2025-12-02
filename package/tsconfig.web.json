@@ -7,11 +7,12 @@
     "src/renderer/components/**/*",
     "src/renderer/hook/**/*",
     "src/renderer/lib/**/*",
+    "src/renderer/locales/**/*",
     "src/renderer/@styles/**/*",
     "src/preload/*.d.ts",
     "src/common/**/*",
     "src/plugins/**/*"
-  ],
+, "src/renderer/App.tsx"  ],
   "compilerOptions": {
     "composite": true,
     "jsx": "react-jsx",

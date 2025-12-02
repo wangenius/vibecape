@@ -1,9 +1,9 @@
 import { useEffect } from "react";
-import { VibecapeSidebar } from "./components/VibecapeSidebar";
-import { VibecapeWorkspace } from "./components/VibecapeWorkspace";
-import { Header } from "./components/Header";
-import { Baybar } from "./components/Baybar";
-import { useVibecapeStore } from "./useVibecapeStore";
+import { Sidebar } from "@/components/Sidebar";
+import { Workspace } from "@/components/Workspace";
+import { Header } from "@/components/Header";
+import { Baybar } from "@/components/Baybar";
+import { useVibecapeStore } from "./hook/useVibecapeStore";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useTheme } from "@/hook/app/useTheme";
 import { useChatInputFocus } from "@/hook/shortcuts/useChatInputFocus";
@@ -32,9 +32,9 @@ const App = () => {
 
         {/* Content Layer - Full Height */}
         <div className="w-full h-full flex overflow-hidden">
-          <VibecapeSidebar />
+          <Sidebar />
           <div className="flex-1 h-full overflow-hidden">
-            <VibecapeWorkspace />
+            <Workspace />
           </div>
           <Baybar />
         </div>

@@ -6,8 +6,8 @@
 
 import { Extension } from "@tiptap/core";
 
-// 标点符号（中英文）
-const PUNCTUATION_CHARS = `，。！？；：、""''（）【】《》—…,.!?;:'"()[]<>-·`;
+// 标点符号（中英文）+ 空格
+const PUNCTUATION_CHARS = `，。！？；：、""''（）【】《》—…,.!?;:'"()[]<>-· `;
 
 function isPunctuation(char: string): boolean {
   return PUNCTUATION_CHARS.includes(char);

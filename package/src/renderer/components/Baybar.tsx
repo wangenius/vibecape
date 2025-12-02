@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useViewManager, toggleBayBar } from "@/hook/app/useViewManager";
-import { ChatPanel } from "./ChatPanel";
+import { ChatPanel } from "./chat/ChatPanel";
 
 export const Baybar = () => {
   const isBayBarOpen = useViewManager((state) => state.isBayBarOpen);

@@ -1,7 +1,7 @@
 import { memo, useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useVibecapeStore } from "../useVibecapeStore";
+import { useVibecapeStore } from "@/hook/useVibecapeStore";
 import type { DocTreeNode } from "@common/schema/docs";
 import {
   ChevronRight,
@@ -765,7 +765,7 @@ const SettingsSidebar = () => {
   );
 };
 
-export const VibecapeSidebar = () => {
+export const Sidebar = () => {
   const isSidebarCollapsed = useViewManager(
     (selector) => selector.isSidebarCollapsed
   );

@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { useVibecapeStore } from "../useVibecapeStore";
-import { VibecapeEditor } from "./VibecapeEditor";
+import { useVibecapeStore } from "@/hook/useVibecapeStore";
+import { DocEditor } from "./editor/DocEditor";
 import { FolderOpen, Loader2, FileText, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { useViewManager } from "@/hook/app/useViewManager";
@@ -126,12 +126,14 @@ const EmptyDocState = () => (
   </div>
 );
 
-export const VibecapeWorkspace = () => {
+export const Workspace = () => {
   const workspace = useVibecapeStore((state) => state.workspace);
   const activeDoc = useVibecapeStore((state) => state.activeDoc);
   const bootstrap = useVibecapeStore((state) => state.bootstrap);
   const saveDoc = useVibecapeStore((state) => state.saveDoc);
-  const activeSidebarPanel = useViewManager((state) => state.activeSidebarPanel);
+  const activeSidebarPanel = useViewManager(
+    (state) => state.activeSidebarPanel
+  );
   const settingsSection = useViewManager((state) => state.previewCosmosId);
 
   useEffect(() => {
@@ -181,7 +183,7 @@ export const VibecapeWorkspace = () => {
   return (
     <div className="flex-1 flex flex-col h-full">
       {/* 编辑器 */}
-      <VibecapeEditor doc={activeDoc} onSave={saveDoc} />
+      <DocEditor doc={activeDoc} onSave={saveDoc} />
     </div>
   );
 };

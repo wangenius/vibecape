@@ -4,12 +4,21 @@
  */
 
 import { Node, mergeAttributes, textblockTypeInputRule } from "@tiptap/core";
-import { ReactNodeViewRenderer, NodeViewWrapper, NodeViewContent } from "@tiptap/react";
+import {
+  ReactNodeViewRenderer,
+  NodeViewWrapper,
+  NodeViewContent,
+} from "@tiptap/react";
 import { NodeViewProps } from "@tiptap/react";
 import { codeToHtml } from "shiki";
-import { Check, Copy, ChevronDown } from "lucide-react";
+import { Check, Copy } from "lucide-react";
 import { useState, useCallback, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 // 常用语言列表
 const LANGUAGES = [
@@ -42,9 +51,9 @@ const LANGUAGES = [
 
 const CodeBlockComponent = ({ node, updateAttributes }: NodeViewProps) => {
   const [copied, setCopied] = useState(false);
-  const [showLanguages, setShowLanguages] = useState(false);
+  const [languageOpen, setLanguageOpen] = useState(false);
   const [highlightedHtml, setHighlightedHtml] = useState<string>("");
-  
+
   const language = node.attrs.language || "plaintext";
   const code = node.textContent || "";
 
@@ -79,12 +88,14 @@ const CodeBlockComponent = ({ node, updateAttributes }: NodeViewProps) => {
             lang: "text",
             themes: { light: "github-light", dark: "github-dark" },
             defaultColor: false,
-          }).then((html) => {
-            if (!cancelled) setHighlightedHtml(html);
-          }).catch(() => {
-            // 最后的回退：显示纯文本
-            if (!cancelled) setHighlightedHtml("");
-          });
+          })
+            .then((html) => {
+              if (!cancelled) setHighlightedHtml(html);
+            })
+            .catch(() => {
+              // 最后的回退：显示纯文本
+              if (!cancelled) setHighlightedHtml("");
+            });
         }
       });
 
@@ -102,97 +113,95 @@ const CodeBlockComponent = ({ node, updateAttributes }: NodeViewProps) => {
   const handleLanguageChange = useCallback(
     (lang: string) => {
       updateAttributes({ language: lang });
-      setShowLanguages(false);
+      setLanguageOpen(false);
     },
     [updateAttributes]
   );
 
-  // 点击外部关闭语言选择器
-  useEffect(() => {
-    if (!showLanguages) return;
-    const handleClick = () => setShowLanguages(false);
-    document.addEventListener("click", handleClick);
-    return () => document.removeEventListener("click", handleClick);
-  }, [showLanguages]);
-
   return (
-    <NodeViewWrapper className="relative my-3" data-type="codeBlock">
-      <div className="rounded-lg border border-border overflow-hidden bg-muted/30">
+    <NodeViewWrapper className="relative my-2" data-type="codeBlock">
+      <div className="rounded-lg bg-muted overflow-hidden">
         {/* Header */}
-        <div 
-          className="flex items-center justify-between px-3 py-1.5 bg-muted/50 border-b border-border select-none"
+        <div
+          className="flex items-center justify-between pl-4 pr-2 pt-2 select-none"
           contentEditable={false}
         >
           {/* Language Selector */}
-          <div className="relative">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowLanguages(!showLanguages);
-              }}
-              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          <Popover open={languageOpen} onOpenChange={setLanguageOpen}>
+            <PopoverTrigger asChild>
+              <button className="flex items-center gap-1 text-[10px] font-medium text-muted-foreground/80 hover:text-foreground transition-colors uppercase tracking-wider">
+                {language}
+              </button>
+            </PopoverTrigger>
+            <PopoverContent
+              align="start"
+              className="p-1 max-h-52 overflow-y-auto w-32"
             >
-              <span className="font-mono">{language}</span>
-              <ChevronDown className="size-3" />
-            </button>
-            {showLanguages && (
-              <div 
-                className="absolute top-full left-0 mt-1 z-50 bg-popover border border-border rounded-md shadow-lg max-h-48 overflow-y-auto min-w-[120px]"
-                onClick={(e) => e.stopPropagation()}
-              >
-                {LANGUAGES.map((lang) => (
-                  <button
-                    key={lang}
-                    onClick={() => handleLanguageChange(lang)}
-                    className={cn(
-                      "block w-full px-3 py-1.5 text-left text-xs hover:bg-accent transition-colors",
-                      lang === language && "bg-accent"
-                    )}
-                  >
-                    {lang}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+              {LANGUAGES.map((lang) => (
+                <button
+                  key={lang}
+                  onClick={() => handleLanguageChange(lang)}
+                  className={cn(
+                    "block w-full px-2 py-1 text-left text-[11px] font-mono rounded transition-colors",
+                    lang === language
+                      ? "bg-foreground/10 text-foreground"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  )}
+                >
+                  {lang}
+                </button>
+              ))}
+            </PopoverContent>
+          </Popover>
 
           {/* Copy Button */}
           <button
             onClick={handleCopy}
-            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            className="p-1 rounded text-muted-foreground/70 hover:text-foreground transition-colors"
           >
             {copied ? (
-              <>
-                <Check className="size-3" />
-                <span>已复制</span>
-              </>
+              <Check className="size-3.5" />
             ) : (
-              <>
-                <Copy className="size-3" />
-                <span>复制</span>
-              </>
+              <Copy className="size-3.5" />
             )}
           </button>
         </div>
 
-        {/* Code Content with Shiki Highlighting */}
-        <div className="relative min-h-[3rem]">
-          {/* 可编辑层 - 在底层 */}
-          <NodeViewContent 
+        {/* Code Content */}
+        <div
+          className="relative whitespace-pre-wrap"
+          style={{
+            fontFamily:
+              "ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace",
+            fontSize: "13px",
+            lineHeight: "21px",
+          }}
+        >
+          <NodeViewContent
             className={cn(
-              "block p-4 font-mono text-sm leading-relaxed whitespace-pre-wrap overflow-x-auto outline-none",
-              highlightedHtml ? "text-transparent caret-foreground selection:bg-primary/30" : "text-foreground"
+              "block px-4 py-4 overflow-x-auto outline-none",
+              highlightedHtml
+                ? "text-transparent caret-foreground selection:bg-primary/20"
+                : "text-foreground/90"
             )}
           />
-          {/* 语法高亮层 - 覆盖在上层 */}
+          {/* Placeholder */}
+          {!code && (
+            <div
+              className="absolute inset-0 px-4 py-4 pointer-events-none text-muted-foreground/50"
+              contentEditable={false}
+            >
+              Enter code...
+            </div>
+          )}
           {highlightedHtml && (
             <div
-              className="absolute inset-0 p-4 pointer-events-none overflow-hidden z-10"
+              className="absolute inset-0 px-4 py-4 pointer-events-none overflow-hidden"
               aria-hidden="true"
               contentEditable={false}
             >
-              <div 
-                className="[&_pre]:!bg-transparent [&_pre]:!m-0 [&_pre]:!p-0 [&_pre]:!overflow-visible [&_code]:!text-sm [&_code]:!leading-relaxed [&_code]:!font-mono [&_code]:!whitespace-pre-wrap"
+              <div
+                className="[&_pre]:!bg-transparent [&_pre]:!m-0 [&_pre]:!p-0 [&_pre]:!whitespace-pre-wrap [&_pre]:![font-family:inherit] [&_pre]:![font-size:inherit] [&_pre]:![line-height:inherit] [&_code]:!whitespace-pre-wrap [&_code]:![font-family:inherit] [&_code]:![font-size:inherit] [&_code]:![line-height:inherit] [&_.line]:!contents [&_span]:![font-family:inherit] [&_span]:![font-size:inherit] [&_span]:![line-height:inherit]"
                 dangerouslySetInnerHTML={{ __html: highlightedHtml }}
               />
             </div>
@@ -205,15 +214,15 @@ const CodeBlockComponent = ({ node, updateAttributes }: NodeViewProps) => {
 
 export const CodeBlockNode = Node.create({
   name: "codeBlock",
-  
+
   group: "block",
-  
+
   content: "text*",
-  
+
   marks: "",
-  
+
   code: true,
-  
+
   defining: true,
 
   addAttributes() {
@@ -256,32 +265,42 @@ export const CodeBlockNode = Node.create({
   addKeyboardShortcuts() {
     return {
       "Mod-Alt-c": () => this.editor.commands.toggleCodeBlock(),
-      // Backspace: 空代码块时删除整个块
+      // Cmd+Backspace: 将代码块转换为普通段落
+      "Mod-Backspace": () => {
+        if (this.editor.isActive("codeBlock")) {
+          return this.editor.commands.toggleNode("codeBlock", "paragraph");
+        }
+        return false;
+      },
+      // Backspace: 在代码块开头时阻止删除代码块
       Backspace: () => {
-        const { state } = this.editor;
-        const { selection } = state;
-        const { $anchor } = selection;
-        
         // 检查是否在代码块内
         if (!this.editor.isActive("codeBlock")) {
           return false;
         }
-        
-        // 检查是否在代码块开头且代码块为空
-        const isAtStart = $anchor.parentOffset === 0;
-        const isEmpty = $anchor.parent.textContent === "";
-        
-        if (isAtStart && isEmpty) {
-          // 删除代码块，替换为段落
-          return this.editor.commands.toggleNode("codeBlock", "paragraph");
+
+        const { state } = this.editor;
+        const { selection } = state;
+        const { $anchor, empty } = selection;
+
+        // 如果有选区，允许正常删除内容
+        if (!empty) {
+          return false;
         }
-        
+
+        // 检查是否在代码块开头（无选区时）
+        // 在代码块开头时，阻止删除代码块
+        const isAtStart = $anchor.parentOffset === 0;
+        if (isAtStart) {
+          return true;
+        }
+
         return false;
       },
       // Tab 缩进
       Tab: () => {
         if (this.editor.isActive("codeBlock")) {
-          this.editor.commands.insertContent("  ");
+          this.editor.commands.insertContent("    ");
           return true;
         }
         return false;
@@ -305,12 +324,12 @@ export const CodeBlockNode = Node.create({
         if (!this.editor.isActive("codeBlock")) {
           return false;
         }
-        
+
         const { state } = this.editor;
         const { selection } = state;
         const { $anchor } = selection;
         const text = $anchor.parent.textContent;
-        
+
         // 如果以两个换行符结尾，退出代码块
         if (text.endsWith("\n\n")) {
           // 删除多余的换行符并退出
@@ -321,7 +340,7 @@ export const CodeBlockNode = Node.create({
           });
           return this.editor.commands.exitCode();
         }
-        
+
         return false;
       },
     };

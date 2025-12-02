@@ -15,7 +15,10 @@ import type { DocData } from "@common/schema/docs";
 import { SlashCommand } from "@/components/editor/extensions/SlashCommand";
 import { createSlashMenuPlugin } from "@/components/editor/menus/SlashMenu";
 import { EditorBubbleMenu } from "@/components/editor/menus/EditorBubbleMenu";
-import { AIRewriteNode, AIPolishMark } from "@/components/editor/extensions/AIRewriteNode";
+import {
+  AIRewriteNode,
+  AIPolishMark,
+} from "@/components/editor/extensions/AIRewriteNode";
 import { CodeBlockNode } from "@/components/editor/extensions/CodeBlockNode";
 import { PolishManager } from "@/components/editor/PolishManager";
 import { CustomKeyboardExtension } from "@/components/editor/extensions/CustomKeyboardExtension";
@@ -29,7 +32,7 @@ type Props = {
   }) => Promise<void>;
 };
 
-export const VibecapeEditor = ({ doc, onSave }: Props) => {
+export const DocEditor = ({ doc, onSave }: Props) => {
   const [title, setTitle] = useState(doc.title);
   const [description, setDescription] = useState(
     doc.metadata?.description ?? ""
@@ -129,7 +132,13 @@ export const VibecapeEditor = ({ doc, onSave }: Props) => {
   const [newFieldKey, setNewFieldKey] = useState("");
   const handleAddMetaField = () => {
     const key = newFieldKey.trim();
-    if (!key || key === "title" || key === "description" || metaValue[key] !== undefined) return;
+    if (
+      !key ||
+      key === "title" ||
+      key === "description" ||
+      metaValue[key] !== undefined
+    )
+      return;
     setMetaValue((prev) => ({ ...prev, [key]: "" }));
     setNewFieldKey("");
   };
@@ -285,7 +294,9 @@ export const VibecapeEditor = ({ doc, onSave }: Props) => {
                     </span>
                     <Input
                       value={String(metaValue[key] ?? "")}
-                      onValueChange={(value) => handleMetaFieldChange(key, value)}
+                      onValueChange={(value) =>
+                        handleMetaFieldChange(key, value)
+                      }
                       className="flex-1 h-7 text-sm bg-transparent border-none shadow-none focus-visible:ring-0 px-0"
                     />
                     <Button

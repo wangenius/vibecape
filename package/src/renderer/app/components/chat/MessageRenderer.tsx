@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { type UIMessage } from "ai";
-import { Check, ChevronDown, Brain } from "lucide-react";
+import { Check, ChevronRight, Sparkles } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Message, MessageContent } from "@/components/ai-elements/message";
 import { Response } from "@/components/ai-elements/response";
@@ -14,22 +14,36 @@ import type {
 } from "@common/types/message";
 
 /** 思考过程折叠区（包含 reasoning + tool calls） */
-function ThinkingSection({ parts }: { parts: ThinkingPart[] }) {
-  const [open, setOpen] = useState(false);
+function ThinkingSection({ parts, isThinking }: { parts: ThinkingPart[]; isThinking?: boolean }) {
+  const [open, setOpen] = useState(true);
+
+  // 思考结束后自动折叠
+  useEffect(() => {
+    if (!isThinking && parts.length > 0) {
+      const timer = setTimeout(() => setOpen(false), 300);
+      return () => clearTimeout(timer);
+    }
+    return undefined;
+  }, [isThinking, parts.length]);
 
   if (parts.length === 0) return null;
 
-  const toolCount = parts.filter((p): p is ToolPart => p.type.startsWith("tool-")).length;
+  const toolParts = parts.filter((p): p is ToolPart => p.type.startsWith("tool-"));
+  const completedTools = toolParts.filter((p) => p.state === "output-available").length;
 
   return (
     <Collapsible open={open} onOpenChange={setOpen} className="mb-2">
-      <CollapsibleTrigger className="flex items-center gap-1.5 text-[10px] text-muted-foreground/40 hover:text-muted-foreground/60 transition-colors">
-        <Brain className="size-3" />
-        <span>思考过程</span>
-        {toolCount > 0 && (
-          <span className="text-muted-foreground/30">· {toolCount} 次工具调用</span>
+      <CollapsibleTrigger className="group flex items-center gap-1.5 text-[10px] text-muted-foreground/50 hover:text-muted-foreground/70 transition-colors py-0.5">
+        <ChevronRight className={`size-2.5 transition-transform duration-200 ${open ? "rotate-90" : ""}`} />
+        {isThinking ? (
+          <Sparkles className="size-2.5 animate-pulse" />
+        ) : (
+          <Check className="size-2.5 text-muted-foreground/40" />
         )}
-        <ChevronDown className={`size-3 transition-transform ${open ? "rotate-180" : ""}`} />
+        <span className="font-medium">{isThinking ? "Thinking" : "Thought"}</span>
+        {toolParts.length > 0 && (
+          <span className="text-muted-foreground/30">· {completedTools}/{toolParts.length} tools</span>
+        )}
       </CollapsibleTrigger>
       <CollapsibleContent className="mt-1.5">
         <div className="max-h-[600px] overflow-y-auto text-[10px] text-muted-foreground/40 leading-4 p-2 bg-muted/30 rounded space-y-1.5">
@@ -130,7 +144,7 @@ export function MessageRenderer({
     <Message from="assistant" className="w-full p-0">
       <MessageContent variant="flat" className="w-full">
         {/* 单个思考折叠区 */}
-        <ThinkingSection parts={thinkingParts} />
+        <ThinkingSection parts={thinkingParts} isThinking={isStreamingThis} />
         {/* 文本内容 */}
         {textParts.map((part, idx) => {
           const text = part.text?.trim();

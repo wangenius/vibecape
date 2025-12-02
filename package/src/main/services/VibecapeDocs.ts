@@ -656,6 +656,73 @@ export class VibecapeDocsService {
   }
 
   /**
+   * 导出单个文档为 Markdown
+   */
+  static async exportDocAsMarkdown(id: string): Promise<void> {
+    const doc = await this.getDoc(id);
+    if (!doc) {
+      throw new Error("文档不存在");
+    }
+
+    const markdown = jsonContentToMarkdown(doc.content);
+    const content = stringifyFrontmatter(markdown, {
+      title: doc.title,
+      ...doc.metadata,
+    });
+
+    const result = await dialog.showSaveDialog({
+      title: "导出为 Markdown",
+      defaultPath: `${doc.title}.md`,
+      filters: [{ name: "Markdown", extensions: ["md"] }],
+    });
+
+    if (result.canceled || !result.filePath) {
+      return;
+    }
+
+    await fs.writeFile(result.filePath, content, "utf-8");
+  }
+
+  /**
+   * 导出单个文档为 PDF
+   */
+  static async exportDocAsPdf(id: string): Promise<void> {
+    const doc = await this.getDoc(id);
+    if (!doc) {
+      throw new Error("文档不存在");
+    }
+
+    const result = await dialog.showSaveDialog({
+      title: "导出为 PDF",
+      defaultPath: `${doc.title}.pdf`,
+      filters: [{ name: "PDF", extensions: ["pdf"] }],
+    });
+
+    if (result.canceled || !result.filePath) {
+      return;
+    }
+
+    // 将 JSONContent 转换为 HTML 用于 PDF 生成
+    const markdown = jsonContentToMarkdown(doc.content);
+    const html = markdownToHtml(markdown, doc.title);
+
+    // 使用 Electron 的 BrowserWindow 打印为 PDF
+    const { BrowserWindow } = await import("electron");
+    const win = new BrowserWindow({
+      show: false,
+      webPreferences: { offscreen: true },
+    });
+
+    await win.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`);
+    const pdfData = await win.webContents.printToPDF({
+      printBackground: true,
+      margins: { top: 0.5, bottom: 0.5, left: 0.5, right: 0.5 },
+    });
+    await fs.writeFile(result.filePath, pdfData);
+    win.close();
+  }
+
+  /**
    * 从数据库导出到 docs 目录 (覆盖)
    * 注意：只覆盖文档文件，不删除 .vibecape 目录
    */
@@ -748,4 +815,89 @@ async function findIndexFile(dirPath: string): Promise<string | null> {
     } catch {}
   }
   return null;
+}
+
+/**
+ * Markdown 转 HTML (用于 PDF 导出)
+ */
+function markdownToHtml(markdown: string, title: string): string {
+  // 简单的 Markdown 转 HTML
+  let html = markdown
+    // 标题
+    .replace(/^###### (.+)$/gm, "<h6>$1</h6>")
+    .replace(/^##### (.+)$/gm, "<h5>$1</h5>")
+    .replace(/^#### (.+)$/gm, "<h4>$1</h4>")
+    .replace(/^### (.+)$/gm, "<h3>$1</h3>")
+    .replace(/^## (.+)$/gm, "<h2>$1</h2>")
+    .replace(/^# (.+)$/gm, "<h1>$1</h1>")
+    // 粗体和斜体
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*(.+?)\*/g, "<em>$1</em>")
+    // 代码块
+    .replace(/```(\w*)\n([\s\S]*?)```/g, "<pre><code class=\"$1\">$2</code></pre>")
+    // 行内代码
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    // 链接
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>')
+    // 列表
+    .replace(/^- (.+)$/gm, "<li>$1</li>")
+    .replace(/^\d+\. (.+)$/gm, "<li>$1</li>")
+    // 段落
+    .replace(/^(?!<[hlopuc])(.*[^>])$/gm, "<p>$1</p>")
+    // 清理空段落
+    .replace(/<p><\/p>/g, "")
+    .replace(/<p>\s*<\/p>/g, "");
+
+  return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>${title}</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      line-height: 1.6;
+      color: #333;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.5em;
+      margin-bottom: 0.5em;
+      font-weight: 600;
+    }
+    h1 { font-size: 2em; }
+    h2 { font-size: 1.5em; }
+    h3 { font-size: 1.25em; }
+    code {
+      background: #f4f4f4;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'SF Mono', Monaco, monospace;
+    }
+    pre {
+      background: #f4f4f4;
+      padding: 16px;
+      border-radius: 8px;
+      overflow-x: auto;
+    }
+    pre code {
+      background: none;
+      padding: 0;
+    }
+    blockquote {
+      border-left: 4px solid #ddd;
+      margin: 0;
+      padding-left: 16px;
+      color: #666;
+    }
+    a { color: #0066cc; }
+    li { margin: 4px 0; }
+  </style>
+</head>
+<body>
+${html}
+</body>
+</html>`;
 }

@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useVibecapeStore } from "@/hook/useVibecapeStore";
-import { Loader2, X, Download, Upload, Plus } from "lucide-react";
+import { Loader2, X, Download, Upload, Plus, FolderOpen } from "lucide-react";
 import { TbDots } from "react-icons/tb";
 import {
   DropdownMenu,
@@ -121,6 +121,12 @@ export const SidebarHeader = ({ onCreateDoc }: SidebarHeaderProps) => {
             <DropdownMenuItem onClick={handleExport}>
               <Upload className="size-3.5" />
               导出到 docs
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => void window.api.vibecape.openInFinder()}
+            >
+              <FolderOpen className="size-3.5" />
+              在 Finder 中打开
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem

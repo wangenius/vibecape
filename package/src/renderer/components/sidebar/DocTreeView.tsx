@@ -132,6 +132,26 @@ export const DocTreeView = () => {
     [deleteDoc]
   );
 
+  // 导出为 Markdown
+  const handleExportMarkdown = useCallback(async (node: DocTreeNode) => {
+    try {
+      await window.api.vibecape.exportDocAsMarkdown(node.id);
+      toast.success("已导出为 Markdown");
+    } catch (error: any) {
+      toast.error(error?.message ?? "导出失败");
+    }
+  }, []);
+
+  // 导出为 PDF
+  const handleExportPdf = useCallback(async (node: DocTreeNode) => {
+    try {
+      await window.api.vibecape.exportDocAsPdf(node.id);
+      toast.success("已导出为 PDF");
+    } catch (error: any) {
+      toast.error(error?.message ?? "导出失败");
+    }
+  }, []);
+
   // 递归渲染树
   const renderDocTree = useCallback(
     (nodes: DocTreeNode[], level = 0, isDraggingOver: string | null) => {
@@ -150,6 +170,8 @@ export const DocTreeView = () => {
               onClick={() => handleNodeSelect(node)}
               onCreateDoc={handleCreateDoc}
               onDelete={handleDelete}
+              onExportMarkdown={handleExportMarkdown}
+              onExportPdf={handleExportPdf}
               isDraggingOver={isDraggingOver}
             />
             {isExpanded &&
@@ -166,6 +188,8 @@ export const DocTreeView = () => {
       handleNodeSelect,
       handleCreateDoc,
       handleDelete,
+      handleExportMarkdown,
+      handleExportPdf,
     ]
   );
 

@@ -1,7 +1,7 @@
 import { memo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import type { DocTreeNode } from "@common/schema/docs";
-import { ChevronRight, FilePlus, Trash2 } from "lucide-react";
+import { ChevronRight, FilePlus, Trash2, FileDown, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TbScript, TbDots } from "react-icons/tb";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
@@ -22,6 +22,8 @@ export interface TreeNodeProps {
   onClick: () => void;
   onCreateDoc: (parentId: string | null) => void;
   onDelete: (node: DocTreeNode) => void;
+  onExportMarkdown: (node: DocTreeNode) => void;
+  onExportPdf: (node: DocTreeNode) => void;
   isDraggingOver: string | null;
 }
 
@@ -35,6 +37,8 @@ export const TreeNode = memo(
     onClick,
     onCreateDoc,
     onDelete,
+    onExportMarkdown,
+    onExportPdf,
     isDraggingOver,
   }: TreeNodeProps) => {
     const hasChildren = (node.children?.length ?? 0) > 0;
@@ -160,6 +164,14 @@ export const TreeNode = memo(
                 <DropdownMenuItem onClick={() => onCreateDoc(node.id)}>
                   <FilePlus className="h-4 w-4 mr-2" />
                   新建子文档
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onExportMarkdown(node)}>
+                  <FileText className="h-4 w-4 mr-2" />
+                  导出为 Markdown
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onExportPdf(node)}>
+                  <FileDown className="h-4 w-4 mr-2" />
+                  导出为 PDF
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   className="text-destructive focus:text-destructive"

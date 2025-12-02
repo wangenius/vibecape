@@ -107,6 +107,13 @@ const api = {
     // 同步
     importFromDocs: () => ipcRenderer.invoke("vibecape:importFromDocs"),
     exportToDocs: () => ipcRenderer.invoke("vibecape:exportToDocs"),
+    // 导出单个文档
+    exportDocAsMarkdown: (id: string) =>
+      ipcRenderer.invoke("vibecape:exportDocAsMarkdown", id),
+    exportDocAsPdf: (id: string) =>
+      ipcRenderer.invoke("vibecape:exportDocAsPdf", id),
+    // 在 Finder 中打开工作区
+    openInFinder: () => ipcRenderer.invoke("vibecape:openInFinder"),
     // 图片
     resolveAssetPath: (assetPath: string) =>
       ipcRenderer.invoke("vibecape:resolveAssetPath", assetPath),

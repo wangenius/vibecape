@@ -72,4 +72,17 @@ export interface VibecapeAPI {
   
   /** 从数据库导出到 docs 目录 */
   exportToDocs: () => Promise<{ exported: number }>;
+
+  // ==================== 导出单个文档 ====================
+  
+  /** 导出单个文档为 Markdown */
+  exportDocAsMarkdown: (id: string) => Promise<void>;
+  
+  /** 导出单个文档为 PDF */
+  exportDocAsPdf: (id: string) => Promise<void>;
+
+  // ==================== 其他 ====================
+  
+  /** 在 Finder 中打开工作区目录 */
+  openInFinder: () => Promise<void>;
 }

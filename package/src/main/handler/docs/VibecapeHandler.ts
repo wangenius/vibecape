@@ -1,4 +1,4 @@
-import { ipcMain } from "electron";
+import { ipcMain, shell } from "electron";
 import { VibecapeDocsService } from "@main/services/VibecapeDocs";
 import type { JSONContent } from "@tiptap/core";
 
@@ -91,3 +91,18 @@ ipcMain.handle("vibecape:importFromDocs", () =>
 ipcMain.handle("vibecape:exportToDocs", () =>
   VibecapeDocsService.exportToDocs()
 );
+
+ipcMain.handle("vibecape:exportDocAsMarkdown", (_event, id: string) =>
+  VibecapeDocsService.exportDocAsMarkdown(id)
+);
+
+ipcMain.handle("vibecape:exportDocAsPdf", (_event, id: string) =>
+  VibecapeDocsService.exportDocAsPdf(id)
+);
+
+ipcMain.handle("vibecape:openInFinder", async () => {
+  const workspace = await VibecapeDocsService.getCurrentWorkspace();
+  if (workspace?.root) {
+    await shell.openPath(workspace.root);
+  }
+});

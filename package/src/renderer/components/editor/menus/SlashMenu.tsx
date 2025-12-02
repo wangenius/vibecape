@@ -8,6 +8,7 @@ import tippy, { Instance as TippyInstance } from "tippy.js";
 import { useCallback, useEffect, useState, forwardRef, useImperativeHandle, useRef } from "react";
 import { Editor } from "@tiptap/core";
 import { cn } from "@/lib/utils";
+import PinyinMatch from "pinyin-match";
 import {
   CheckSquare,
   Heading1,
@@ -399,12 +400,22 @@ export const createSlashMenuPlugin = () => {
     char: "/",
     
     items: ({ query }: { query: string }) => {
+      if (!query) {
+        return SLASH_MENU_ITEMS;
+      }
       return SLASH_MENU_ITEMS.filter((item) => {
         const searchStr = query.toLowerCase();
-        return (
+        // 普通文本匹配
+        if (
           item.title.toLowerCase().includes(searchStr) ||
           item.description.toLowerCase().includes(searchStr)
-        );
+        ) {
+          return true;
+        }
+        // 拼音匹配
+        const matchTitle = PinyinMatch.match(item.title, query);
+        const matchDesc = PinyinMatch.match(item.description, query);
+        return matchTitle !== false || matchDesc !== false;
       });
     },
 

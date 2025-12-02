@@ -183,24 +183,23 @@ export const useVibecapeStore = create<VibecapeState & VibecapeActions>()(
     },
 
     saveDoc: async (data) => {
-      const { activeDocId } = get();
+      const { activeDocId, activeDoc } = get();
       if (!activeDocId) return;
 
-      set({ loading: true, error: undefined });
+      // 保存是后台操作，不设置 loading 状态避免 UI 闪烁
       try {
         const updated = await window.api.vibecape.updateDoc(activeDocId, data);
         if (updated) {
           set({ activeDoc: updated });
-          // 如果 title 变了，刷新树
-          if (data.title) {
-            await get().refreshTree();
+          // 如果 title 变了，静默刷新树（不设置 loading）
+          if (data.title && data.title !== activeDoc?.title) {
+            const tree = await window.api.vibecape.getTree();
+            set({ tree });
           }
         }
       } catch (error) {
         set({ error: (error as Error).message });
         throw error;
-      } finally {
-        set({ loading: false });
       }
     },
 

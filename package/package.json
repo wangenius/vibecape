@@ -103,6 +103,7 @@
     "jszip": "^3.10.1",
     "lucide-react": "^0.309.0",
     "nanoid": "^5.1.6",
+    "pinyin-match": "^1.2.9",
     "react-dropzone": "^14.3.8",
     "react-hook-form": "^7.65.0",
     "react-i18next": "^14.0.1",

@@ -22,9 +22,9 @@ export const TitleInput = memo(
         ref={inputRef}
         defaultValue={value}
         onChange={onChange}
-        className="w-full text-4xl font-medium tracking-tight bg-transparent border-none 
+        className="w-full text-5xl font-medium tracking-tight bg-transparent border-none 
           focus:bg-transparent
-          placeholder:text-muted-foreground/30 px-0"
+          placeholder:text-muted-foreground/30 px-0 h-20"
         placeholder="输入标题..."
       />
     );

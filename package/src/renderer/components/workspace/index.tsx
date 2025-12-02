@@ -12,6 +12,7 @@ export const Workspace = () => {
   const activeDoc = useVibecapeStore((state) => state.activeDoc);
   const bootstrap = useVibecapeStore((state) => state.bootstrap);
   const saveDoc = useVibecapeStore((state) => state.saveDoc);
+  const openDoc = useVibecapeStore((state) => state.openDoc);
   const activeSidebarPanel = useViewManager(
     (state) => state.activeSidebarPanel
   );
@@ -20,6 +21,17 @@ export const Workspace = () => {
   useEffect(() => {
     bootstrap();
   }, [bootstrap]);
+
+  // 监听文档跳转事件
+  useEffect(() => {
+    const handleNavigate = (e: CustomEvent<{ id: string }>) => {
+      openDoc(e.detail.id);
+    };
+    window.addEventListener("doc:navigate", handleNavigate as EventListener);
+    return () => {
+      window.removeEventListener("doc:navigate", handleNavigate as EventListener);
+    };
+  }, [openDoc]);
 
   // 设置模式 - 显示设置页面
   if (activeSidebarPanel === "settings") {
@@ -63,7 +75,7 @@ export const Workspace = () => {
 
   return (
     <div className="flex-1 flex flex-col h-full">
-      <DocWorkspace doc={activeDoc} onSave={saveDoc} />
+      <DocWorkspace key={activeDoc.id} doc={activeDoc} onSave={saveDoc} />
     </div>
   );
 };

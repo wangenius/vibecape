@@ -141,12 +141,15 @@
   padding: 0.75rem 1rem !important;
   margin: 1em 0 !important;
   color: var(--foreground) !important;
-  font-style: normal !important;
+  font-style: italic !important;
+  font-weight: 400 !important;
   quotes: none !important;
+  opacity: 0.5;
 }
 
 .tiptap blockquote p {
   margin: 0;
+  font-weight: 400 !important;
 }
 
 /* ========== Admonition 样式 ========== */

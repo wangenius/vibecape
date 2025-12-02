@@ -18,6 +18,7 @@ import Suggestion from "@tiptap/suggestion";
 import { PluginKey } from "@tiptap/pm/state";
 import tippy, { Instance as TippyInstance } from "tippy.js";
 import { forwardRef, useCallback, useImperativeHandle, useState } from "react";
+import PinyinMatch from "pinyin-match";
 
 declare module "@tiptap/core" {
   interface Commands<ReturnType> {
@@ -362,10 +363,24 @@ export const Admonition = Node.create({
         pluginKey: new PluginKey("admonitionSuggestion"),
         char: ":::",
         items: ({ query }) => {
-          return ADMONITION_MENU_ITEMS.filter((item) =>
-            item.label.toLowerCase().includes(query.toLowerCase()) ||
-            item.type.toLowerCase().includes(query.toLowerCase())
-          );
+          if (!query) {
+            return ADMONITION_MENU_ITEMS;
+          }
+          return ADMONITION_MENU_ITEMS.filter((item) => {
+            const lowerQuery = query.toLowerCase();
+            // 普通文本匹配
+            if (
+              item.label.toLowerCase().includes(lowerQuery) ||
+              item.type.toLowerCase().includes(lowerQuery) ||
+              item.description.toLowerCase().includes(lowerQuery)
+            ) {
+              return true;
+            }
+            // 拼音匹配
+            const matchLabel = PinyinMatch.match(item.label, query);
+            const matchDesc = PinyinMatch.match(item.description, query);
+            return matchLabel !== false || matchDesc !== false;
+          });
         },
         render: () => {
           let popup: TippyInstance[] | null = null;

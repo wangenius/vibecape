@@ -10,9 +10,13 @@ import Suggestion from "@tiptap/suggestion";
 import { PluginKey } from "@tiptap/pm/state";
 import tippy, { Instance as TippyInstance } from "tippy.js";
 import { forwardRef, useCallback, useImperativeHandle, useState, useEffect } from "react";
-import { FileText } from "lucide-react";
+import { TbScript } from "react-icons/tb";
+import { ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { DocTreeNode } from "@common/schema/docs";
+import PinyinMatch from "pinyin-match";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
 
 declare module "@tiptap/core" {
   interface Commands<ReturnType> {
@@ -26,8 +30,40 @@ declare module "@tiptap/core" {
 const MentionComponent = ({ node }: NodeViewProps) => {
   const title = node.attrs.title || "未知文档";
   const docId = node.attrs.id;
+  const [open, setOpen] = useState(false);
+  const [docInfo, setDocInfo] = useState<{ title: string; description: string } | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleClick = useCallback(() => {
+  // 获取文档详情
+  const fetchDocInfo = useCallback(async () => {
+    if (!docId || docInfo) return;
+    setLoading(true);
+    try {
+      const api = (window as any).api?.vibecape;
+      if (api?.getDoc) {
+        const doc = await api.getDoc(docId);
+        setDocInfo({
+          title: doc.title || "无标题",
+          description: doc.metadata?.description || "暂无描述",
+        });
+      }
+    } catch (err) {
+      console.error("Failed to fetch doc info:", err);
+      setDocInfo({ title, description: "无法加载文档信息" });
+    } finally {
+      setLoading(false);
+    }
+  }, [docId, docInfo, title]);
+
+  // 打开 Popover 时加载文档信息
+  useEffect(() => {
+    if (open) {
+      fetchDocInfo();
+    }
+  }, [open, fetchDocInfo]);
+
+  const handleNavigate = useCallback(() => {
+    setOpen(false);
     // 触发文档跳转事件
     const event = new CustomEvent("doc:navigate", {
       detail: { id: docId },
@@ -37,14 +73,46 @@ const MentionComponent = ({ node }: NodeViewProps) => {
 
   return (
     <NodeViewWrapper as="span" className="inline">
-      <span
-        onClick={handleClick}
-        className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-primary/10 text-primary text-sm cursor-pointer hover:bg-primary/20 transition-colors"
-        contentEditable={false}
-      >
-        <FileText className="size-3" />
-        <span>{title}</span>
-      </span>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <span
+            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-primary/10 text-primary text-sm cursor-pointer hover:bg-primary/20 transition-colors"
+            contentEditable={false}
+          >
+            <TbScript className="size-3" />
+            <span>{title}</span>
+          </span>
+        </PopoverTrigger>
+        <PopoverContent 
+          className="w-72 p-0" 
+          align="start"
+          onOpenAutoFocus={(e) => e.preventDefault()}
+        >
+          {loading ? (
+            <div className="p-4 text-sm text-muted-foreground">加载中...</div>
+          ) : docInfo ? (
+            <div className="flex flex-col">
+              <div className="p-3 border-b border-border">
+                <h4 className="font-medium text-sm leading-tight mb-1">
+                  {docInfo.title}
+                </h4>
+                <p className="text-xs text-muted-foreground line-clamp-2">
+                  {docInfo.description}
+                </p>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="m-1 justify-start gap-2"
+                onClick={handleNavigate}
+              >
+                <ExternalLink className="size-3.5" />
+                打开文档
+              </Button>
+            </div>
+          ) : null}
+        </PopoverContent>
+      </Popover>
     </NodeViewWrapper>
   );
 };
@@ -138,7 +206,7 @@ const MentionMenuComponent = forwardRef<MentionMenuRef, MentionMenuProps>(
                 onMouseEnter={() => setSelectedIndex(index)}
               >
                 <div className="flex items-center justify-center size-6 rounded-md transition-colors shrink-0 text-blue-500">
-                  <FileText className="size-4" />
+                  <TbScript className="size-4" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <span
@@ -269,9 +337,19 @@ export const Mention = Node.create({
           // 刷新文档列表
           fetchDocs();
           
-          return cachedDocs.filter((doc) =>
-            doc.title.toLowerCase().includes(query.toLowerCase())
-          ).slice(0, 10);
+          if (!query) {
+            return cachedDocs.slice(0, 10);
+          }
+          
+          return cachedDocs.filter((doc) => {
+            // 普通文本匹配
+            if (doc.title.toLowerCase().includes(query.toLowerCase())) {
+              return true;
+            }
+            // 拼音匹配
+            const match = PinyinMatch.match(doc.title, query);
+            return match !== false;
+          }).slice(0, 10);
         },
         render: () => {
           let popup: TippyInstance[] | null = null;

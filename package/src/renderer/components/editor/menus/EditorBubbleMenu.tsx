@@ -34,10 +34,9 @@ const ToolbarButton = ({
       disabled={disabled}
       title={title}
       className={cn(
-        "h-7 w-7 flex items-center justify-center rounded-md",
-        "text-zinc-400 hover:text-zinc-100 hover:bg-zinc-700/50",
-        "transition-all duration-100",
-        active && "text-zinc-100 bg-zinc-700/60",
+        "h-7 w-7 flex items-center justify-center rounded-lg",
+        "transition-all duration-100 hover:bg-muted",
+        active && "text-primary bg-primary/10",
         disabled && "opacity-40 cursor-not-allowed"
       )}
     >
@@ -90,7 +89,7 @@ export const EditorBubbleMenu = ({ editor }: EditorBubbleMenuProps) => {
         return true;
       }}
     >
-      <div className="flex items-center gap-0.5 p-1 bg-zinc-900 rounded-lg shadow-lg shadow-black/25 border border-zinc-800">
+      <div className="flex items-center gap-0.5 p-1 rounded-lg border bg-background">
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleBold().run()}
           active={editor.isActive("bold")}

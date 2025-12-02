@@ -1,6 +1,6 @@
 import { useEffect } from "react";
-import { Sidebar } from "@/components/Sidebar";
-import { Workspace } from "@/components/Workspace";
+import { Sidebar } from "@/components/sidebar";
+import { Workspace } from "@/components/workspace";
 import { Header } from "@/components/Header";
 import { Baybar } from "@/components/Baybar";
 import { useVibecapeStore } from "./hook/useVibecapeStore";

@@ -1,0 +1,68 @@
+{
+  "introLabel": "Systemic Builder",
+  "profile": {
+    "name": "WANGENIUS",
+    "tagline": "TANTO NOMINI NULLUM PAR ELOGIUM",
+    "subtitle": "A Special Solution Across Product, Capital, and Narrative",
+    "description": "Startup Founder, Developer and Product Manager",
+    "avatar": "/avatar.png"
+  },
+  "mission": "Building the creative infrastructure that connects research, software, and narratives.",
+  "lab": {
+    "title": "Personal Lab",
+    "description": "Independent builder for intelligence, crypto, and creator systems",
+    "statusLabel": "Currently running",
+    "statusValue": "Tech + macro narrative practice",
+    "statusMeta": "Independent · Remote-first"
+  },
+  "heroSignals": [
+    {
+      "label": "Focus",
+      "value": "Intelligence infrastructure + creator economy"
+    },
+    {
+      "label": "Practice",
+      "value": "Systems × Crypto × Media"
+    },
+    {
+      "label": "Cadence",
+      "value": "Research → Design → Ship"
+    }
+  ],
+  "personaStages": [
+    {
+      "label": "01 · Research",
+      "value": "Venture / AI strategy",
+      "description": "Mapped how AI, crypto, and macro narratives reshape capital flows."
+    },
+    {
+      "label": "02 · Operator",
+      "value": "Full-stack systems builder",
+      "description": "Shipping intelligence products that tie infrastructure, media, and community."
+    },
+    {
+      "label": "03 · Founder",
+      "value": "Independent practice",
+      "description": "Run an applied lab spanning creator economy, crypto rails, and research media."
+    }
+  ],
+  "personaTags": [
+    "tech futures",
+    "next-gen creator economy",
+    "crypto systems",
+    "intelligence infrastructure",
+    "macro narratives",
+    "ai research"
+  ],
+  "cta": {
+    "primary": "View Work",
+    "secondary": "Subscribe",
+    "login": "Log in",
+    "contact": "Contact",
+    "lastRead": "Last read"
+  },
+  "closing": {
+    "title": "Pairing venture research with product execution.",
+    "body": "Available for selective product, capital, and media collaborations."
+  }
+}

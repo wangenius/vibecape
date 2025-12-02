@@ -1,0 +1,26 @@
+{
+  "section": {
+    "label": "Contact",
+    "title": "Find me",
+    "description": "For collaboration, conversation, or just saying hi, you can reach me through these channels."
+  },
+  "wechat": {
+    "label": "WeChat",
+    "note": "Add a short note so I know where you found me."
+  },
+  "email": {
+    "label": "Email"
+  },
+  "twitter": {
+    "label": "Twitter / X"
+  },
+  "github": {
+    "label": "GitHub"
+  },
+  "bento": {
+    "label": "Bento"
+  },
+  "wechatOfficial": {
+    "label": "WeChat Official Account"
+  }
+}

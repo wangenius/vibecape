@@ -1,0 +1,26 @@
+{
+  "section": {
+    "label": "联系方式",
+    "title": "找到我",
+    "description": "合作、交流或只是打个招呼，都可以通过这些方式联系我。"
+  },
+  "wechat": {
+    "label": "微信",
+    "note": "备注来由方便通过好友请求。"
+  },
+  "email": {
+    "label": "邮箱"
+  },
+  "twitter": {
+    "label": "推特 / X"
+  },
+  "github": {
+    "label": "GitHub"
+  },
+  "bento": {
+    "label": "Bento"
+  },
+  "wechatOfficial": {
+    "label": "微信公众号"
+  }
+}

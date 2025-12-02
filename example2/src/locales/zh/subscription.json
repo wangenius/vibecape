@@ -1,0 +1,96 @@
+{
+  "plans": {
+    "monthly": {
+      "name": "月度订阅",
+      "tagline": "轻松开启，随时取消",
+      "period": "每月",
+      "cta": "立即开通 · ¥19/月"
+    },
+    "yearly": {
+      "name": "年度订阅",
+      "tagline": "年付立省，优先预约",
+      "period": "每年",
+      "cta": "立即开通 · ¥99/年"
+    },
+    "lifetime": {
+      "name": "永久订阅",
+      "tagline": "一次购买，终身受益",
+      "period": "终身",
+      "cta": "立即开通 · ¥299"
+    }
+  },
+  "benefits": {
+    "headerLabel": "权益",
+    "tiers": {
+      "free": "免费",
+      "monthly": "月度",
+      "yearly": "年度",
+      "lifetime": "永久"
+    },
+    "rows": {
+      "publicContentAccess": "公开内容访问",
+      "fullContentAccess": "全站深度内容访问",
+      "caseStudies": "案例拆解与实操模板",
+      "knowledgeUpdates": "知识库持续更新",
+      "productEarlyAccess": "所有产品内测资格",
+      "communitySupport": "会员社群与每日答疑",
+      "newsletterInsights": "邮件简报与主题洞察",
+      "privateDownloads": "私有资源库下载权限",
+      "roadmapUpdates": "路线图抢先与资料库更新",
+      "exposureSupport": "资源位推荐与曝光支持",
+      "quarterlyWorkshops": "季度主题工作坊",
+      "oneOnOneCoaching": "1v1 深度辅导",
+      "prioritySupport": "优先客服与 SLA",
+      "invoiceSupport": "发票与企业采购支持",
+      "lifetimePerks": "终身权益与未来新品授权"
+    }
+  },
+  "buttons": {
+    "alreadyMember": "已是会员",
+    "currentPlanPrefix": "到期：",
+    "lifetimeActive": "永久有效"
+  },
+  "feedback": {
+    "cancelled": {
+      "title": "订阅未完成",
+      "description": "你已取消支付，欢迎随时重新加入。"
+    },
+    "processing": {
+      "title": "正在确认订阅",
+      "description": "支付完成后正在同步会员权限，请稍后刷新即可解锁内容。"
+    },
+    "success": {
+      "title": "订阅已激活",
+      "description": "你已经解锁全站内容，欢迎继续探索。"
+    },
+    "syncError": {
+      "title": "同步失败",
+      "description": "确认失败，请稍后再试。"
+    }
+  },
+  "statusLabels": {
+    "active": "已激活",
+    "trialing": "试用中",
+    "paid": "已支付",
+    "incomplete": "待处理",
+    "incomplete_expired": "付款失效",
+    "cancelled": "已取消",
+    "canceled": "已取消",
+    "unpaid": "待付款",
+    "past_due": "已逾期",
+    "expired": "已过期",
+    "unknown": "未知状态"
+  },
+  "expiration": {
+    "permanent": "永久有效",
+    "pending": "待确认"
+  },
+  "info": {
+    "payment": "所有结算通过 Stripe 处理，支持国际卡、银联与企业采购。",
+    "support": {
+      "beforeLink": "支付成功后即可在仪表盘管理发票与续订。如需帮助，欢迎通过 ",
+      "linkText": "联系方式",
+      "afterLink": " 与我们沟通。"
+    }
+  }
+}

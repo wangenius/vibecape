@@ -1,14 +1,20 @@
 import { ipcMain, type WebContents } from "electron";
 import { Chat } from "../../services/Chat";
 import { Model } from "../../services/Model";
-import { streamText } from "ai";
+import { streamText, stepCountIs, type UIMessage } from "ai";
 import type { ChatThread } from "@common/schema/chat";
+import { chatTools } from "./tools";
+
+// 消息部分类型
+type MessagePart = UIMessage["parts"][number];
 
 // 流式请求状态管理
 interface StreamState {
   abortController: AbortController;
   threadId?: string;
-  accumulatedText: string;
+  parts: MessagePart[];
+  currentText: string;
+  currentReasoning: string;
 }
 
 const activeStreams = new Map<string, StreamState>();
@@ -110,26 +116,13 @@ async function buildMessages(
   }));
 }
 
-/**
- * 保存累积的消息文本
- */
-async function saveAccumulatedText(
-  threadId: string | undefined,
-  text: string
-): Promise<void> {
-  if (!threadId || !text) return;
-
-  try {
-    await Chat.addMessage(threadId, "assistant", [{ type: "text", text }]);
-  } catch (error) {
-    console.error("[ChatHandler] 保存消息失败:", error);
-    throw error;
-  }
+/** 保存消息 */
+async function saveMessage(threadId: string | undefined, parts: MessagePart[]) {
+  if (!threadId || parts.length === 0) return;
+  await Chat.addMessage(threadId, "assistant", parts);
 }
 
-/**
- * 处理流式响应
- */
+/** 处理流式响应 */
 async function handleStreamResponse(
   requestId: string,
   threadId: string | undefined,
@@ -140,36 +133,71 @@ async function handleStreamResponse(
   const main = await Model.get();
   const abortController = new AbortController();
 
-  // 初始化流状态
-  const streamState: StreamState = {
+  const state: StreamState = {
     abortController,
     threadId,
-    accumulatedText: "",
+    parts: [],
+    currentText: "",
+    currentReasoning: "",
   };
-  activeStreams.set(requestId, streamState);
+  activeStreams.set(requestId, state);
+
+  // flush 当前累积的内容到 parts
+  const flush = () => {
+    if (state.currentReasoning) {
+      state.parts.push({ type: "reasoning", text: state.currentReasoning });
+      state.currentReasoning = "";
+    }
+    if (state.currentText) {
+      state.parts.push({ type: "text", text: state.currentText });
+      state.currentText = "";
+    }
+  };
 
   const result = streamText({
     model: main,
     messages,
+    tools: chatTools,
     abortSignal: abortController.signal,
+    stopWhen: stepCountIs(20),
 
     onChunk: ({ chunk }) => {
       if (chunk.type === "text-delta") {
-        streamState.accumulatedText += chunk.text;
+        if (state.currentReasoning) flush();
+        state.currentText += chunk.text;
+      } else if (chunk.type === "reasoning-delta") {
+        if (state.currentText) flush();
+        state.currentReasoning += (chunk as { text?: string }).text || "";
+      } else if (chunk.type === "tool-call") {
+        flush();
+        const toolName = (chunk as { toolName?: string }).toolName || "unknown";
+        state.parts.push({
+          type: `tool-${toolName}`,
+          toolCallId: (chunk as { toolCallId?: string }).toolCallId || `${toolName}-${Date.now()}`,
+          state: "input-available",
+          input: (chunk as { args?: unknown }).args,
+        } as MessagePart);
+      } else if (chunk.type === "tool-result") {
+        const resultToolCallId = (chunk as { toolCallId?: string }).toolCallId;
+        const tc = state.parts.find(
+          (p) => p.type.startsWith("tool-") && 
+                 (p as { toolCallId?: string }).toolCallId === resultToolCallId
+        );
+        if (tc) {
+          (tc as { state: string; output?: unknown }).state = "output-available";
+          (tc as { output?: unknown }).output = (chunk as { result?: unknown }).result;
+        }
       }
       webContents.send(channel, chunk);
     },
 
-    onFinish: async ({ text }) => {
+    onFinish: async () => {
       try {
-        const finalText = text || streamState.accumulatedText;
-        await saveAccumulatedText(threadId, finalText);
+        flush();
+        await saveMessage(threadId, state.parts);
         webContents.send(channel, { type: "end" });
       } catch (error: any) {
-        webContents.send(channel, {
-          type: "error",
-          message: error?.message || "保存消息失败",
-        });
+        webContents.send(channel, { type: "error", message: error?.message || "保存消息失败" });
       } finally {
         activeStreams.delete(requestId);
       }
@@ -178,12 +206,10 @@ async function handleStreamResponse(
     onError: async ({ error }) => {
       const err = error as Error;
       const isAborted = err?.name === "AbortError";
-
-      // 保存中断前的累积文本
-      if (isAborted && streamState.accumulatedText) {
-        await saveAccumulatedText(threadId, streamState.accumulatedText);
+      if (isAborted) {
+        flush();
+        await saveMessage(threadId, state.parts);
       }
-
       webContents.send(channel, {
         type: "error",
         message: isAborted ? "请求已取消" : err?.message || "生成失败",
@@ -192,7 +218,6 @@ async function handleStreamResponse(
     },
   });
 
-  // 延迟消费流，确保前端已注册监听器
   setImmediate(() => result.consumeStream());
 }
 
@@ -233,54 +258,59 @@ ipcMain.handle("chat:delete", async (_event, threadId: string) => {
 });
 
 // 流式对话
-ipcMain.handle(
-  "chat:stream",
-  async (event, payload: ChatStreamPayload) => {
-    const requestId = payload.id;
-    const channel = getStreamChannel(requestId);
+ipcMain.handle("chat:stream", async (event, payload: ChatStreamPayload) => {
+  const requestId = payload.id;
+  const channel = getStreamChannel(requestId);
 
-    try {
-      // 1. 确保线程存在
-      const thread = await Chat.getThread(payload.thread);
-      if (!thread) throw new Error("Thread not found");
+  try {
+    // 1. 确保线程存在
+    const thread = await Chat.getThread(payload.thread);
+    if (!thread) throw new Error("Thread not found");
 
-      const isEmptyTitle = !thread.title.trim();
+    const isEmptyTitle = !thread.title.trim();
 
-      const messages = await buildMessages(thread, payload);
+    const messages = await buildMessages(thread, payload);
 
-      if (isEmptyTitle && payload.prompt) {
-        void generateThreadTitle(thread.id, payload.prompt, event.sender);
-      }
-      await handleStreamResponse(
-        requestId,
-        thread.id,
-        messages,
-        channel,
-        event.sender
-      );
-
-      return { success: true };
-    } catch (error: any) {
-      throw new Error(error?.message || "流式请求失败");
+    if (isEmptyTitle && payload.prompt) {
+      void generateThreadTitle(thread.id, payload.prompt, event.sender);
     }
+    await handleStreamResponse(
+      requestId,
+      thread.id,
+      messages,
+      channel,
+      event.sender
+    );
+
+    return { success: true };
+  } catch (error: any) {
+    throw new Error(error?.message || "流式请求失败");
   }
-);
+});
 
 // 取消流式请求
 ipcMain.handle("chat:cancel", async (_event, id: string) => {
-  const streamState = activeStreams.get(id);
-  if (!streamState) {
+  const state = activeStreams.get(id);
+  if (!state) {
     return { success: true };
   }
 
-  // 保存累积的文本
-  await saveAccumulatedText(streamState.threadId, streamState.accumulatedText);
+  // flush 并保存累积的内容
+  if (state.currentReasoning) {
+    state.parts.push({ type: "reasoning", text: state.currentReasoning });
+  }
+  if (state.currentText) {
+    state.parts.push({ type: "text", text: state.currentText });
+  }
+  await saveMessage(state.threadId, state.parts);
 
   // 清空以避免 onError 重复保存
-  streamState.accumulatedText = "";
+  state.parts = [];
+  state.currentText = "";
+  state.currentReasoning = "";
 
   // 取消请求
-  streamState.abortController.abort();
+  state.abortController.abort();
   activeStreams.delete(id);
 
   return { success: true };

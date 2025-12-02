@@ -262,82 +262,87 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
       setStatus(chatId, "streaming");
 
-      let accumulatedText = "";
-      let accumulatedReasoning = "";
+      // 按原始顺序累积 parts
+      interface LocalPart {
+        type: string;
+        text?: string;
+        toolInvocation?: {
+          toolCallId: string;
+          toolName: string;
+          args: Record<string, unknown>;
+          state: "call" | "result";
+          result?: unknown;
+        };
+      }
+      
+      const parts: LocalPart[] = [];
+      let currentText = "";
+      let currentReasoning = "";
+
+      // flush 当前累积的内容到 parts
+      const flush = () => {
+        if (currentReasoning) {
+          parts.push({ type: "reasoning", text: currentReasoning });
+          currentReasoning = "";
+        }
+        if (currentText) {
+          parts.push({ type: "text", text: currentText });
+          currentText = "";
+        }
+      };
+
+      // 构建显示用的 parts
+      const buildDisplayParts = (): UIMessage["parts"] => {
+        const display: LocalPart[] = [...parts];
+        if (currentReasoning) display.push({ type: "reasoning", text: currentReasoning });
+        if (currentText) display.push({ type: "text", text: currentText });
+        return (display.length > 0 ? display : [{ type: "text", text: "" }]) as UIMessage["parts"];
+      };
+
+      const updateMessage = () => {
+        get().updateLastMessage(chatId, { parts: buildDisplayParts() });
+      };
 
       // 监听流式数据
-      const handler = (_event: unknown, chunk: any) => {
-        console.log("[useChat] Received chunk:", chunk);
+      const handler = (_event: unknown, chunk: { type: string; text?: string; toolCallId?: string; toolName?: string; args?: unknown; result?: unknown; message?: string }) => {
+        if (!chunk || typeof chunk !== "object") return;
 
-        if (!chunk || typeof chunk !== "object") {
-          console.warn("[useChat] Invalid chunk:", chunk);
-          return;
-        }
-
-        const chunkType = chunk.type;
-        const chunkText = chunk.text;
-
-        if (chunkType === "text-delta" && typeof chunkText === "string") {
-          accumulatedText += chunkText;
-          console.log(
-            "[useChat] Accumulated text length:",
-            accumulatedText.length
-          );
-
-          // 构建 parts 数组
-          const parts: UIMessage["parts"] = [];
-
-          // 如果有 reasoning，添加到 parts
-          if (accumulatedReasoning) {
-            parts.push({ type: "reasoning", text: accumulatedReasoning });
-          }
-
-          // 添加文本内容
-          if (accumulatedText) {
-            parts.push({ type: "text", text: accumulatedText });
-          }
-
-          // 更新最后一条消息（助手消息）
-          get().updateLastMessage(chatId, {
-            parts: parts.length > 0 ? parts : [{ type: "text", text: "" }],
+        if (chunk.type === "text-delta") {
+          if (currentReasoning) flush();
+          currentText += chunk.text || "";
+          updateMessage();
+        } else if (chunk.type === "reasoning-delta") {
+          if (currentText) flush();
+          currentReasoning += chunk.text || "";
+          updateMessage();
+        } else if (chunk.type === "tool-call") {
+          flush();
+          parts.push({
+            type: "tool-invocation",
+            toolInvocation: {
+              toolCallId: chunk.toolCallId || gen.id(),
+              toolName: chunk.toolName || "unknown",
+              args: (chunk.args as Record<string, unknown>) || {},
+              state: "call",
+            },
           });
-        } else if (
-          chunkType === "reasoning-delta" &&
-          typeof chunkText === "string"
-        ) {
-          accumulatedReasoning += chunkText;
-          console.log(
-            "[useChat] Accumulated reasoning length:",
-            accumulatedReasoning.length
+          updateMessage();
+        } else if (chunk.type === "tool-result") {
+          const tc = parts.find((p) => 
+            p.type === "tool-invocation" && 
+            p.toolInvocation?.toolName === chunk.toolName && 
+            p.toolInvocation?.state === "call"
           );
-
-          // 构建 parts 数组
-          const parts: UIMessage["parts"] = [];
-
-          // 添加 reasoning
-          if (accumulatedReasoning) {
-            parts.push({ type: "reasoning", text: accumulatedReasoning });
+          if (tc?.toolInvocation) {
+            tc.toolInvocation.state = "result";
+            tc.toolInvocation.result = chunk.result;
           }
-
-          // 添加文本内容（如果有）
-          if (accumulatedText) {
-            parts.push({ type: "text", text: accumulatedText });
-          }
-
-          // 更新最后一条消息（助手消息）
-          get().updateLastMessage(chatId, {
-            parts: parts.length > 0 ? parts : [{ type: "text", text: "" }],
-          });
-        } else if (chunkType === "end") {
-          console.log(
-            "[useChat] Stream finished, text:",
-            accumulatedText.length,
-            "reasoning:",
-            accumulatedReasoning.length
-          );
+          updateMessage();
+        } else if (chunk.type === "end") {
+          console.log("[useChat] Stream finished");
           cleanup();
           setStatus(chatId, "idle");
-        } else if (chunkType === "error") {
+        } else if (chunk.type === "error") {
           console.error("[useChat] Stream error:", chunk.message);
           cleanup();
           setError(chatId, new Error(chunk.message || "生成失败"));

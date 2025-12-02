@@ -1,57 +1,72 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { type UIMessage } from "ai";
-import { Check, ChevronDown } from "lucide-react";
+import { Check, ChevronDown, Brain } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { useState } from "react";
 import { Message, MessageContent } from "@/components/ai-elements/message";
 import { Response } from "@/components/ai-elements/response";
+import type {
+  TextPart,
+  ReasoningPart,
+  ToolPart,
+  ThinkingPart,
+} from "@common/types/message";
 
-/** 工具调用展示组件 */
-function ToolCallDisplay({
-  toolName,
-  input,
-  output,
-  isComplete,
-}: {
-  toolName: string;
-  input?: unknown;
-  output?: unknown;
-  isComplete: boolean;
-}) {
+/** 思考过程折叠区（包含 reasoning + tool calls） */
+function ThinkingSection({ parts }: { parts: ThinkingPart[] }) {
   const [open, setOpen] = useState(false);
-  const hasDetails = input !== undefined || output !== undefined;
+
+  if (parts.length === 0) return null;
+
+  const toolCount = parts.filter((p): p is ToolPart => p.type.startsWith("tool-")).length;
 
   return (
-    <Collapsible open={open} onOpenChange={setOpen} className="mb-1">
-      <CollapsibleTrigger className="flex items-center gap-1 text-[10px] text-muted-foreground/50 hover:text-muted-foreground/70 transition-colors">
-        {isComplete ? (
-          <Check className="size-2.5 text-green-500/70" />
-        ) : (
-          <div className="size-2.5 rounded-full border border-muted-foreground/30 animate-pulse" />
+    <Collapsible open={open} onOpenChange={setOpen} className="mb-2">
+      <CollapsibleTrigger className="flex items-center gap-1.5 text-[10px] text-muted-foreground/40 hover:text-muted-foreground/60 transition-colors">
+        <Brain className="size-3" />
+        <span>思考过程</span>
+        {toolCount > 0 && (
+          <span className="text-muted-foreground/30">· {toolCount} 次工具调用</span>
         )}
-        <code className="font-mono">{toolName}</code>
-        {hasDetails && (
-          <ChevronDown className={`size-2.5 transition-transform ${open ? "rotate-180" : ""}`} />
-        )}
+        <ChevronDown className={`size-3 transition-transform ${open ? "rotate-180" : ""}`} />
       </CollapsibleTrigger>
-      {hasDetails && (
-        <CollapsibleContent className="mt-1 ml-3.5 text-[10px] text-muted-foreground/40 font-mono">
-          {input !== undefined && (
-            <div className="mb-0.5">
-              <span className="text-muted-foreground/30">输入: </span>
-              <span className="break-all">{JSON.stringify(input)}</span>
-            </div>
-          )}
-          {output !== undefined && (
-            <div>
-              <span className="text-muted-foreground/30">输出: </span>
-              <span className="break-all">{JSON.stringify(output)}</span>
-            </div>
-          )}
-        </CollapsibleContent>
-      )}
+      <CollapsibleContent className="mt-1.5">
+        <div className="max-h-[600px] overflow-y-auto text-[10px] text-muted-foreground/40 leading-4 p-2 bg-muted/30 rounded space-y-1.5">
+          {/* 按顺序渲染 */}
+          {parts.map((part, idx) => {
+            if (part.type === "reasoning") {
+              const text = (part as ReasoningPart).text?.trim();
+              return text ? (
+                <div key={idx} className="whitespace-pre-wrap">{text}</div>
+              ) : null;
+            }
+            if (part.type.startsWith("tool-")) {
+              const toolPart = part as ToolPart;
+              const toolName = toolPart.type.slice(5);
+              const isComplete = toolPart.state === "output-available";
+              return (
+                <div key={idx} className="flex items-start gap-1.5 font-mono">
+                  {isComplete ? (
+                    <Check className="size-2.5 text-green-500/70 mt-0.5 shrink-0" />
+                  ) : (
+                    <div className="size-2.5 rounded-full border border-muted-foreground/30 animate-pulse mt-0.5 shrink-0" />
+                  )}
+                  <div>
+                    <code>{toolName}</code>
+                    {toolPart.output !== undefined && (
+                      <span className="text-muted-foreground/30 ml-1 break-all">
+                        → {JSON.stringify(toolPart.output)}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              );
+            }
+            return null;
+          })}
+        </div>
+      </CollapsibleContent>
     </Collapsible>
   );
 }
@@ -86,7 +101,10 @@ export function MessageRenderer({
 
   // 简单提取文本
   const textContent = useMemo(() => 
-    parts.filter((p) => p.type === "text").map((p: any) => p.text).join("").trim()
+    (parts.filter((p) => p.type === "text") as TextPart[])
+      .map((p) => p.text)
+      .join("")
+      .trim()
   , [parts]);
 
   if (message.role === "user") {
@@ -102,42 +120,25 @@ export function MessageRenderer({
     );
   }
 
+  // 分离：所有思考内容 + 所有文本内容
+  const thinkingParts = parts.filter(
+    (p) => p.type === "reasoning" || p.type.startsWith("tool-")
+  ) as ThinkingPart[];
+  const textParts = parts.filter((p) => p.type === "text") as TextPart[];
+
   return (
     <Message from="assistant" className="w-full p-0">
       <MessageContent variant="flat" className="w-full">
-        {/* 直接按顺序渲染 parts */}
-        {parts.map((part, idx) => {
-          if (part.type === "reasoning") {
-            const text = (part as any).text?.trim();
-            return text ? (
-              <p key={idx} className="text-[10px] text-muted-foreground/40 leading-4 whitespace-pre-wrap mb-1">
-                {text}
-              </p>
-            ) : null;
-          }
-          if (part.type.startsWith("tool-")) {
-            const toolName = part.type.slice(5); // 移除 "tool-" 前缀
-            const toolPart = part as { state?: string; input?: unknown; output?: unknown };
-            const isComplete = toolPart.state === "output-available";
-            return (
-              <ToolCallDisplay
-                key={idx}
-                toolName={toolName}
-                input={toolPart.input}
-                output={toolPart.output}
-                isComplete={isComplete}
-              />
-            );
-          }
-          if (part.type === "text") {
-            const text = (part as any).text?.trim();
-            return text ? (
-              <div key={idx} className="text-xs leading-5 text-foreground/90 p-1.5">
-                <Response>{text}</Response>
-              </div>
-            ) : null;
-          }
-          return null;
+        {/* 单个思考折叠区 */}
+        <ThinkingSection parts={thinkingParts} />
+        {/* 文本内容 */}
+        {textParts.map((part, idx) => {
+          const text = part.text?.trim();
+          return text ? (
+            <div key={idx} className="text-xs leading-5 text-foreground/90 p-1.5">
+              <Response>{text}</Response>
+            </div>
+          ) : null;
         })}
         {/* 流式加载提示 */}
         {isStreamingThis && !textContent && (

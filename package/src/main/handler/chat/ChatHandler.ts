@@ -1,12 +1,10 @@
 import { ipcMain, type WebContents } from "electron";
 import { Chat } from "../../services/Chat";
 import { Model } from "../../services/Model";
-import { streamText, stepCountIs, type UIMessage } from "ai";
+import { streamText, stepCountIs } from "ai";
 import type { ChatThread } from "@common/schema/chat";
+import type { MessagePart } from "@common/types/message";
 import { chatTools } from "./tools";
-
-// 消息部分类型
-type MessagePart = UIMessage["parts"][number];
 
 // 流式请求状态管理
 interface StreamState {

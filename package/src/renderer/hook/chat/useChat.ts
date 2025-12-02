@@ -1,6 +1,12 @@
 import { create } from "zustand";
 import type { UIMessage } from "ai";
 import { gen } from "@common/lib/generator";
+import type {
+  TextPart,
+  ReasoningPart,
+  ToolPart,
+  MessagePart,
+} from "@common/types/message";
 
 const STREAM_CHANNEL_PREFIX = "llm:stream:";
 const getStreamChannel = (id: string) => `${STREAM_CHANNEL_PREFIX}${id}`;
@@ -262,40 +268,28 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
       setStatus(chatId, "streaming");
 
-      // 按原始顺序累积 parts
-      interface LocalPart {
-        type: string;
-        text?: string;
-        toolInvocation?: {
-          toolCallId: string;
-          toolName: string;
-          args: Record<string, unknown>;
-          state: "call" | "result";
-          result?: unknown;
-        };
-      }
-      
-      const parts: LocalPart[] = [];
+      // 按原始顺序累积 parts (v5 格式)
+      const parts: MessagePart[] = [];
       let currentText = "";
       let currentReasoning = "";
 
       // flush 当前累积的内容到 parts
       const flush = () => {
         if (currentReasoning) {
-          parts.push({ type: "reasoning", text: currentReasoning });
+          parts.push({ type: "reasoning", text: currentReasoning } as ReasoningPart);
           currentReasoning = "";
         }
         if (currentText) {
-          parts.push({ type: "text", text: currentText });
+          parts.push({ type: "text", text: currentText } as TextPart);
           currentText = "";
         }
       };
 
       // 构建显示用的 parts
       const buildDisplayParts = (): UIMessage["parts"] => {
-        const display: LocalPart[] = [...parts];
-        if (currentReasoning) display.push({ type: "reasoning", text: currentReasoning });
-        if (currentText) display.push({ type: "text", text: currentText });
+        const display: MessagePart[] = [...parts];
+        if (currentReasoning) display.push({ type: "reasoning", text: currentReasoning } as ReasoningPart);
+        if (currentText) display.push({ type: "text", text: currentText } as TextPart);
         return (display.length > 0 ? display : [{ type: "text", text: "" }]) as UIMessage["parts"];
       };
 
@@ -317,25 +311,23 @@ export const useChatStore = create<ChatStore>((set, get) => ({
           updateMessage();
         } else if (chunk.type === "tool-call") {
           flush();
-          parts.push({
-            type: "tool-invocation",
-            toolInvocation: {
-              toolCallId: chunk.toolCallId || gen.id(),
-              toolName: chunk.toolName || "unknown",
-              args: (chunk.args as Record<string, unknown>) || {},
-              state: "call",
-            },
-          });
+          const toolName = chunk.toolName || "unknown";
+          const toolPart: ToolPart = {
+            type: `tool-${toolName}`,
+            toolCallId: chunk.toolCallId || gen.id(),
+            state: "input-available",
+            input: chunk.args || {},
+          };
+          parts.push(toolPart);
           updateMessage();
         } else if (chunk.type === "tool-result") {
-          const tc = parts.find((p) => 
-            p.type === "tool-invocation" && 
-            p.toolInvocation?.toolName === chunk.toolName && 
-            p.toolInvocation?.state === "call"
+          const tc = parts.find((p): p is ToolPart => 
+            p.type.startsWith("tool-") && 
+            (p as ToolPart).toolCallId === chunk.toolCallId
           );
-          if (tc?.toolInvocation) {
-            tc.toolInvocation.state = "result";
-            tc.toolInvocation.result = chunk.result;
+          if (tc) {
+            tc.state = "output-available";
+            tc.output = chunk.result;
           }
           updateMessage();
         } else if (chunk.type === "end") {

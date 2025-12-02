@@ -2,12 +2,14 @@ import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
 import fs from "fs";
 import path from "path";
+import os from "os";
 import * as chatSchema from "../../common/schema/chat";
 import { ensureSchema } from "./ensure-schema";
 
-// 全局聊天数据库路径
-const chatPath = path.join(process.cwd(), "data", "chat.db");
-fs.mkdirSync(path.dirname(chatPath), { recursive: true });
+// 全局聊天数据库路径 - 存储到用户目录 ~/.vibecape/
+const vibecapeDir = path.join(os.homedir(), ".vibecape");
+const chatPath = path.join(vibecapeDir, "chat.db");
+fs.mkdirSync(vibecapeDir, { recursive: true });
 
 const client = createClient({
   url: `file:${chatPath}`,

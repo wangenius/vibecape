@@ -5,6 +5,8 @@ import type {
   DocData,
   VibecapeWorkspace,
 } from "@common/schema/docs";
+import { initModels, initDefaultModels } from "@/hook/model/useModel";
+import { initProviders } from "@/hook/model/useProvider";
 
 type VibecapeState = {
   // 工作区
@@ -63,6 +65,13 @@ export const useVibecapeStore = create<VibecapeState & VibecapeActions>(
 
     bootstrap: async () => {
       try {
+        // 并行初始化模型和 Provider 数据
+        await Promise.all([
+          initModels(),
+          initDefaultModels(),
+          initProviders(),
+        ]);
+
         const workspace = await window.api.vibecape.getWorkspace();
         set({ workspace });
 

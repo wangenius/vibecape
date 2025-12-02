@@ -17,6 +17,7 @@ interface ThreadState {
   setActiveChatId: (id: string | undefined) => void;
   setHistoryLoading: (loading: boolean) => void;
   setThreadList: (list: ChatThreadMeta[]) => void;
+  updateThreadTitle: (threadId: string, title: string) => void;
 
   // 业务方法
   _initialize: () => Promise<void>; // 内部方法，自动调用
@@ -32,6 +33,15 @@ export const useThreadStore = create<ThreadState>((set, get) => ({
   threadList: [],
   initialized: false,
   isInitializing: false,
+
+  // 更新单个线程的标题（用于实时更新）
+  updateThreadTitle: (threadId: string, title: string) => {
+    set((state) => ({
+      threadList: state.threadList.map((t) =>
+        t.id === threadId ? { ...t, title } : t
+      ),
+    }));
+  },
 
   setActiveChatId: (id) => {
     set({ activeChatId: id });
@@ -156,6 +166,7 @@ export function useThread() {
   const _initialize = useThreadStore((state) => state._initialize);
   const refreshThreads = useThreadStore((state) => state.refreshThreads);
   const selectThread = useThreadStore((state) => state.selectThread);
+  const updateThreadTitle = useThreadStore((state) => state.updateThreadTitle);
 
   // 自动初始化：确保全局只执行一次
   useEffect(() => {
@@ -163,6 +174,15 @@ export function useThread() {
       void _initialize();
     }
   }, [initialized, _initialize]);
+
+  // 监听标题更新事件
+  useEffect(() => {
+    const unsubscribe = window.api.chat.onThreadUpdated(({ threadId, title }) => {
+      console.log("[useThread] 收到标题更新:", threadId, title);
+      updateThreadTitle(threadId, title);
+    });
+    return unsubscribe;
+  }, [updateThreadTitle]);
 
   return {
     // 状态

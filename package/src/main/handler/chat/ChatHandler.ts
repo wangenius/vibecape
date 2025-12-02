@@ -29,40 +29,49 @@ interface ChatStreamPayload {
  */
 async function generateThreadTitle(
   threadId: string,
-  userMessage: string
+  userMessage: string,
+  webContents: WebContents
 ): Promise<void> {
+  console.log("[ChatHandler] 开始生成标题, threadId:", threadId);
   try {
-    // 直接获取 fast 模型实例（已配置好）
-    const fastModel = await Model.get("fast");
+    // 优先使用 fast 模型，若未配置则 fallback 到 primary 模型
+    let model;
+    try {
+      model = await Model.get("fast");
+      console.log("[ChatHandler] 使用 fast 模型");
+    } catch {
+      model = await Model.get("primary");
+      console.log("[ChatHandler] fallback 到 primary 模型");
+    }
 
-    streamText({
-      model: fastModel,
+    const result = streamText({
+      model,
       messages: [
         {
           role: "system",
           content:
-            "你是一个标题生成助手。根据用户的消息，生成一个简洁、准确的对话标题，不超过20个字。只输出标题内容，不要有任何前缀、后缀或引号。",
+            "不要思考。你是一个标题生成助手。根据用户的消息，生成一个简洁、准确的对话标题，不超过15个字。只输出标题内容，不要有任何前缀、后缀或引号。",
         },
         {
           role: "user",
-          content: [
-            {
-              type: "text",
-              text: `请为以下对话生成一个20字以内的标题：\n\n${userMessage}`,
-            },
-          ],
+          content: `不要思考，请为以下对话生成一个15字以内的标题：\n\n${userMessage}`,
         },
       ],
-      temperature: 1,
-      maxOutputTokens: 30,
-      stopSequences: ["\n"],
-      onFinish: ({ text }) => {
-        console.log("text", text);
-        if (text) {
-          Chat.updateThreadTitle(threadId, text);
-        }
-      },
-    }).consumeStream();
+      temperature: 0.7,
+      maxOutputTokens: 50,
+    });
+
+    // 等待流完成并获取结果
+    const text = await result.text;
+    console.log("[ChatHandler] 生成标题结果:", text);
+
+    if (text) {
+      const title = text.trim().replace(/^["']|["']$/g, ""); // 去除可能的引号
+      await Chat.updateThreadTitle(threadId, title);
+      console.log("[ChatHandler] 标题已更新:", title);
+      // 通知前端刷新线程列表
+      webContents.send("chat:thread-updated", { threadId, title });
+    }
   } catch (error) {
     console.error("[ChatHandler] 生成标题失败:", error);
   }
@@ -240,7 +249,7 @@ ipcMain.handle(
       const messages = await buildMessages(thread, payload);
 
       if (isEmptyTitle && payload.prompt) {
-        void generateThreadTitle(thread.id, payload.prompt);
+        void generateThreadTitle(thread.id, payload.prompt, event.sender);
       }
       await handleStreamResponse(
         requestId,

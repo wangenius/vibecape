@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import { TbHistory, TbSparkles, TbPlus, TbSquareRoundedX } from "react-icons/tb";
+import { TbHistory, TbSparkles, TbPlus, TbSquareRoundedX, TbRotateClockwise } from "react-icons/tb";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,6 +17,12 @@ import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
 import { StopIcon } from "@radix-ui/react-icons";
 import { ArrowUp } from "lucide-react";
+import { useChat, useChatStore } from "@/hook/chat/useChat";
+import { useThread } from "@/hook/chat/useThread";
+import type { UIMessage } from "ai";
+import type { ChatThreadMeta } from "@common/schema/chat";
+import { Response } from "@/components/ai-elements/response";
+import { Message, MessageContent } from "@/components/ai-elements/message";
 
 interface ChatInputProps {
   onSubmit: (message: { text: string }) => void | Promise<void>;
@@ -163,35 +169,229 @@ const ChatInputEditor = ({
   );
 };
 
-export const ChatPanel = () => {
-  const [historyOpen, setHistoryOpen] = useState(false);
-  const [messages, setMessages] = useState<Array<{ role: string; content: string }>>([]);
-  const [status, setStatus] = useState<"ready" | "loading" | "error" | "streaming" | "submitted">("ready");
+// 线程列表项组件
+interface ThreadListItemProps {
+  thread: ChatThreadMeta;
+  isActive: boolean;
+  onSelect: (threadId: string) => void;
+}
 
-  const handleSubmit = useCallback(async (message: { text: string }) => {
-    const userMessage = { role: "user", content: message.text };
-    setMessages((prev) => [...prev, userMessage]);
-    setStatus("submitted");
-    
-    // 模拟 AI 响应
-    setTimeout(() => {
-      const assistantMessage = {
-        role: "assistant",
-        content: "这是一个模拟的 AI 响应。在实际实现中，这里会连接到 AI 服务。",
-      };
-      setMessages((prev) => [...prev, assistantMessage]);
-      setStatus("ready");
-    }, 1000);
-  }, []);
+const ThreadListItem: React.FC<ThreadListItemProps> = ({
+  thread,
+  isActive,
+  onSelect,
+}) => {
+  const chatStatus = useChatStore(
+    (state) => state.chats.get(thread.id)?.status
+  );
+  const isStreaming = chatStatus === "streaming" || chatStatus === "submitted";
 
-  const handleNewThread = useCallback(() => {
-    setMessages([]);
-    setHistoryOpen(false);
-  }, []);
+  return (
+    <button
+      onClick={() => onSelect(thread.id)}
+      className={cn(
+        "w-full rounded-md px-2 py-1.5 text-left transition",
+        isActive ? "bg-primary/10 text-primary" : "hover:bg-muted"
+      )}
+    >
+      <div className="flex items-start justify-between gap-1.5">
+        <div className="flex items-center gap-1.5 min-w-0 flex-1">
+          {isStreaming && (
+            <span className="shrink-0 flex items-center gap-1 text-[9px] text-primary">
+              <span className="inline-block h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+            </span>
+          )}
+          <span className="truncate text-[11px] font-medium">
+            {thread.title || "未命名会话"}
+          </span>
+        </div>
+      </div>
+    </button>
+  );
+};
+
+// 获取消息文本内容
+type TextPart = Extract<UIMessage["parts"][number], { type: "text" }>;
+const isTextPart = (part: UIMessage["parts"][number]): part is TextPart =>
+  part.type === "text";
+const getMessageContent = (message: UIMessage) =>
+  message.parts
+    .filter(isTextPart)
+    .map((part) => part.text)
+    .join("")
+    .trim();
+
+// 聊天核心组件
+interface ChatCoreProps {
+  chatId: string;
+}
+
+const ChatCore: React.FC<ChatCoreProps> = ({ chatId }) => {
+  const { messages, status, error, sendMessage, stop, regenerate, clearError } =
+    useChat(chatId);
+
+  const isStreaming = status === "streaming" || status === "submitted";
+
+  const resolveInputStatus = useCallback((): ChatInputProps["status"] => {
+    if (error || status === "error") return "error";
+    if (status === "streaming" || status === "submitted")
+      return status as ChatInputProps["status"];
+    return "ready";
+  }, [status, error]);
+
+  const inputStatus = resolveInputStatus();
+
+  const handleInputSubmit = useCallback(
+    async (message: { text?: string }) => {
+      const text = message.text?.trim();
+      if (!text) return;
+      await sendMessage(text);
+    },
+    [sendMessage]
+  );
 
   const handleSuggestion = async (prompt: string) => {
-    await handleSubmit({ text: prompt });
+    await sendMessage(prompt);
   };
+
+  const handleRetry = () => {
+    clearError();
+    void regenerate();
+  };
+
+  const visibleMessages = messages.filter(
+    (message) => message.role !== "system"
+  );
+
+  return (
+    <>
+      <Conversation className="flex-1 bg-transparent">
+        <ConversationContent className="mx-auto flex w-full flex-col gap-1 p-2">
+          {visibleMessages.length === 0 ? (
+            <div className="flex flex-col items-center justify-center min-h-[50vh] gap-8 px-4">
+              <div className="flex flex-col items-center gap-3">
+                <TbSparkles className="h-8 w-8 text-muted-foreground/40" />
+                <p className="text-xs text-muted-foreground/60 tracking-wide">
+                  开始对话
+                </p>
+              </div>
+              <div className="w-full max-w-md flex flex-col gap-2">
+                {suggestionPresets.map((item) => (
+                  <button
+                    key={item.prompt}
+                    onClick={() => void handleSuggestion(item.prompt)}
+                    className="group relative rounded-lg border border-border/40 bg-transparent px-4 py-3 text-left transition-all duration-200 hover:border-border/80 hover:bg-muted/30"
+                  >
+                    <div className="text-xs font-medium text-foreground/90 mb-1">
+                      {item.title}
+                    </div>
+                    <div className="text-[11px] text-muted-foreground/70 line-clamp-2 leading-relaxed">
+                      {item.prompt}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            visibleMessages.map((message, index) => {
+              const messageText = getMessageContent(message);
+              const isLastMessage = index === visibleMessages.length - 1;
+              const isStreamingMessage =
+                isStreaming && isLastMessage && message.role === "assistant";
+
+              return (
+                <Message key={message.id} from={message.role} className="w-full p-0">
+                  {message.role === "assistant" ? (
+                    <MessageContent variant="flat" className="w-full">
+                      <div className={cn(
+                        "text-xs leading-5 text-foreground/90 p-1.5",
+                        isStreamingMessage && !messageText && "animate-pulse"
+                      )}>
+                        {messageText ? (
+                          <Response>{messageText}</Response>
+                        ) : (
+                          isStreamingMessage && <span className="text-muted-foreground">思考中...</span>
+                        )}
+                      </div>
+                    </MessageContent>
+                  ) : (
+                    <MessageContent
+                      className="whitespace-pre-wrap text-xs leading-relaxed w-fit max-w-2xl px-3! py-2! rounded-2xl rounded-tr-none bg-muted-foreground/10 text-foreground ml-auto"
+                      variant="flat"
+                    >
+                      {messageText}
+                    </MessageContent>
+                  )}
+                </Message>
+              );
+            })
+          )}
+          {error && (
+            <div className="rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive-foreground">
+              <div>生成出错：{error.message || "未知错误"}</div>
+              <div className="mt-2 flex gap-2">
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  className="h-7 px-2 text-xs"
+                  onClick={handleRetry}
+                >
+                  <TbRotateClockwise className="mr-1 h-3 w-3" />
+                  重试生成
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 px-2 text-xs"
+                  onClick={clearError}
+                >
+                  忽略
+                </Button>
+              </div>
+            </div>
+          )}
+        </ConversationContent>
+        <ConversationScrollButton />
+      </Conversation>
+
+      <div className="p-0 border-t border-muted-foreground/20 bg-muted-foreground/10">
+        <ChatInputEditor
+          status={inputStatus}
+          placeholder="输入你的问题..."
+          onSubmit={handleInputSubmit}
+          onStop={stop}
+          enableQuote
+        />
+      </div>
+    </>
+  );
+};
+
+export const ChatPanel = () => {
+  const [historyOpen, setHistoryOpen] = useState(false);
+
+  const {
+    activeChatId,
+    historyLoading,
+    threadList,
+    isInitializing,
+    refreshThreads,
+    selectThread,
+  } = useThread();
+
+  useEffect(() => {
+    if (historyOpen) {
+      void refreshThreads();
+    }
+  }, [historyOpen, refreshThreads]);
+
+  const handleSelectThread = useCallback(
+    async (targetThreadId?: string) => {
+      setHistoryOpen(false);
+      await selectThread(targetThreadId);
+    },
+    [selectThread]
+  );
 
   return (
     <div className="h-full w-full flex flex-col overflow-hidden bg-transparent">
@@ -202,7 +402,7 @@ export const ChatPanel = () => {
             variant="ghost"
             size="icon"
             className="h-6 w-6"
-            onClick={handleNewThread}
+            onClick={() => void handleSelectThread(undefined)}
             title="新建对话"
           >
             <TbPlus className="h-3.5 w-3.5" />
@@ -234,8 +434,27 @@ export const ChatPanel = () => {
                     切换到之前的对话
                   </p>
                 </div>
-                <div className="py-8 text-center text-xs text-muted-foreground">
-                  还没有历史记录
+                <div className="max-h-[60vh] space-y-0.5 overflow-y-auto">
+                  {historyLoading ? (
+                    <div className="py-8 text-center text-xs text-muted-foreground">
+                      加载中...
+                    </div>
+                  ) : threadList.length === 0 ? (
+                    <div className="py-8 text-center text-xs text-muted-foreground">
+                      还没有历史记录
+                    </div>
+                  ) : (
+                    threadList.map((thread) => (
+                      <ThreadListItem
+                        key={thread.id}
+                        thread={thread}
+                        isActive={thread.id === activeChatId}
+                        onSelect={(threadId) =>
+                          void handleSelectThread(threadId)
+                        }
+                      />
+                    ))
+                  )}
                 </div>
               </div>
             </PopoverContent>
@@ -243,61 +462,20 @@ export const ChatPanel = () => {
         </div>
       </div>
 
-      {/* 聊天内容区域 */}
-      <Conversation className="flex-1 bg-transparent">
-        <ConversationContent className="mx-auto flex w-full flex-col gap-1 p-2">
-          {messages.length === 0 ? (
-            <div className="flex flex-col items-center justify-center min-h-[50vh] gap-8 px-4">
-              <div className="flex flex-col items-center gap-3">
-                <TbSparkles className="h-8 w-8 text-muted-foreground/40" />
-                <p className="text-xs text-muted-foreground/60 tracking-wide">
-                  开始对话
-                </p>
-              </div>
-              <div className="w-full max-w-md flex flex-col gap-2">
-                {suggestionPresets.map((item) => (
-                  <button
-                    key={item.prompt}
-                    onClick={() => void handleSuggestion(item.prompt)}
-                    className="group relative rounded-lg border border-border/40 bg-transparent px-4 py-3 text-left transition-all duration-200 hover:border-border/80 hover:bg-muted/30"
-                  >
-                    <div className="text-xs font-medium text-foreground/90 mb-1">
-                      {item.title}
-                    </div>
-                    <div className="text-[11px] text-muted-foreground/70 line-clamp-2 leading-relaxed">
-                      {item.prompt}
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-          ) : (
-            messages.map((message, index) => (
-              <div
-                key={index}
-                className={cn(
-                  "rounded-lg px-3 py-2 text-sm",
-                  message.role === "user"
-                    ? "bg-primary/10 ml-8"
-                    : "bg-muted/50 mr-8"
-                )}
-              >
-                {message.content}
-              </div>
-            ))
-          )}
-        </ConversationContent>
-        <ConversationScrollButton />
-      </Conversation>
-
-      <div className="p-0 border-t border-muted-foreground/20 bg-muted-foreground/10">
-        <ChatInputEditor
-          status={status}
-          placeholder="输入你的问题..."
-          onSubmit={handleSubmit}
-          enableQuote
-        />
-      </div>
+      {/* 聊天核心组件 */}
+      {isInitializing ? (
+        <div className="flex flex-1 items-center justify-center">
+          <div className="text-sm text-muted-foreground">初始化中...</div>
+        </div>
+      ) : activeChatId ? (
+        <ChatCore key={activeChatId} chatId={activeChatId} />
+      ) : (
+        <div className="flex flex-1 items-center justify-center">
+          <div className="text-sm text-muted-foreground">
+            加载失败，请尝试新建对话
+          </div>
+        </div>
+      )}
     </div>
   );
 };

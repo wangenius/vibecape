@@ -70,6 +70,14 @@ const api = {
     delete: (threadId: string) => ipcRenderer.invoke("chat:delete", threadId),
     stream: (payload: any) => ipcRenderer.invoke("chat:stream", payload),
     cancel: (id: string) => ipcRenderer.invoke("chat:cancel", id),
+    onThreadUpdated: (
+      callback: (data: { threadId: string; title: string }) => void
+    ) => {
+      const handler = (_event: any, data: { threadId: string; title: string }) =>
+        callback(data);
+      ipcRenderer.on("chat:thread-updated", handler);
+      return () => ipcRenderer.removeListener("chat:thread-updated", handler);
+    },
   },
   vibecape: {
     // 工作区管理

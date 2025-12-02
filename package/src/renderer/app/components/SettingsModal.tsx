@@ -43,12 +43,11 @@ import {
   createProvider,
   updateProvider,
   deleteProvider,
-  fetchRemoteModels,
   refreshProviders,
-  type RemoteModel,
 } from "@/hook/model/useProvider";
 import { BsStars } from "react-icons/bs";
-import { MoreVertical, Plus, RefreshCw, Server } from "lucide-react";
+import { MoreVertical, Plus, Server } from "lucide-react";
+import { RemoteModelsSheet } from "./RemoteModelsSheet";
 
 const THEME_OPTIONS = [
   { value: "default", label: "默认" },
@@ -225,9 +224,6 @@ export const ModelSettings = () => {
   const [editingProviderId, setEditingProviderId] = useState<string | null>(null);
   const [providerSheetOpen, setProviderSheetOpen] = useState(false);
   const [savingProvider, setSavingProvider] = useState(false);
-  const [fetchingModels, setFetchingModels] = useState<string | null>(null);
-  const [remoteModels, setRemoteModels] = useState<RemoteModel[]>([]);
-  const [lastFetchedProviderId, setLastFetchedProviderId] = useState<string | null>(null);
 
   const modelList = useMemo(() => Object.values(models), [models]);
 
@@ -267,7 +263,6 @@ export const ModelSettings = () => {
     setProviderForm(null);
     setEditingProviderId(null);
     setProviderSheetOpen(false);
-    setRemoteModels([]);
   };
 
   const handleProviderChange = <K extends keyof ProviderForm>(
@@ -316,40 +311,6 @@ export const ModelSettings = () => {
       toast.success("Provider 删除成功");
     } catch (error: any) {
       toast.error(error?.message ?? "删除 Provider 失败");
-    }
-  };
-
-  const handleFetchModels = async (providerId: string) => {
-    try {
-      setFetchingModels(providerId);
-      const models = await fetchRemoteModels(providerId);
-      setRemoteModels(models);
-      setLastFetchedProviderId(providerId);
-      toast.success(`获取到 ${models.length} 个模型`);
-    } catch (error: any) {
-      toast.error(error?.message ?? "获取模型列表失败");
-      setRemoteModels([]);
-      setLastFetchedProviderId(null);
-    } finally {
-      setFetchingModels(null);
-    }
-  };
-
-  const handleAddModelFromProvider = async (provider: (typeof providers)[0], remoteModel: RemoteModel) => {
-    try {
-      await createModel({
-        name: remoteModel.id,
-        model: remoteModel.id,
-        provider_id: provider.id,
-        base_url: provider.base_url,
-        api_key: provider.api_key,
-        type: "text",
-        json: false,
-        reasoner: false,
-      });
-      toast.success(`模型 ${remoteModel.id} 添加成功`);
-    } catch (error: any) {
-      toast.error(error?.message ?? "添加模型失败");
     }
   };
 
@@ -475,16 +436,7 @@ export const ModelSettings = () => {
                   </div>
                 </div>
                 <div className="flex items-center gap-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 px-2 text-xs"
-                    onClick={() => handleFetchModels(provider.id)}
-                    disabled={fetchingModels === provider.id}
-                  >
-                    <RefreshCw className={`h-3 w-3 mr-1 ${fetchingModels === provider.id ? 'animate-spin' : ''}`} />
-                    {fetchingModels === provider.id ? "获取中..." : "获取模型"}
-                  </Button>
+                  <RemoteModelsSheet provider={provider} />
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
@@ -514,49 +466,6 @@ export const ModelSettings = () => {
           </div>
         )}
 
-        {/* 远程模型列表 */}
-        {remoteModels.length > 0 && lastFetchedProviderId && (
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <h4 className="text-sm font-medium text-muted-foreground">
-                可用模型 ({providers.find(p => p.id === lastFetchedProviderId)?.name})
-              </h4>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-6 px-2 text-xs"
-                onClick={() => {
-                  setRemoteModels([]);
-                  setLastFetchedProviderId(null);
-                }}
-              >
-                清除
-              </Button>
-            </div>
-            <div className="grid gap-1 max-h-48 overflow-y-auto">
-              {remoteModels.map((rm) => {
-                const provider = providers.find(p => p.id === lastFetchedProviderId);
-                return (
-                  <div
-                    key={rm.id}
-                    className="flex items-center justify-between p-2 text-sm rounded bg-muted/20 hover:bg-muted/40"
-                  >
-                    <span className="truncate">{rm.id}</span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-6 px-2 text-xs"
-                      onClick={() => provider && handleAddModelFromProvider(provider, rm)}
-                    >
-                      <Plus className="h-3 w-3 mr-1" />
-                      添加
-                    </Button>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
       </section>
 
       {/* 模型管理 */}

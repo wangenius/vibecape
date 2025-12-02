@@ -25,4 +25,8 @@ export interface ChatAPI {
   }) => Promise<{ success: boolean }>;
   // 取消聊天
   cancel: (id: string) => Promise<{ success: boolean }>;
+  // 监听线程标题更新事件
+  onThreadUpdated: (
+    callback: (data: { threadId: string; title: string }) => void
+  ) => () => void;
 }

@@ -31,6 +31,7 @@
     "migrate": "tsx scripts/migrate-database.ts"
   },
   "dependencies": {
+    "@302ai/ai-sdk": "^0.2.6",
     "@ai-sdk/deepseek": "^1.0.23",
     "@ai-sdk/google": "^2.0.23",
     "@ai-sdk/openai": "^2.0.52",

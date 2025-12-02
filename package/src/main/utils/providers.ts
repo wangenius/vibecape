@@ -58,17 +58,17 @@ export async function createProviderForModel(model: ModelRecord) {
     });
   }
 
-  // OpenAI models
-  if (
-    modelName.includes("gpt") ||
-    modelId.includes("openai") ||
-    url.includes("openai.com")
-  ) {
-    return createOpenAI({
-      apiKey,
-      baseURL,
-    });
-  }
+  // // OpenAI models
+  // if (
+  //   modelName.includes("gpt") ||
+  //   modelId.includes("openai") ||
+  //   url.includes("openai.com")
+  // ) {
+  //   return createOpenAI({
+  //     apiKey,
+  //     baseURL,
+  //   });
+  // }
 
   return createOpenAICompatible({
     name: model.name || "custom",

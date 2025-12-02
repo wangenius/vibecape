@@ -10,7 +10,7 @@ import type { NodeViewProps } from "@tiptap/react";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { useState, useCallback, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
-import { Loader2, ImageIcon, Link2, X } from "lucide-react";
+import { Loader2, ImageIcon, X } from "lucide-react";
 import { toast } from "sonner";
 
 declare module "@tiptap/core" {
@@ -23,7 +23,7 @@ declare module "@tiptap/core" {
 }
 
 // 图片组件
-const ImageComponent = ({ node, updateAttributes }: NodeViewProps) => {
+const ImageComponent = ({ node, updateAttributes, selected }: NodeViewProps) => {
   const { src, alt, title } = node.attrs;
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -184,11 +184,12 @@ const ImageComponent = ({ node, updateAttributes }: NodeViewProps) => {
   // 占位符状态 - 简洁的上传界面
   if (isPlaceholder) {
     return (
-      <NodeViewWrapper className="my-3">
+      <NodeViewWrapper className="my-2">
         <div
           className={cn(
-            "rounded-lg overflow-hidden transition-all",
-            dragOver && "bg-primary/5"
+            "group rounded-md transition-all p-2 bg-muted",
+            dragOver ? "bg-muted" : "hover:bg-muted-foreground/10",
+            selected && "bg-muted-foreground/20"
           )}
           contentEditable={false}
           onDrop={handleDrop}
@@ -198,81 +199,73 @@ const ImageComponent = ({ node, updateAttributes }: NodeViewProps) => {
           }}
           onDragLeave={() => setDragOver(false)}
         >
-          <div className="bg-muted/50">
-            {/* 主区域 */}
-            <div
-              className={cn(
-                "flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors",
-                "hover:bg-muted/80",
-                uploading && "pointer-events-none"
-              )}
-              onClick={() => !uploading && fileInputRef.current?.click()}
-            >
-              <div className="flex items-center justify-center size-8 rounded-md bg-muted">
-                {uploading ? (
-                  <Loader2 className="size-4 animate-spin text-muted-foreground" />
-                ) : (
-                  <ImageIcon className="size-4 text-muted-foreground" />
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <span className="text-sm text-muted-foreground">
-                  {uploading ? "上传中..." : "添加图片"}
-                </span>
-              </div>
-              {!showUrlInput && !uploading && (
-                <button
-                  className="flex items-center gap-1.5 px-2 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted rounded transition-colors"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setShowUrlInput(true);
-                    setTimeout(() => urlInputRef.current?.focus(), 0);
-                  }}
-                >
-                  <Link2 className="size-3" />
-                  <span>链接</span>
-                </button>
-              )}
-            </div>
-
-            {/* URL 输入 */}
-            {showUrlInput && (
-              <div className="px-4 pb-3">
-                <div className="flex items-center gap-2">
-                  <input
-                    ref={urlInputRef}
-                    type="text"
-                    placeholder="粘贴图片链接..."
-                    value={urlInput}
-                    onChange={(e) => setUrlInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        handleUrlSubmit();
-                      }
-                      if (e.key === "Escape") {
-                        setShowUrlInput(false);
-                        setUrlInput("");
-                      }
-                    }}
-                    onBlur={() => {
-                      if (!urlInput.trim()) {
-                        setShowUrlInput(false);
-                      }
-                    }}
-                    className="flex-1 h-8 px-3 text-sm bg-background border border-border rounded-md outline-none focus:ring-1 focus:ring-primary/50 placeholder:text-muted-foreground/50"
-                  />
-                  <button
-                    onClick={handleUrlSubmit}
-                    disabled={!urlInput.trim()}
-                    className="h-8 px-3 text-xs font-medium bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:pointer-events-none transition-colors"
-                  >
-                    确定
-                  </button>
-                </div>
-              </div>
+          {/* 主区域 */}
+          <div
+            className={cn(
+              "flex items-center gap-2.5 px-3 py-2 cursor-pointer",
+              uploading && "pointer-events-none opacity-60"
+            )}
+            onClick={() => !uploading && fileInputRef.current?.click()}
+          >
+            {uploading ? (
+              <Loader2 className="size-4 animate-spin text-muted-foreground" />
+            ) : (
+              <ImageIcon className="size-4 text-muted-foreground" />
+            )}
+            <span className="text-sm text-muted-foreground flex-1">
+              {uploading ? "上传中..." : "添加图片"}
+            </span>
+            {!showUrlInput && !uploading && (
+              <button
+                className="text-xs text-muted-foreground/70 hover:text-muted-foreground transition-colors"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowUrlInput(true);
+                  setTimeout(() => urlInputRef.current?.focus(), 0);
+                }}
+              >
+                粘贴链接
+              </button>
             )}
           </div>
+
+          {/* URL 输入 */}
+          {showUrlInput && (
+            <div className="px-3 pb-2">
+              <div className="flex items-center gap-2">
+                <input
+                  ref={urlInputRef}
+                  type="text"
+                  placeholder="https://"
+                  value={urlInput}
+                  onChange={(e) => setUrlInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleUrlSubmit();
+                    }
+                    if (e.key === "Escape") {
+                      setShowUrlInput(false);
+                      setUrlInput("");
+                    }
+                  }}
+                  onBlur={() => {
+                    if (!urlInput.trim()) {
+                      setShowUrlInput(false);
+                    }
+                  }}
+                  className="flex-1 h-7 px-2 text-sm bg-background border border-border/50 rounded outline-none focus:border-border placeholder:text-muted-foreground/40"
+                />
+                <button
+                  onClick={handleUrlSubmit}
+                  disabled={!urlInput.trim()}
+                  className="h-7 px-2.5 text-xs bg-foreground/10 hover:bg-foreground/15 text-foreground rounded disabled:opacity-40 disabled:pointer-events-none transition-colors"
+                >
+                  确定
+                </button>
+              </div>
+            </div>
+          )}
 
           <input
             ref={fileInputRef}
@@ -320,14 +313,19 @@ const ImageComponent = ({ node, updateAttributes }: NodeViewProps) => {
               onLoad={handleLoad}
               onError={handleError}
               className={cn(
-                "max-w-full h-auto mx-auto transition-opacity my-0!",
+                "max-w-full max-h-[70vh] h-auto mx-auto transition-opacity my-0! object-contain",
                 loading ? "opacity-0 h-0" : "opacity-100"
               )}
               draggable={false}
             />
-            {/* Hover 蒙版 */}
+            {/* Hover/选中 蒙版 */}
             {!loading && (
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors pointer-events-none" />
+              <div
+                className={cn(
+                  "absolute inset-0 transition-colors pointer-events-none",
+                  selected ? "bg-black/10" : "bg-black/0 group-hover:bg-black/5"
+                )}
+              />
             )}
           </div>
         )}

@@ -23,6 +23,10 @@
   }
 }
 
+body {
+  overflow:hidden;
+}
+
 /* Shiki 双主题支持 */
 .shiki,
 .shiki span {

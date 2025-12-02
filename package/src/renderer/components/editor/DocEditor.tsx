@@ -22,6 +22,7 @@ import { Blockquote } from "@/components/editor/extensions/Blockquote";
 import { Admonition } from "@/components/editor/extensions/Admonition";
 import { Mention } from "@/components/editor/extensions/Mention";
 import { ImageNode } from "@/components/editor/extensions/ImageNode";
+import { LinkNode } from "@/components/editor/extensions/LinkNode";
 import { PolishManager } from "@/components/editor/PolishManager";
 import { CustomKeyboardExtension } from "@/components/editor/extensions/CustomKeyboardExtension";
 
@@ -54,6 +55,7 @@ export const DocEditor = ({ doc, onChange, onSave }: Props) => {
       Admonition,
       Mention,
       ImageNode,
+      LinkNode,
       Placeholder.configure({
         placeholder: "输入 / 打开命令菜单...",
         showOnlyWhenEditable: true,

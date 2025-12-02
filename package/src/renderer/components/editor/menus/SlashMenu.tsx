@@ -27,6 +27,7 @@ import {
   AlertTriangle,
   AlertCircle,
   ImageIcon,
+  Link2,
 } from "lucide-react";
 
 export type SlashMenuCategory = "ai" | "heading" | "list" | "insert";
@@ -221,6 +222,15 @@ export const SLASH_MENU_ITEMS: SlashMenuItem[] = [
     category: "insert",
     command: ({ editor }) => {
       editor.chain().focus().insertImagePlaceholder().run();
+    },
+  },
+  {
+    title: "链接",
+    description: "插入链接卡片",
+    icon: <Link2 className="size-4" />,
+    category: "insert",
+    command: ({ editor }) => {
+      editor.chain().focus().insertLinkPlaceholder().run();
     },
   },
 ];
@@ -465,6 +475,24 @@ export const createSlashMenuPlugin = () => {
             trigger: "manual",
             placement: "bottom-start",
             maxWidth: "none",
+            popperOptions: {
+              strategy: "fixed",
+              modifiers: [
+                {
+                  name: "flip",
+                  options: {
+                    fallbackPlacements: ["top-start", "bottom-start"],
+                  },
+                },
+                {
+                  name: "preventOverflow",
+                  options: {
+                    boundary: "viewport",
+                    padding: 8,
+                  },
+                },
+              ],
+            },
           });
         },
 

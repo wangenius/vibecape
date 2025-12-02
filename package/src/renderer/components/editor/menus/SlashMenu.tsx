@@ -26,6 +26,7 @@ import {
   Info,
   AlertTriangle,
   AlertCircle,
+  ImageIcon,
 } from "lucide-react";
 
 export type SlashMenuCategory = "ai" | "heading" | "list" | "insert";
@@ -211,6 +212,15 @@ export const SLASH_MENU_ITEMS: SlashMenuItem[] = [
     category: "insert",
     command: ({ editor }) => {
       editor.chain().focus().setAdmonition("danger").run();
+    },
+  },
+  {
+    title: "图片",
+    description: "插入本地或网络图片",
+    icon: <ImageIcon className="size-4" />,
+    category: "insert",
+    command: ({ editor }) => {
+      editor.chain().focus().insertImagePlaceholder().run();
     },
   },
 ];

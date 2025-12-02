@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { TbSettings, TbBox, TbInfoCircle } from "react-icons/tb";
+import { TbSettings, TbBox, TbInfoCircle, TbCloud } from "react-icons/tb";
 
 export const DRAG_HOVER_DELAY = 800;
 export const INDENT_WIDTH = 24;
@@ -21,5 +21,6 @@ export const nodeBaseStyles = {
 export const SETTINGS_NAV_ITEMS = [
   { key: "general", label: "通用", icon: TbSettings },
   { key: "models", label: "模型", icon: TbBox },
+  { key: "storage", label: "云存储", icon: TbCloud },
   { key: "about", label: "关于", icon: TbInfoCircle },
 ];

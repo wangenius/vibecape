@@ -107,6 +107,11 @@ const api = {
     // 同步
     importFromDocs: () => ipcRenderer.invoke("vibecape:importFromDocs"),
     exportToDocs: () => ipcRenderer.invoke("vibecape:exportToDocs"),
+    // 图片
+    resolveAssetPath: (assetPath: string) =>
+      ipcRenderer.invoke("vibecape:resolveAssetPath", assetPath),
+    uploadImage: (payload: { filename: string; data: string; useOss?: boolean }) =>
+      ipcRenderer.invoke("vibecape:uploadImage", payload),
   },
 };
 

@@ -41,9 +41,9 @@ export const settings = sqliteTable("settings", {
         primary: "",
         fast: "",
         image: "",
-      video: "",
-      voice: "",
-    },
+        video: "",
+        voice: "",
+      },
       ui: {
         theme: "default",
         mode: "light",
@@ -54,6 +54,16 @@ export const settings = sqliteTable("settings", {
         proxy: {
           enabled: false,
           url: "",
+        },
+        oss: {
+          enabled: false,
+          provider: "aliyun",
+          region: "",
+          bucket: "",
+          accessKeyId: "",
+          accessKeySecret: "",
+          endpoint: "",
+          customDomain: "",
         },
         docsRoot: "",
         vibecapeRoot: "",
@@ -79,6 +89,16 @@ export type SettingsData = {
     proxy: {
       enabled: boolean;
       url: string;
+    };
+    oss: {
+      enabled: boolean;
+      provider: "aliyun" | "qiniu" | "tencent" | "s3";
+      region: string;
+      bucket: string;
+      accessKeyId: string;
+      accessKeySecret: string;
+      endpoint: string;
+      customDomain: string;
     };
     docsRoot: string;
     vibecapeRoot: string;

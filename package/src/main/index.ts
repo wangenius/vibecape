@@ -1,5 +1,6 @@
-import { app, shell, BrowserWindow, ipcMain, nativeImage } from "electron";
+import { app, shell, BrowserWindow, ipcMain, nativeImage, protocol, net } from "electron";
 import { join } from "path";
+import { pathToFileURL } from "url";
 import icon from "../../resources/new-macOS-Default-1024x1024@2x.png?asset";
 import { ensureDatabaseReady } from "./db/client";
 
@@ -10,6 +11,7 @@ import "./handler/app/ProviderHandler";
 import "./handler/chat/ChatHandler";
 import "./handler/docs/VibecapeHandler";
 import "./handler/docs/DocsAIHandler";
+import "./handler/docs/ImageHandler";
 
 function createWindow(): void {
   // Create the browser window.
@@ -49,10 +51,30 @@ function createWindow(): void {
   }
 }
 
+// 注册自定义协议用于加载本地资源
+protocol.registerSchemesAsPrivileged([
+  {
+    scheme: "local-asset",
+    privileges: {
+      secure: true,
+      supportFetchAPI: true,
+      bypassCSP: true,
+      stream: true,
+    },
+  },
+]);
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(async () => {
+  // 注册 local-asset 协议处理器
+  protocol.handle("local-asset", (request) => {
+    // local-asset://path/to/file -> file:///path/to/file
+    const filePath = decodeURIComponent(request.url.replace("local-asset://", ""));
+    return net.fetch(pathToFileURL(filePath).href);
+  });
+
   // Set app user model id for windows
   app.setAppUserModelId("com.electron");
 

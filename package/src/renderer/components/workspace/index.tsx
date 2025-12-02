@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useVibecapeStore } from "@/hook/useVibecapeStore";
 import { useViewManager } from "@/hook/app/useViewManager";
-import { GeneralSettings, ModelSettings, AboutSettings } from "../SettingsModal";
+import { GeneralSettings, ModelSettings, StorageSettings, AboutSettings } from "../SettingsModal";
 import { InitProgressDialog } from "./InitProgressDialog";
 import { WelcomePage } from "./WelcomePage";
 import { EmptyDocState } from "./EmptyDocState";
@@ -39,6 +39,8 @@ export const Workspace = () => {
       switch (settingsSection) {
         case "models":
           return <ModelSettings />;
+        case "storage":
+          return <StorageSettings />;
         case "about":
           return <AboutSettings />;
         case "general":

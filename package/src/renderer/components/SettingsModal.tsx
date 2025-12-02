@@ -48,7 +48,7 @@ import {
 import { BsStars } from "react-icons/bs";
 import { MoreVertical, Plus, Server } from "lucide-react";
 import { RemoteModelsSheet } from "./RemoteModelsSheet";
-import iconImage from "@/assets/icon.png";
+import iconImage from "@/assets/new-macOS-Default-1024x1024@2x.png";
 
 const THEME_OPTIONS = [
   { value: "default", label: "默认" },
@@ -169,6 +169,157 @@ export const GeneralSettings = () => {
   );
 };
 
+// 云存储设置
+export const StorageSettings = () => {
+  const settings = useSettings();
+
+  return (
+    <div className="space-y-6">
+      <section className="space-y-4">
+        <header>
+          <h3 className="text-base font-semibold">云存储</h3>
+          <p className="text-sm text-muted-foreground mt-1">
+            配置云端对象存储服务，用于存储图片、文档等资源
+          </p>
+        </header>
+
+        <div className="space-y-2">
+          <div className="flex items-center justify-between gap-4 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
+            <div className="flex flex-col gap-1">
+              <span className="text-sm font-medium">启用云存储</span>
+              <p className="text-xs text-muted-foreground">
+                开启后资源将上传到云端存储
+              </p>
+            </div>
+            <Switch
+              checked={settings.general.oss?.enabled ?? false}
+              onCheckedChange={(checked) =>
+                updateSettings(settingsShape.general.oss.enabled, checked)
+              }
+            />
+          </div>
+
+          {settings.general.oss?.enabled && (
+            <div className="rounded-lg bg-muted/30 p-4 space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">服务商</label>
+                <Select
+                  value={settings.general.oss?.provider ?? "aliyun"}
+                  onValueChange={(value) =>
+                    updateSettings(
+                      settingsShape.general.oss.provider,
+                      value as "aliyun" | "qiniu" | "tencent" | "s3"
+                    )
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="aliyun">阿里云 OSS</SelectItem>
+                    <SelectItem value="qiniu">七牛云</SelectItem>
+                    <SelectItem value="tencent">腾讯云 COS</SelectItem>
+                    <SelectItem value="s3">Amazon S3</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Region</label>
+                  <Input
+                    placeholder="例如：oss-cn-hangzhou"
+                    value={settings.general.oss?.region ?? ""}
+                    onChange={(e) =>
+                      updateSettings(
+                        settingsShape.general.oss.region,
+                        e.target.value
+                      )
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Bucket</label>
+                  <Input
+                    placeholder="存储桶名称"
+                    value={settings.general.oss?.bucket ?? ""}
+                    onChange={(e) =>
+                      updateSettings(
+                        settingsShape.general.oss.bucket,
+                        e.target.value
+                      )
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Access Key ID</label>
+                <Input
+                  placeholder="访问密钥 ID"
+                  value={settings.general.oss?.accessKeyId ?? ""}
+                  onChange={(e) =>
+                    updateSettings(
+                      settingsShape.general.oss.accessKeyId,
+                      e.target.value
+                    )
+                  }
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Access Key Secret</label>
+                <Input
+                  type="password"
+                  placeholder="访问密钥 Secret"
+                  value={settings.general.oss?.accessKeySecret ?? ""}
+                  onChange={(e) =>
+                    updateSettings(
+                      settingsShape.general.oss.accessKeySecret,
+                      e.target.value
+                    )
+                  }
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Endpoint（可选）</label>
+                <Input
+                  placeholder="自定义端点地址"
+                  value={settings.general.oss?.endpoint ?? ""}
+                  onChange={(e) =>
+                    updateSettings(
+                      settingsShape.general.oss.endpoint,
+                      e.target.value
+                    )
+                  }
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">自定义域名（可选）</label>
+                <Input
+                  placeholder="例如：https://cdn.example.com"
+                  value={settings.general.oss?.customDomain ?? ""}
+                  onChange={(e) =>
+                    updateSettings(
+                      settingsShape.general.oss.customDomain,
+                      e.target.value
+                    )
+                  }
+                />
+                <p className="text-xs text-muted-foreground">
+                  配置后资源 URL 将使用此域名
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+    </div>
+  );
+};
+
 // Provider 表单类型
 type ProviderForm = {
   name: string;
@@ -211,7 +362,7 @@ export const ModelSettings = () => {
   const defaultModels = useDefaultModels();
   const providersMap = useProviders();
   const providers = useMemo(() => Object.values(providersMap), [providersMap]);
-  
+
   // Model 状态
   const [refreshing, setRefreshing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -219,10 +370,12 @@ export const ModelSettings = () => {
   const [form, setForm] = useState<ModelForm | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
-  
+
   // Provider 状态
   const [providerForm, setProviderForm] = useState<ProviderForm | null>(null);
-  const [editingProviderId, setEditingProviderId] = useState<string | null>(null);
+  const [editingProviderId, setEditingProviderId] = useState<string | null>(
+    null
+  );
   const [providerSheetOpen, setProviderSheetOpen] = useState(false);
   const [savingProvider, setSavingProvider] = useState(false);
 
@@ -239,9 +392,11 @@ export const ModelSettings = () => {
 
   useEffect(() => {
     setRefreshing(true);
-    Promise.all([refreshModels(), refreshProviders()]).finally(() => setRefreshing(false));
+    Promise.all([refreshModels(), refreshProviders()]).finally(() =>
+      setRefreshing(false)
+    );
   }, []);
-  
+
   // Provider 操作
   const startCreateProvider = () => {
     setProviderForm(createEmptyProviderForm());
@@ -440,13 +595,17 @@ export const ModelSettings = () => {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => startEditProvider(provider)}>
+                      <DropdownMenuItem
+                        onClick={() => startEditProvider(provider)}
+                      >
                         编辑
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
                         className="text-destructive focus:text-destructive"
-                        onClick={() => handleDeleteProvider(provider.id, provider.name)}
+                        onClick={() =>
+                          handleDeleteProvider(provider.id, provider.name)
+                        }
                       >
                         删除
                       </DropdownMenuItem>
@@ -457,7 +616,6 @@ export const ModelSettings = () => {
             ))}
           </div>
         )}
-
       </section>
 
       {/* 模型管理 */}
@@ -653,7 +811,9 @@ export const ModelSettings = () => {
                     <SelectValue placeholder="选择" />
                   </SelectTrigger>
                   <SelectContent align="end">
-                    <SelectItem value="__none__" disabled>请选择</SelectItem>
+                    <SelectItem value="__none__" disabled>
+                      请选择
+                    </SelectItem>
                     {providers.map((p) => (
                       <SelectItem key={p.id} value={p.id}>
                         {p.name}
@@ -741,11 +901,16 @@ export const ModelSettings = () => {
       </Sheet>
 
       {/* Provider 编辑 Sheet */}
-      <Sheet open={providerSheetOpen} onOpenChange={(open) => !open && cancelEditProvider()}>
+      <Sheet
+        open={providerSheetOpen}
+        onOpenChange={(open) => !open && cancelEditProvider()}
+      >
         <SheetContent className="sm:max-w-md overflow-y-auto flex flex-col">
           <SheetHeader>
             <SheetTitle>
-              {editingProviderId === "__new" ? "添加 Provider" : "编辑 Provider"}
+              {editingProviderId === "__new"
+                ? "添加 Provider"
+                : "编辑 Provider"}
             </SheetTitle>
             <SheetDescription>配置 API 提供商信息</SheetDescription>
           </SheetHeader>
@@ -766,7 +931,9 @@ export const ModelSettings = () => {
                 <Label>Base URL</Label>
                 <Input
                   value={providerForm.base_url}
-                  onChange={(e) => handleProviderChange("base_url", e.target.value)}
+                  onChange={(e) =>
+                    handleProviderChange("base_url", e.target.value)
+                  }
                   placeholder="例如 https://api.openai.com/v1"
                   disabled={savingProvider}
                 />
@@ -776,7 +943,9 @@ export const ModelSettings = () => {
                 <Label>API Key</Label>
                 <Input
                   value={providerForm.api_key}
-                  onChange={(e) => handleProviderChange("api_key", e.target.value)}
+                  onChange={(e) =>
+                    handleProviderChange("api_key", e.target.value)
+                  }
                   placeholder="访问 API 所需的密钥"
                   disabled={savingProvider}
                   type="password"
@@ -787,7 +956,9 @@ export const ModelSettings = () => {
                 <Label>Models 路径</Label>
                 <Input
                   value={providerForm.models_path}
-                  onChange={(e) => handleProviderChange("models_path", e.target.value)}
+                  onChange={(e) =>
+                    handleProviderChange("models_path", e.target.value)
+                  }
                   placeholder="/models"
                   disabled={savingProvider}
                 />

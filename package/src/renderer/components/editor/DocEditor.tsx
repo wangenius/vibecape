@@ -21,6 +21,7 @@ import { InlineCode } from "@/components/editor/extensions/InlineCode";
 import { Blockquote } from "@/components/editor/extensions/Blockquote";
 import { Admonition } from "@/components/editor/extensions/Admonition";
 import { Mention } from "@/components/editor/extensions/Mention";
+import { ImageNode } from "@/components/editor/extensions/ImageNode";
 import { PolishManager } from "@/components/editor/PolishManager";
 import { CustomKeyboardExtension } from "@/components/editor/extensions/CustomKeyboardExtension";
 
@@ -52,6 +53,7 @@ export const DocEditor = ({ doc, onChange, onSave }: Props) => {
       Blockquote,
       Admonition,
       Mention,
+      ImageNode,
       Placeholder.configure({
         placeholder: "输入 / 打开命令菜单...",
         showOnlyWhenEditable: true,
@@ -142,7 +144,7 @@ export const DocEditor = ({ doc, onChange, onSave }: Props) => {
     >
       <EditorContent
         editor={editor}
-        className="w-full h-full [&_p]:mb-2 [&_.ProseMirror]:min-h-[400px]"
+        className="w-full h-full [&_p]:mb-2 [&_.ProseMirror]:min-h-[400px] px-2"
       />
       <EditorBubbleMenu editor={editor} />
       <PolishManager editor={editor} />

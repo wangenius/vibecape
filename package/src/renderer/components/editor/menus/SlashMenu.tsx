@@ -20,6 +20,11 @@ import {
   Minus,
   Wand2,
   Sparkles,
+  MessageCircle,
+  Lightbulb,
+  Info,
+  AlertTriangle,
+  AlertCircle,
 } from "lucide-react";
 
 export type SlashMenuCategory = "ai" | "heading" | "list" | "insert";
@@ -160,6 +165,51 @@ export const SLASH_MENU_ITEMS: SlashMenuItem[] = [
     category: "insert",
     command: ({ editor }) => {
       editor.chain().focus().setHorizontalRule().run();
+    },
+  },
+  {
+    title: "提示 Note",
+    description: "灰色提示框",
+    icon: <MessageCircle className="size-4" />,
+    category: "insert",
+    command: ({ editor }) => {
+      editor.chain().focus().setAdmonition("note").run();
+    },
+  },
+  {
+    title: "技巧 Tip",
+    description: "绿色技巧框",
+    icon: <Lightbulb className="size-4" />,
+    category: "insert",
+    command: ({ editor }) => {
+      editor.chain().focus().setAdmonition("tip").run();
+    },
+  },
+  {
+    title: "信息 Info",
+    description: "蓝色信息框",
+    icon: <Info className="size-4" />,
+    category: "insert",
+    command: ({ editor }) => {
+      editor.chain().focus().setAdmonition("info").run();
+    },
+  },
+  {
+    title: "警告 Warning",
+    description: "黄色警告框",
+    icon: <AlertTriangle className="size-4" />,
+    category: "insert",
+    command: ({ editor }) => {
+      editor.chain().focus().setAdmonition("warning").run();
+    },
+  },
+  {
+    title: "危险 Danger",
+    description: "红色危险框",
+    icon: <AlertCircle className="size-4" />,
+    category: "insert",
+    command: ({ editor }) => {
+      editor.chain().focus().setAdmonition("danger").run();
     },
   },
 ];

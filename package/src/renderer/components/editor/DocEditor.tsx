@@ -17,6 +17,10 @@ import {
   AIPolishMark,
 } from "@/components/editor/extensions/AIRewriteNode";
 import { CodeBlockNode } from "@/components/editor/extensions/CodeBlockNode";
+import { InlineCode } from "@/components/editor/extensions/InlineCode";
+import { Blockquote } from "@/components/editor/extensions/Blockquote";
+import { Admonition } from "@/components/editor/extensions/Admonition";
+import { Mention } from "@/components/editor/extensions/Mention";
 import { PolishManager } from "@/components/editor/PolishManager";
 import { CustomKeyboardExtension } from "@/components/editor/extensions/CustomKeyboardExtension";
 
@@ -40,8 +44,14 @@ export const DocEditor = ({ doc, onChange, onSave }: Props) => {
       StarterKit.configure({
         hardBreak: false,
         codeBlock: false, // 禁用默认 codeBlock，使用自定义的
+        code: false, // 禁用默认 inline code，使用自定义的
+        blockquote: false, // 禁用默认 blockquote，使用自定义的
       }),
       CodeBlockNode,
+      InlineCode,
+      Blockquote,
+      Admonition,
+      Mention,
       Placeholder.configure({
         placeholder: "输入 / 打开命令菜单...",
         showOnlyWhenEditable: true,

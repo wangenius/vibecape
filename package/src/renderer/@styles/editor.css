@@ -1,0 +1,240 @@
+/* Editor 样式 */
+
+/* ========== 标题样式 ========== */
+.tiptap h1,
+.tiptap h2,
+.tiptap h3,
+.tiptap h4,
+.tiptap h5,
+.tiptap h6 {
+  font-weight: 600;
+  line-height: 1.3;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+}
+
+.tiptap h1:first-child,
+.tiptap h2:first-child,
+.tiptap h3:first-child,
+.tiptap h4:first-child,
+.tiptap h5:first-child,
+.tiptap h6:first-child {
+  margin-top: 0;
+}
+
+.tiptap h1 {
+  font-size: 1.875rem;
+}
+
+.tiptap h2 {
+  font-size: 1.5rem;
+}
+
+.tiptap h3 {
+  font-size: 1.25rem;
+}
+
+.tiptap h4 {
+  font-size: 1.125rem;
+}
+
+.tiptap h5 {
+  font-size: 1rem;
+}
+
+.tiptap h6 {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+}
+
+/* ========== 段落样式 ========== */
+.tiptap p {
+  margin: 0;
+  padding: 0;
+  line-height: 1.7;
+}
+
+.tiptap p + p {
+  margin-top: 0.5em;
+}
+
+/* 标题后的段落 */
+.tiptap h1 + p,
+.tiptap h2 + p,
+.tiptap h3 + p,
+.tiptap h4 + p,
+.tiptap h5 + p,
+.tiptap h6 + p {
+  margin-top: 0;
+}
+
+/* ========== 列表样式 ========== */
+.tiptap ul,
+.tiptap ol {
+  margin: 0.75em 0;
+  padding-left: 1.5em;
+}
+
+.tiptap ul ul,
+.tiptap ul ol,
+.tiptap ol ul,
+.tiptap ol ol {
+  margin: 0.25em 0;
+}
+
+.tiptap li {
+  margin: 0.25em 0;
+}
+
+.tiptap li > p {
+  margin: 0;
+}
+
+.tiptap li > p + p {
+  margin-top: 0.25em;
+}
+
+/* 列表后的段落 */
+.tiptap ul + p,
+.tiptap ol + p {
+  margin-top: 0.75em;
+}
+
+/* ========== 代码块字体 ========== */
+[data-type="codeBlock"],
+[data-type="codeBlock"] * {
+  font-family: 'Fira Code', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace !important;
+  font-feature-settings: "liga" 1, "calt" 1 !important;
+  font-variant-ligatures: common-ligatures !important;
+}
+
+/* ========== Inline Code 样式 ========== */
+.inline-code,
+.prose .inline-code,
+.prose code.inline-code {
+  font-family: 'Fira Code', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace !important;
+  font-feature-settings: "liga" 1, "calt" 1 !important;
+  font-weight: 400 !important;
+  font-size: 0.875em !important;
+  padding: 0.15em 0.4em !important;
+  border-radius: 0.25rem !important;
+  background-color: var(--muted) !important;
+  color: var(--foreground) !important;
+}
+
+.inline-code::before,
+.inline-code::after,
+.prose .inline-code::before,
+.prose .inline-code::after,
+.prose code.inline-code::before,
+.prose code.inline-code::after {
+  content: none !important;
+}
+
+/* ========== Blockquote 样式 ========== */
+.tiptap blockquote,
+.custom-blockquote,
+.prose .custom-blockquote {
+  background-color: var(--muted) !important;
+  border-left: none !important;
+  border-radius: 0.5rem !important;
+  padding: 0.75rem 1rem !important;
+  margin: 1em 0 !important;
+  color: var(--foreground) !important;
+  font-style: normal !important;
+  quotes: none !important;
+}
+
+.tiptap blockquote p {
+  margin: 0;
+}
+
+/* ========== Admonition 样式 ========== */
+.admonition {
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  margin: 1em 0;
+}
+
+.admonition-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.admonition-icon {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
+
+.admonition-label {
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.admonition-content {
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+
+.admonition-content p {
+  margin: 0;
+}
+
+.admonition-content p + p {
+  margin-top: 0.5em;
+}
+
+/* Note - 灰色 */
+.admonition-note {
+  background-color: var(--muted);
+  color: var(--foreground);
+}
+
+.admonition-note .admonition-header {
+  color: var(--muted-foreground);
+}
+
+/* Tip - 绿色 */
+.admonition-tip {
+  background-color: rgba(34, 197, 94, 0.1);
+  color: var(--foreground);
+}
+
+.admonition-tip .admonition-header {
+  color: rgb(34, 197, 94);
+}
+
+/* Info - 蓝色 */
+.admonition-info {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: var(--foreground);
+}
+
+.admonition-info .admonition-header {
+  color: rgb(59, 130, 246);
+}
+
+/* Warning - 黄色 */
+.admonition-warning {
+  background-color: rgba(234, 179, 8, 0.1);
+  color: var(--foreground);
+}
+
+.admonition-warning .admonition-header {
+  color: rgb(202, 138, 4);
+}
+
+/* Danger - 红色 */
+.admonition-danger {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: var(--foreground);
+}
+
+.admonition-danger .admonition-header {
+  color: rgb(239, 68, 68);
+}

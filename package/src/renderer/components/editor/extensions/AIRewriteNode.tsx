@@ -8,7 +8,7 @@ import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { Fragment } from "@tiptap/pm/model";
 import { ReactNodeViewRenderer, NodeViewWrapper } from "@tiptap/react";
 import { useState, useCallback, useRef, useEffect, KeyboardEvent } from "react";
-import { Loader2, Sparkles, X, Check, BrainIcon, ChevronDown } from "lucide-react";
+import { Loader2, Sparkles, X, Check, BrainIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface AIRewriteOptions {
@@ -447,7 +447,6 @@ function AIRewriteComponent(props: any) {
   const [prompt, setPrompt] = useState("");
   const [response, setResponse] = useState("");
   const [reasoning, setReasoning] = useState("");
-  const [reasoningOpen, setReasoningOpen] = useState(true);
   const [status, setStatus] = useState<
     "idle" | "loading" | "success" | "error"
   >("idle");
@@ -480,7 +479,6 @@ function AIRewriteComponent(props: any) {
     setStatus("loading");
     setResponse("");
     setReasoning("");
-    setReasoningOpen(true);
     setError("");
     reasoningStartTime.current = Date.now();
 
@@ -537,10 +535,6 @@ ${textBefore}
           fullReasoning += payload.text || "";
           setReasoning(fullReasoning);
         } else if (payload?.type === "text-delta") {
-          // 收到正式内容时，折叠 reasoning
-          if (fullReasoning && reasoningStartTime.current) {
-            setReasoningOpen(false);
-          }
           fullResponse += payload.text || "";
           setResponse(fullResponse);
         } else if (payload?.type === "end") {
@@ -709,35 +703,11 @@ ${textBefore}
           )}
         </div>
 
-        {/* Reasoning 思考过程 */}
-        {reasoning && (
-          <div className="border-l-2 border-muted-foreground/20 pl-2">
-            <button
-              type="button"
-              onClick={() => setReasoningOpen(!reasoningOpen)}
-              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mb-1"
-            >
-              <BrainIcon className="size-3" />
-              <span>
-                {status === "loading" && !response
-                  ? "思考中..."
-                  : `思考过程`}
-              </span>
-              <ChevronDown
-                className={cn(
-                  "size-3 transition-transform",
-                  reasoningOpen ? "rotate-180" : "rotate-0"
-                )}
-              />
-            </button>
-            {reasoningOpen && (
-              <div className="text-xs text-muted-foreground whitespace-pre-wrap select-text max-h-32 overflow-y-auto">
-                {reasoning}
-                {status === "loading" && !response && (
-                  <span className="inline-block w-0.5 h-3 bg-muted-foreground/40 animate-pulse ml-0.5 align-middle" />
-                )}
-              </div>
-            )}
+        {/* Reasoning 思考过程 - 只在思考中显示 */}
+        {reasoning && status === "loading" && !response && (
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground pl-2">
+            <BrainIcon className="size-3" />
+            <span>思考中...</span>
           </div>
         )}
 

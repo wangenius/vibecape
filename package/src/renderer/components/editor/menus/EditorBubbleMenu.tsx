@@ -89,7 +89,7 @@ export const EditorBubbleMenu = ({ editor }: EditorBubbleMenuProps) => {
         return true;
       }}
     >
-      <div className="flex items-center gap-0.5 p-1 rounded-lg border bg-background">
+      <div className="flex items-center gap-0.5 p-1 rounded-lg border border-muted-foreground/20 bg-background">
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleBold().run()}
           active={editor.isActive("bold")}

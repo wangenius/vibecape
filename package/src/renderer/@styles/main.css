@@ -1,6 +1,7 @@
 @import "./code-block.css";
 @import "./base.css";
 @import "./utils.css";
+@import "./editor.css";
 @source "../../plugins";
 @import "tailwindcss";
 @plugin "tailwindcss-animate";
@@ -22,14 +23,6 @@
   }
 }
 
-/* 代码块字体 */
-[data-type="codeBlock"],
-[data-type="codeBlock"] * {
-  font-family: 'Fira Code', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace !important;
-  font-feature-settings: "liga" 1, "calt" 1 !important;
-  font-variant-ligatures: common-ligatures !important;
-}
-
 /* Shiki 双主题支持 */
 .shiki,
 .shiki span {
@@ -40,12 +33,4 @@
 .dark .shiki,
 .dark .shiki span {
   color: var(--shiki-dark);
-}
-
-.tiptap p:not(pre p) {
-  padding: 0;
-  margin: 0;
-  line-height: 1.6;
-  font-size: 1rem;
-  font-family: var(--font-sans);
 }

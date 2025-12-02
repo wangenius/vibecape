@@ -16,6 +16,7 @@ import { SlashCommand } from "@/components/editor/extensions/SlashCommand";
 import { createSlashMenuPlugin } from "@/components/editor/menus/SlashMenu";
 import { EditorBubbleMenu } from "@/components/editor/menus/EditorBubbleMenu";
 import { AIRewriteNode, AIPolishMark } from "@/components/editor/extensions/AIRewriteNode";
+import { CodeBlockNode } from "@/components/editor/extensions/CodeBlockNode";
 import { PolishManager } from "@/components/editor/PolishManager";
 import { CustomKeyboardExtension } from "@/components/editor/extensions/CustomKeyboardExtension";
 
@@ -48,7 +49,9 @@ export const VibecapeEditor = ({ doc, onSave }: Props) => {
     extensions: [
       StarterKit.configure({
         hardBreak: false,
+        codeBlock: false, // 禁用默认 codeBlock，使用自定义的
       }),
+      CodeBlockNode,
       Placeholder.configure({
         placeholder: "输入 / 打开命令菜单...",
         showOnlyWhenEditable: true,

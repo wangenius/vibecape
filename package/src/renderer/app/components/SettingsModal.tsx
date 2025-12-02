@@ -835,7 +835,7 @@ export const AboutSettings = () => {
           <div>
             <h3 className="text-xl font-semibold">Vibecape</h3>
             <p className="text-sm text-muted-foreground mt-1">
-              本地优先的 MDX 文档编辑器
+              NextGen AI Native Docs Editor
             </p>
           </div>
         </div>

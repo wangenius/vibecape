@@ -7,11 +7,13 @@ import { useVibecapeStore } from "./useVibecapeStore";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useTheme } from "@/hook/app/useTheme";
 import { useChatInputFocus } from "@/hook/shortcuts/useChatInputFocus";
+import { useSidebarToggle } from "@/hook/shortcuts/useSidebarToggle";
 
 const App = () => {
   const bootstrap = useVibecapeStore((state) => state.bootstrap);
 
   useTheme();
+  useSidebarToggle();
   useChatInputFocus(true, true);
 
   useEffect(() => {

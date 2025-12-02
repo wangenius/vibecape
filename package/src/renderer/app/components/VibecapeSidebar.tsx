@@ -211,12 +211,11 @@ const TreeNode = memo(
                   <FilePlus className="h-4 w-4 mr-2" />
                   新建子文档
                 </DropdownMenuItem>
-                <DropdownMenuSeparator />
                 <DropdownMenuItem
                   className="text-destructive focus:text-destructive"
                   onClick={() => onDelete(node)}
                 >
-                  <Trash2 className="h-4 w-4 mr-2" />
+                  <Trash2 className="h-4 w-4 mr-2 stroke-destructive" />
                   删除
                 </DropdownMenuItem>
               </DropdownMenuContent>

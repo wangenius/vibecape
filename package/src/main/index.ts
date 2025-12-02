@@ -9,6 +9,7 @@ import "./handler/app/ModelHandler";
 import "./handler/app/ProviderHandler";
 import "./handler/chat/ChatHandler";
 import "./handler/docs/VibecapeHandler";
+import "./handler/docs/DocsAIHandler";
 
 function createWindow(): void {
   // Create the browser window.

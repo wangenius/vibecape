@@ -28,6 +28,10 @@ export const useSidebarToggle = (enabled: boolean = true) => {
       // 如果是 Ctrl+B，还要确保 Meta 没有按下
       if (isCtrlB && event.metaKey) return;
 
+      // 如果有选中文字，不触发（让编辑器处理加粗）
+      const selection = window.getSelection();
+      if (selection && selection.toString().trim().length > 0) return;
+
       event.preventDefault();
 
       // 切换侧边栏

@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 import type { JSONContent } from "@tiptap/core";
 import type {
   DocTreeNode,
@@ -53,35 +54,47 @@ type VibecapeActions = {
   exportToDocs: () => Promise<{ exported: number }>;
 };
 
-export const useVibecapeStore = create<VibecapeState & VibecapeActions>(
-  (set, get) => ({
-    workspace: null,
-    tree: [],
-    activeDocId: null,
-    activeDoc: null,
-    loading: false,
-    initProgress: null,
-    error: undefined,
+export const useVibecapeStore = create<VibecapeState & VibecapeActions>()(
+  persist(
+    (set, get) => ({
+      workspace: null,
+      tree: [],
+      activeDocId: null,
+      activeDoc: null,
+      loading: false,
+      initProgress: null,
+      error: undefined,
 
-    bootstrap: async () => {
-      try {
-        // 并行初始化模型和 Provider 数据
-        await Promise.all([
-          initModels(),
-          initDefaultModels(),
-          initProviders(),
-        ]);
+      bootstrap: async () => {
+        try {
+          // 并行初始化模型和 Provider 数据
+          await Promise.all([
+            initModels(),
+            initDefaultModels(),
+            initProviders(),
+          ]);
 
-        const workspace = await window.api.vibecape.getWorkspace();
-        set({ workspace });
+          const workspace = await window.api.vibecape.getWorkspace();
+          set({ workspace });
 
-        if (workspace?.initialized) {
-          await get().refreshTree();
+          if (workspace?.initialized) {
+            await get().refreshTree();
+            // 恢复上次打开的文档
+            const { activeDocId } = get();
+            if (activeDocId) {
+              try {
+                const doc = await window.api.vibecape.getDoc(activeDocId);
+                set({ activeDoc: doc });
+              } catch {
+                // 文档不存在，清除
+                set({ activeDocId: null, activeDoc: null });
+              }
+            }
+          }
+        } catch (error) {
+          set({ error: (error as Error).message });
         }
-      } catch (error) {
-        set({ error: (error as Error).message });
-      }
-    },
+      },
 
     createWorkspace: async () => {
       set({ loading: true, error: undefined });
@@ -252,5 +265,12 @@ export const useVibecapeStore = create<VibecapeState & VibecapeActions>(
         set({ loading: false });
       }
     },
-  })
+    }),
+    {
+      name: "vibecape_store",
+      partialize: (state) => ({
+        activeDocId: state.activeDocId,
+      }),
+    }
+  )
 );

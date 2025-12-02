@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import { type UIMessage } from "ai";
 import { Check, Sparkles } from "lucide-react";
 import {
@@ -25,7 +25,7 @@ function ThinkingSection({
   parts: ThinkingPart[];
   isThinking?: boolean;
 }) {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
 
   // 检测思考是否完成
   const toolParts = parts.filter((p): p is ToolPart =>
@@ -37,19 +37,10 @@ function ThinkingSection({
   );
   const isStillThinking = isThinking && hasIncompleteTools;
 
-  // 思考结束后自动折叠
-  useEffect(() => {
-    if (!isStillThinking && parts.length > 0) {
-      const timer = setTimeout(() => setOpen(false), 300);
-      return () => clearTimeout(timer);
-    }
-    return undefined;
-  }, [isStillThinking, parts.length]);
-
   if (parts.length === 0) return null;
 
   return (
-    <Collapsible open={open} onOpenChange={setOpen} className="mb-2">
+    <Collapsible open={open} onOpenChange={setOpen}>
       <CollapsibleTrigger className="group flex items-center gap-1.5 text-xs text-muted-foreground/50 hover:text-muted-foreground/70 transition-colors py-0.5">
         {isStillThinking ? (
           <Sparkles className="size-3 animate-pulse" />
@@ -164,7 +155,7 @@ export function MessageRenderer({
 
   return (
     <Message from="assistant" className="w-full p-0">
-      <MessageContent variant="flat" className="w-full">
+      <MessageContent variant="flat" className="w-full gap-1 space-y-1">
         {/* 单个思考折叠区 */}
         <ThinkingSection parts={thinkingParts} isThinking={isStreamingThis} />
         {/* 文本内容 */}

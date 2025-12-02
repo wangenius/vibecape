@@ -44,7 +44,7 @@ export function Header() {
   return (
     <header
       id="body-header"
-      className="flex items-center bg-transparent pr-1 pl-20 h-8 flex-none"
+      className="flex items-center bg-transparent pr-1 pl-20 h-8 flex-none select-none"
     >
       <motion.div
         id="sidebar-header"

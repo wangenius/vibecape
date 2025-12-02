@@ -81,8 +81,6 @@ export function RemoteModelsSheet({ provider }: RemoteModelsSheetProps) {
         name: remoteModel.id,
         model: remoteModel.id,
         provider_id: provider.id,
-        base_url: provider.base_url,
-        api_key: provider.api_key,
         type: "text",
         json: false,
         reasoner: false,
@@ -91,7 +89,7 @@ export function RemoteModelsSheet({ provider }: RemoteModelsSheetProps) {
     } catch (error: any) {
       toast.error(error?.message ?? "添加模型失败");
     }
-  }, [provider]);
+  }, [provider.id]);
 
   // 过滤模型
   const filteredModels = useMemo(() => {

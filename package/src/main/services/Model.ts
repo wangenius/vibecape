@@ -84,11 +84,8 @@ export class Model {
   static async create(payload: ModelInsert): Promise<ModelRecord> {
     await this.ensureInit();
 
-    if (!payload.api_key?.trim()) {
-      throw new Error("API Key 不能为空");
-    }
-    if (!payload.base_url?.trim()) {
-      throw new Error("Base URL 不能为空");
+    if (!payload.provider_id?.trim()) {
+      throw new Error("Provider 不能为空");
     }
 
     const [record] = await appDb.insert(models).values(payload).returning();
@@ -111,8 +108,8 @@ export class Model {
     if (changes.description !== undefined)
       updateData.description = changes.description;
     if (changes.model !== undefined) updateData.model = changes.model;
-    if (changes.base_url !== undefined) updateData.base_url = changes.base_url;
-    if (changes.api_key !== undefined) updateData.api_key = changes.api_key;
+    if (changes.provider_id !== undefined)
+      updateData.provider_id = changes.provider_id;
     if (changes.type !== undefined) updateData.type = changes.type;
     if (changes.json !== undefined) updateData.json = changes.json;
     if (changes.reasoner !== undefined) updateData.reasoner = changes.reasoner;

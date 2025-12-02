@@ -23,8 +23,6 @@ export const models = sqliteTable("models", {
   description: text("description").notNull().default(""),
   model: text("model").notNull(),
   provider_id: text("provider_id").notNull().default(""),
-  base_url: text("base_url").notNull(),
-  api_key: text("api_key").notNull(),
   type: text("type").notNull().default("text"),
   json: integer("json", { mode: "boolean" }).notNull().default(false),
   reasoner: integer("reasoner", { mode: "boolean" }).notNull().default(false),

@@ -184,8 +184,6 @@ type ModelForm = {
   name: string;
   model: string;
   provider_id: string;
-  base_url: string;
-  api_key: string;
   type: "text" | "img" | "video";
   json: boolean;
   reasoner: boolean;
@@ -197,8 +195,6 @@ const createEmptyForm = (): ModelForm => ({
   name: "",
   model: "",
   provider_id: "",
-  base_url: "",
-  api_key: "",
   type: "text",
   json: false,
   reasoner: false,
@@ -324,9 +320,7 @@ export const ModelSettings = () => {
     setForm({
       name: model.name,
       model: model.model,
-      provider_id: model.provider_id || "",
-      base_url: model.base_url,
-      api_key: model.api_key,
+      provider_id: model.provider_id,
       type: (model.type as ModelForm["type"]) || "text",
       json: model.json,
       reasoner: model.reasoner,
@@ -354,16 +348,9 @@ export const ModelSettings = () => {
       ...form,
       name: form.name.trim(),
       model: form.model.trim(),
-      base_url: form.base_url.trim(),
-      api_key: form.api_key.trim(),
     };
 
-    if (
-      !trimmed.name ||
-      !trimmed.model ||
-      !trimmed.base_url ||
-      !trimmed.api_key
-    ) {
+    if (!trimmed.name || !trimmed.model || !trimmed.provider_id) {
       toast.error("请填写完整的模型信息");
       return;
     }
@@ -643,49 +630,25 @@ export const ModelSettings = () => {
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label>类型</Label>
-                <Select
-                  value={form.type}
-                  onValueChange={(v) =>
-                    handleChange("type", v as ModelForm["type"])
-                  }
-                  disabled={saving}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {MODEL_TYPES.map((t) => (
-                      <SelectItem key={t} value={t}>
-                        {t}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Provider（可选）</Label>
+              <div className="flex items-center justify-between p-3 bg-muted/40 rounded-md">
+                <div>
+                  <p className="text-sm font-medium">Provider</p>
+                  <p className="text-xs text-muted-foreground">
+                    使用 Provider 的 API 配置
+                  </p>
+                </div>
                 <Select
                   value={form.provider_id || "__none__"}
                   onValueChange={(v) => {
-                    const pid = v === "__none__" ? "" : v;
-                    handleChange("provider_id", pid);
-                    // 自动填充 base_url 和 api_key
-                    const provider = providers.find(p => p.id === pid);
-                    if (provider) {
-                      handleChange("base_url", provider.base_url);
-                      handleChange("api_key", provider.api_key);
-                    }
+                    handleChange("provider_id", v === "__none__" ? "" : v);
                   }}
                   disabled={saving}
                 >
-                  <SelectTrigger>
-                    <SelectValue placeholder="选择 Provider 或手动填写" />
+                  <SelectTrigger className="w-32">
+                    <SelectValue placeholder="选择" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="__none__">手动填写</SelectItem>
+                  <SelectContent align="end">
+                    <SelectItem value="__none__" disabled>请选择</SelectItem>
                     {providers.map((p) => (
                       <SelectItem key={p.id} value={p.id}>
                         {p.name}
@@ -693,30 +656,33 @@ export const ModelSettings = () => {
                     ))}
                   </SelectContent>
                 </Select>
-                <p className="text-xs text-muted-foreground">
-                  选择 Provider 可自动填充 API 配置
-                </p>
               </div>
 
-              <div className="space-y-2">
-                <Label>API Base URL</Label>
-                <Input
-                  value={form.base_url}
-                  onChange={(e) => handleChange("base_url", e.target.value)}
-                  placeholder="模型请求的基础地址"
+              <div className="flex items-center justify-between p-3 bg-muted/40 rounded-md">
+                <div>
+                  <p className="text-sm font-medium">模型类型</p>
+                  <p className="text-xs text-muted-foreground">
+                    文本、图像或视频生成
+                  </p>
+                </div>
+                <Select
+                  value={form.type}
+                  onValueChange={(v) =>
+                    handleChange("type", v as ModelForm["type"])
+                  }
                   disabled={saving}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>API Key</Label>
-                <Input
-                  value={form.api_key}
-                  onChange={(e) => handleChange("api_key", e.target.value)}
-                  placeholder="访问模型所需的密钥"
-                  disabled={saving}
-                  type="password"
-                />
+                >
+                  <SelectTrigger className="w-24">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent align="end">
+                    {MODEL_TYPES.map((t) => (
+                      <SelectItem key={t} value={t}>
+                        {t}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="flex items-center justify-between p-3 bg-muted/40 rounded-md">
@@ -749,11 +715,20 @@ export const ModelSettings = () => {
             </div>
           )}
 
-          <SheetFooter className="mt-4">
-            <Button variant="outline" onClick={cancelEdit} disabled={saving}>
+          <SheetFooter className="mt-4 flex gap-3">
+            <Button
+              variant="outline"
+              className="flex-1 h-11"
+              onClick={cancelEdit}
+              disabled={saving}
+            >
               取消
             </Button>
-            <Button onClick={handleSave} disabled={saving}>
+            <Button
+              className="flex-1 h-11"
+              onClick={handleSave}
+              disabled={saving}
+            >
               {saving ? "保存中..." : "保存"}
             </Button>
           </SheetFooter>
@@ -818,11 +793,20 @@ export const ModelSettings = () => {
             </div>
           )}
 
-          <SheetFooter className="mt-4">
-            <Button variant="outline" onClick={cancelEditProvider} disabled={savingProvider}>
+          <SheetFooter className="mt-4 flex gap-3">
+            <Button
+              variant="outline"
+              className="flex-1 h-11"
+              onClick={cancelEditProvider}
+              disabled={savingProvider}
+            >
               取消
             </Button>
-            <Button onClick={handleSaveProvider} disabled={savingProvider}>
+            <Button
+              className="flex-1 h-11"
+              onClick={handleSaveProvider}
+              disabled={savingProvider}
+            >
               {savingProvider ? "保存中..." : "保存"}
             </Button>
           </SheetFooter>

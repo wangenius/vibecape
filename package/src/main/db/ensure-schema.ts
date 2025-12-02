@@ -27,14 +27,13 @@ export async function ensureSchema(
       description TEXT NOT NULL DEFAULT '',
       model TEXT NOT NULL,
       provider_id TEXT NOT NULL DEFAULT '',
-      base_url TEXT NOT NULL,
-      api_key TEXT NOT NULL,
       type TEXT NOT NULL DEFAULT 'text',
       json INTEGER NOT NULL DEFAULT 0,
       reasoner INTEGER NOT NULL DEFAULT 0
     );`,
-    // 迁移：添加 provider_id 列（如果表已存在但缺少该列）
-    `ALTER TABLE models ADD COLUMN provider_id TEXT NOT NULL DEFAULT '';`,
+    // 迁移：从 models 表移除 api_key 和 base_url 列（如果存在）
+    `ALTER TABLE models DROP COLUMN api_key;`,
+    `ALTER TABLE models DROP COLUMN base_url;`,
     // Settings 表
     `CREATE TABLE IF NOT EXISTS settings (
       key TEXT PRIMARY KEY,
@@ -68,6 +67,10 @@ export async function ensureSchema(
     } catch (error: any) {
       // 忽略 "duplicate column" 错误（ALTER TABLE 添加已存在的列）
       if (error?.message?.includes("duplicate column")) {
+        continue;
+      }
+      // 忽略 "no such column" 错误（DROP COLUMN 时列不存在）
+      if (error?.message?.includes("no such column")) {
         continue;
       }
       throw error;

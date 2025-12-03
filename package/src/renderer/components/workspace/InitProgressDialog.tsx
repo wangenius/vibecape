@@ -1,7 +1,9 @@
 import { useVibecapeStore } from "@/hook/useVibecapeStore";
 import { Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export const InitProgressDialog = () => {
+  const { t } = useTranslation();
   const initProgress = useVibecapeStore((state) => state.initProgress);
 
   if (!initProgress) return null;
@@ -12,7 +14,9 @@ export const InitProgressDialog = () => {
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
           <div className="text-center space-y-1">
-            <p className="font-medium">初始化工作区</p>
+            <p className="font-medium">
+              {t("common.settings.initializingWorkspace")}
+            </p>
             <p className="text-sm text-muted-foreground">{initProgress}</p>
           </div>
           {/* 进度条 */}

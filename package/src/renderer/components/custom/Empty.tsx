@@ -1,4 +1,5 @@
-import { cn } from '@/lib/utils';
+import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 export const Empty = (props: {
   content?: string;
@@ -6,10 +7,11 @@ export const Empty = (props: {
   size?: number;
   className?: string;
 }) => {
+  const { t } = useTranslation();
   return (
     <div
       hidden={props.hidden}
-      className={cn('flex flex-col gap-1 p-2 items-center', props.className)}
+      className={cn("flex flex-col gap-1 p-2 items-center", props.className)}
     >
       <svg
         className="icon w-12 text-muted-foreground stroke-2"
@@ -28,8 +30,8 @@ export const Empty = (props: {
           opacity="0.2"
         />
       </svg>
-      <div className={'text-muted-foreground text-xs mt-2'}>
-        {props.content || '暂无内容'}
+      <div className={"text-muted-foreground text-xs mt-2"}>
+        {props.content || t("common.noContent")}
       </div>
     </div>
   );

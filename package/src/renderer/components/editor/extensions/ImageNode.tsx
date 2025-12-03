@@ -12,18 +12,29 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { Loader2, ImageIcon, X } from "lucide-react";
 import { toast } from "sonner";
+import { lang } from "@/locales/i18n";
+import { useTranslation } from "react-i18next";
 
 declare module "@tiptap/core" {
   interface Commands<ReturnType> {
     imageNode: {
-      setImage: (options: { src: string; alt?: string; title?: string }) => ReturnType;
+      setImage: (options: {
+        src: string;
+        alt?: string;
+        title?: string;
+      }) => ReturnType;
       insertImagePlaceholder: () => ReturnType;
     };
   }
 }
 
 // 图片组件
-const ImageComponent = ({ node, updateAttributes, selected }: NodeViewProps) => {
+const ImageComponent = ({
+  node,
+  updateAttributes,
+  selected,
+}: NodeViewProps) => {
+  const { t } = useTranslation();
   const { src, alt, title } = node.attrs;
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -105,7 +116,7 @@ const ImageComponent = ({ node, updateAttributes, selected }: NodeViewProps) => 
   const handleFileUpload = useCallback(
     async (file: File) => {
       if (!file.type.startsWith("image/")) {
-        toast.error("请选择图片文件");
+        toast.error(t("common.image.selectFile"));
         return;
       }
 
@@ -113,7 +124,7 @@ const ImageComponent = ({ node, updateAttributes, selected }: NodeViewProps) => 
       try {
         const api = (window as any).api?.vibecape;
         if (!api?.uploadImage) {
-          toast.error("图片上传功能不可用");
+          toast.error(t("common.image.uploadUnavailable"));
           return;
         }
 
@@ -135,11 +146,11 @@ const ImageComponent = ({ node, updateAttributes, selected }: NodeViewProps) => 
         if (result.success) {
           updateAttributes({ src: result.path, alt: file.name });
         } else {
-          toast.error(result.error || "上传失败");
+          toast.error(result.error || t("common.image.uploadFailed"));
         }
       } catch (error: any) {
         console.error("Upload error:", error);
-        toast.error(error?.message || "上传失败");
+        toast.error(error?.message || t("common.image.uploadFailed"));
       } finally {
         setUploading(false);
       }
@@ -213,7 +224,9 @@ const ImageComponent = ({ node, updateAttributes, selected }: NodeViewProps) => 
               <ImageIcon className="size-4 text-muted-foreground" />
             )}
             <span className="text-sm text-muted-foreground flex-1">
-              {uploading ? "上传中..." : "添加图片"}
+              {uploading
+                ? t("common.image.uploading")
+                : t("common.image.addImage")}
             </span>
             {!showUrlInput && !uploading && (
               <button
@@ -224,7 +237,7 @@ const ImageComponent = ({ node, updateAttributes, selected }: NodeViewProps) => 
                   setTimeout(() => urlInputRef.current?.focus(), 0);
                 }}
               >
-                粘贴链接
+                {t("common.image.pasteLink")}
               </button>
             )}
           </div>
@@ -261,7 +274,7 @@ const ImageComponent = ({ node, updateAttributes, selected }: NodeViewProps) => 
                   disabled={!urlInput.trim()}
                   className="h-7 px-2.5 text-xs bg-foreground/10 hover:bg-foreground/15 text-foreground rounded disabled:opacity-40 disabled:pointer-events-none transition-colors"
                 >
-                  确定
+                  {t("common.image.confirm")}
                 </button>
               </div>
             </div>
@@ -298,14 +311,19 @@ const ImageComponent = ({ node, updateAttributes, selected }: NodeViewProps) => 
               <ImageIcon className="size-4 text-destructive" />
             </div>
             <div className="flex-1 min-w-0">
-              <span className="text-sm text-muted-foreground">图片加载失败</span>
+              <span className="text-sm text-muted-foreground">
+                {t("common.image.loadFailed")}
+              </span>
               <p className="text-xs text-muted-foreground/60 truncate">{src}</p>
             </div>
           </div>
         )}
 
         {!error && resolvedSrc && (
-          <div className="relative group cursor-pointer" onDoubleClick={() => setShowPreview(true)}>
+          <div
+            className="relative group cursor-pointer"
+            onDoubleClick={() => setShowPreview(true)}
+          >
             <img
               src={resolvedSrc}
               alt={alt || ""}
@@ -434,7 +452,7 @@ export const ImageNode = Node.create({
   addInputRules() {
     // 匹配 ![alt](src) 或 ![alt](src "title")
     const imageInputRegex = /!\[([^\]]*)\]\(([^)\s]+)(?:\s+"([^"]*)")?\)$/;
-    
+
     return [
       nodeInputRule({
         find: imageInputRegex,
@@ -453,7 +471,7 @@ export const ImageNode = Node.create({
       try {
         const api = (window as any).api?.vibecape;
         if (!api?.uploadImage) {
-          toast.error("图片上传功能不可用");
+          toast.error(lang("common.image.uploadUnavailable"));
           return;
         }
 
@@ -473,14 +491,18 @@ export const ImageNode = Node.create({
         });
 
         if (result.success) {
-          editor.chain().focus().setImage({ src: result.path, alt: file.name }).run();
-          toast.success("图片上传成功");
+          editor
+            .chain()
+            .focus()
+            .setImage({ src: result.path, alt: file.name })
+            .run();
+          toast.success(lang("common.image.uploadSuccess"));
         } else {
-          toast.error(result.error || "上传失败");
+          toast.error(result.error || lang("common.image.uploadFailed"));
         }
       } catch (error: any) {
         console.error("Upload error:", error);
-        toast.error(error?.message || "上传失败");
+        toast.error(error?.message || lang("common.image.uploadFailed"));
       }
     };
 

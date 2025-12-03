@@ -45,14 +45,14 @@ const getMentionIcon = (type: MentionType) => {
   }
 };
 
-const getMentionTypeLabel = (type: MentionType) => {
+const getMentionTypeLabel = (type: MentionType, t: any) => {
   switch (type) {
     case "story":
-      return "剧情";
+      return t("common.mentionMenu.story");
     case "actant":
-      return "角色";
+      return t("common.mentionMenu.actant");
     case "lore":
-      return "设定";
+      return t("common.mentionMenu.lore");
   }
 };
 
@@ -69,8 +69,8 @@ const getMentionTypeColor = (type: MentionType) => {
 
 export const MentionMenuComponent = forwardRef<
   MentionMenuRef,
-  MentionMenuProps & { isLoading?: boolean }
->(({ items, command, isLoading = false }, ref) => {
+  MentionMenuProps & { isLoading?: boolean; t: any }
+>(({ items, command, isLoading = false, t }, ref) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -179,14 +179,14 @@ export const MentionMenuComponent = forwardRef<
       {isLoading ? (
         <div className="px-3 py-6 text-sm text-muted-foreground text-center flex items-center justify-center gap-2">
           <div className="w-3.5 h-3.5 border-2 border-muted-foreground/30 border-t-muted-foreground rounded-full animate-spin" />
-          <span className="text-xs">Loading...</span>
+          <span className="text-xs">{t("common.mentionMenu.loading")}</span>
         </div>
       ) : items.length > 0 ? (
         <div className="flex flex-col">
           {allGroupedItems.map((group, groupIndex) => (
             <div key={group.type}>
               <div className="px-3 py-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wide select-none">
-                {getMentionTypeLabel(group.type)}
+                {getMentionTypeLabel(group.type, t)}
               </div>
               <div className="px-1">
                 {group.items.map((item, itemIndex) => {
@@ -234,7 +234,7 @@ export const MentionMenuComponent = forwardRef<
         </div>
       ) : (
         <div className="px-3 py-6 text-sm text-muted-foreground text-center">
-          No results
+          {t("common.mentionMenu.noResults")}
         </div>
       )}
     </div>
@@ -250,7 +250,7 @@ function getAllMentionItems(): MentionItem[] {
   return items;
 }
 
-export const createMentionPlugin = () => {
+export const createMentionPlugin = (t: any) => {
   let popup: TippyInstance[] | null = null;
   let cachedItems: MentionItem[] | null = null;
 
@@ -318,6 +318,7 @@ export const createMentionPlugin = () => {
               items: props.items,
               isLoading,
               command: createCommandCallback(props),
+              t,
             },
             editor: props.editor,
           });

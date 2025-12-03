@@ -6,6 +6,7 @@ import type { JSONContent } from "@tiptap/core";
 import type { DocData } from "@common/schema/docs";
 import { DocEditor } from "@/components/editor/DocEditor";
 import AutoResizeTextarea from "../ui/AutoResizeTextarea";
+import { useTranslation } from "react-i18next";
 
 type Props = {
   doc: DocData;
@@ -17,6 +18,7 @@ type Props = {
 };
 
 export const DocWorkspace = ({ doc, onSave }: Props) => {
+  const { t } = useTranslation();
   const [title, setTitle] = useState(doc.title);
   const [description, setDescription] = useState(
     doc.metadata?.description ?? ""
@@ -115,7 +117,11 @@ export const DocWorkspace = ({ doc, onSave }: Props) => {
                 type="button"
                 onClick={() => setDescExpanded(!descExpanded)}
                 className="shrink-0 p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                title={descExpanded ? "收起描述" : "展开描述"}
+                title={
+                  descExpanded
+                    ? t("common.settings.collapseDesc")
+                    : t("common.settings.expandDesc")
+                }
               >
                 {descExpanded ? (
                   <ChevronUp className="h-4 w-4" />
@@ -141,7 +147,7 @@ export const DocWorkspace = ({ doc, onSave }: Props) => {
                       onValueChange={(value) => {
                         setDescription(value);
                       }}
-                      placeholder="输入描述..."
+                      placeholder={t("common.settings.enterDesc")}
                       autoFocus
                     />
                   </div>

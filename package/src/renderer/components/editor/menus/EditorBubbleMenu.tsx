@@ -8,6 +8,7 @@ import type { Editor } from "@tiptap/react";
 import { cn } from "@/lib/utils";
 import { Bold, Italic, Code, Link, Sparkles } from "lucide-react";
 import { useCallback } from "react";
+import { useTranslation } from "react-i18next";
 
 interface EditorBubbleMenuProps {
   editor: Editor | null;
@@ -46,11 +47,12 @@ const ToolbarButton = ({
 };
 
 export const EditorBubbleMenu = ({ editor }: EditorBubbleMenuProps) => {
+  const { t } = useTranslation();
   const handleLink = useCallback(() => {
     if (!editor) return;
 
     const previousUrl = editor.getAttributes("link").href;
-    const url = window.prompt("输入链接地址", previousUrl);
+    const url = window.prompt(t("common.bubbleMenu.enterLinkUrl"), previousUrl);
 
     if (url === null) return;
 
@@ -94,31 +96,31 @@ export const EditorBubbleMenu = ({ editor }: EditorBubbleMenuProps) => {
           onClick={() => editor.chain().focus().toggleBold().run()}
           active={editor.isActive("bold")}
           icon={<Bold className="size-4" strokeWidth={2} />}
-          title="加粗"
+          title={t("common.bubbleMenu.bold")}
         />
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleItalic().run()}
           active={editor.isActive("italic")}
           icon={<Italic className="size-4" strokeWidth={2} />}
-          title="斜体"
+          title={t("common.bubbleMenu.italic")}
         />
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleCode().run()}
           active={editor.isActive("code")}
           icon={<Code className="size-4" strokeWidth={2} />}
-          title="代码"
+          title={t("common.bubbleMenu.code")}
         />
         <ToolbarButton
           onClick={handleLink}
           active={editor.isActive("link")}
           icon={<Link className="size-4" strokeWidth={2} />}
-          title="链接"
+          title={t("common.bubbleMenu.link")}
         />
         <div className="w-px h-4 bg-zinc-700 mx-0.5" />
         <ToolbarButton
           onClick={() => editor.commands.insertAIPolish()}
           icon={<Sparkles className="size-4" strokeWidth={2} />}
-          title="AI"
+          title={t("common.bubbleMenu.ai")}
         />
       </div>
     </BubbleMenu>

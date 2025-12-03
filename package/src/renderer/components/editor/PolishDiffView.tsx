@@ -9,6 +9,7 @@ import { Check, X, Copy } from "lucide-react";
 import { memo, useCallback } from "react";
 import { toast } from "sonner";
 import { diffWords, type Change } from "diff";
+import { useTranslation } from "react-i18next";
 
 interface PolishDiffViewProps {
   originalText: string;
@@ -62,11 +63,12 @@ export const PolishDiffView = memo(
     onReject,
     className,
   }: PolishDiffViewProps) => {
+    const { t } = useTranslation();
     const changes = diffWords(originalText, polishedText);
 
     const handleCopy = useCallback(() => {
       navigator.clipboard.writeText(polishedText);
-      toast.success("已复制润色后的内容");
+      toast.success(t("common.polish.copied"));
     }, [polishedText]);
 
     return (
@@ -80,10 +82,10 @@ export const PolishDiffView = memo(
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-xs font-medium text-muted-foreground">
-              AI 润色建议
+              {t("common.polish.suggestion")}
             </span>
             <span className="text-xs text-muted-foreground/60">
-              {polishedText.length} 字
+              {polishedText.length} {t("common.polish.chars")}
             </span>
           </div>
           <Button
@@ -91,7 +93,7 @@ export const PolishDiffView = memo(
             size="icon"
             className="h-6 w-6"
             onClick={handleCopy}
-            title="复制润色内容"
+            title={t("common.polish.copy")}
           >
             <Copy className="h-3.5 w-3.5" />
           </Button>
@@ -111,7 +113,7 @@ export const PolishDiffView = memo(
             className="h-8 text-xs"
           >
             <X className="h-3.5 w-3.5 mr-1" />
-            拒绝
+            {t("common.polish.reject")}
           </Button>
           <Button
             variant="default"
@@ -120,7 +122,7 @@ export const PolishDiffView = memo(
             className="h-8 text-xs"
           >
             <Check className="h-3.5 w-3.5 mr-1" />
-            应用
+            {t("common.polish.apply")}
           </Button>
         </div>
       </div>

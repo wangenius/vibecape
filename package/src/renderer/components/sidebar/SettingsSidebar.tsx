@@ -1,20 +1,25 @@
 import { useViewManager, setViewManager } from "@/hook/app/useViewManager";
 import { cn } from "@/lib/utils";
 import { SETTINGS_NAV_ITEMS } from "./constants";
+import { useTranslation } from "react-i18next";
 
 export const SettingsSidebar = () => {
+  const { t } = useTranslation();
   const currentSection =
     useViewManager((state) => state.previewCosmosId) || "general";
 
   return (
     <div className="h-full w-[360px] flex flex-col bg-accent overflow-hidden pt-10">
       <div className="p-3">
-        <div className="text-sm font-medium">设置</div>
+        <div className="text-sm font-medium">
+          {t("common.settings.settingsTitle")}
+        </div>
       </div>
       <div className="flex-1 p-2 space-y-1">
         {SETTINGS_NAV_ITEMS.map((item) => {
           const Icon = item.icon;
           const isActive = currentSection === item.key;
+          const labelKey = item.key === "storage" ? "cloudStorage" : item.key;
           return (
             <button
               key={item.key}
@@ -29,7 +34,7 @@ export const SettingsSidebar = () => {
               )}
             >
               <Icon className="size-4" />
-              <span>{item.label}</span>
+              <span>{t(`common.settings.${labelKey}`)}</span>
             </button>
           );
         })}

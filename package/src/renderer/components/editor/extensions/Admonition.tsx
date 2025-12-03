@@ -12,13 +12,21 @@ import {
   ReactRenderer,
 } from "@tiptap/react";
 import { NodeViewProps } from "@tiptap/react";
-import { Info, Lightbulb, AlertTriangle, AlertCircle, MessageCircle } from "lucide-react";
+import {
+  Info,
+  Lightbulb,
+  AlertTriangle,
+  AlertCircle,
+  MessageCircle,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import Suggestion from "@tiptap/suggestion";
 import { PluginKey } from "@tiptap/pm/state";
 import tippy, { Instance as TippyInstance } from "tippy.js";
 import { forwardRef, useCallback, useImperativeHandle, useState } from "react";
 import PinyinMatch from "pinyin-match";
+import { lang } from "@/locales/i18n";
+import { useTranslation } from "react-i18next";
 
 declare module "@tiptap/core" {
   interface Commands<ReturnType> {
@@ -33,36 +41,41 @@ export type AdmonitionType = "note" | "tip" | "warning" | "danger" | "info";
 
 export const ADMONITION_CONFIG: Record<
   AdmonitionType,
-  { icon: React.ElementType; label: string; className: string; description: string }
+  {
+    icon: React.ElementType;
+    label: string;
+    className: string;
+    descriptionKey: string;
+  }
 > = {
   note: {
     icon: MessageCircle,
     label: "Note",
-    description: "灰色提示框",
+    descriptionKey: "common.admonition.noteDesc",
     className: "admonition-note",
   },
   tip: {
     icon: Lightbulb,
     label: "Tip",
-    description: "绿色技巧框",
+    descriptionKey: "common.admonition.tipDesc",
     className: "admonition-tip",
   },
   info: {
     icon: Info,
     label: "Info",
-    description: "蓝色信息框",
+    descriptionKey: "common.admonition.infoDesc",
     className: "admonition-info",
   },
   warning: {
     icon: AlertTriangle,
     label: "Warning",
-    description: "黄色警告框",
+    descriptionKey: "common.admonition.warningDesc",
     className: "admonition-warning",
   },
   danger: {
     icon: AlertCircle,
     label: "Danger",
-    description: "红色危险框",
+    descriptionKey: "common.admonition.dangerDesc",
     className: "admonition-danger",
   },
 };
@@ -93,14 +106,13 @@ interface AdmonitionMenuItem {
   icon: React.ElementType;
 }
 
-const ADMONITION_MENU_ITEMS: AdmonitionMenuItem[] = Object.entries(ADMONITION_CONFIG).map(
-  ([type, config]) => ({
+const getAdmonitionMenuItems = (): AdmonitionMenuItem[] =>
+  Object.entries(ADMONITION_CONFIG).map(([type, config]) => ({
     type: type as AdmonitionType,
     label: config.label,
-    description: config.description,
+    description: lang(config.descriptionKey),
     icon: config.icon,
-  })
-);
+  }));
 
 interface AdmonitionMenuProps {
   items: AdmonitionMenuItem[];
@@ -111,109 +123,111 @@ interface AdmonitionMenuRef {
   onKeyDown: (props: { event: KeyboardEvent }) => boolean;
 }
 
-const AdmonitionMenuComponent = forwardRef<AdmonitionMenuRef, AdmonitionMenuProps>(
-  ({ items, command }, ref) => {
-    const [selectedIndex, setSelectedIndex] = useState(0);
+const AdmonitionMenuComponent = forwardRef<
+  AdmonitionMenuRef,
+  AdmonitionMenuProps
+>(({ items, command }, ref) => {
+  const { t } = useTranslation();
+  const [selectedIndex, setSelectedIndex] = useState(0);
 
-    const selectItem = useCallback(
-      (index: number) => {
-        const item = items[index];
-        if (item) {
-          command(item);
-        }
-      },
-      [items, command]
-    );
-
-    const onKeyDown = useCallback(
-      ({ event }: { event: KeyboardEvent }) => {
-        if (event.key === "ArrowUp") {
-          event.preventDefault();
-          setSelectedIndex((prev) => (prev > 0 ? prev - 1 : items.length - 1));
-          return true;
-        }
-        if (event.key === "ArrowDown") {
-          event.preventDefault();
-          setSelectedIndex((prev) => (prev < items.length - 1 ? prev + 1 : 0));
-          return true;
-        }
-        if (event.key === "Enter") {
-          event.preventDefault();
-          selectItem(selectedIndex);
-          return true;
-        }
-        return false;
-      },
-      [items.length, selectedIndex, selectItem]
-    );
-
-    useImperativeHandle(ref, () => ({ onKeyDown }), [onKeyDown]);
-
-    const getIconColor = (type: AdmonitionType) => {
-      switch (type) {
-        case "note":
-          return "text-zinc-500";
-        case "tip":
-          return "text-emerald-500";
-        case "info":
-          return "text-blue-500";
-        case "warning":
-          return "text-amber-500";
-        case "danger":
-          return "text-red-500";
+  const selectItem = useCallback(
+    (index: number) => {
+      const item = items[index];
+      if (item) {
+        command(item);
       }
-    };
+    },
+    [items, command]
+  );
 
-    return (
-      <div
-        className="bg-background border border-border rounded-2xl overflow-hidden w-56 max-h-80 overflow-y-auto py-1.5 animate-in fade-in slide-in-from-top-1 duration-150 scrollbar-hide"
-        style={{ scrollbarWidth: "none" }}
-      >
-        <div className="px-3 py-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wide select-none">
-          提示框
-        </div>
-        <div className="px-1">
-          {items.map((item, index) => {
-            const Icon = item.icon;
-            const isSelected = index === selectedIndex;
-            return (
-              <button
-                key={item.type}
+  const onKeyDown = useCallback(
+    ({ event }: { event: KeyboardEvent }) => {
+      if (event.key === "ArrowUp") {
+        event.preventDefault();
+        setSelectedIndex((prev) => (prev > 0 ? prev - 1 : items.length - 1));
+        return true;
+      }
+      if (event.key === "ArrowDown") {
+        event.preventDefault();
+        setSelectedIndex((prev) => (prev < items.length - 1 ? prev + 1 : 0));
+        return true;
+      }
+      if (event.key === "Enter") {
+        event.preventDefault();
+        selectItem(selectedIndex);
+        return true;
+      }
+      return false;
+    },
+    [items.length, selectedIndex, selectItem]
+  );
+
+  useImperativeHandle(ref, () => ({ onKeyDown }), [onKeyDown]);
+
+  const getIconColor = (type: AdmonitionType) => {
+    switch (type) {
+      case "note":
+        return "text-zinc-500";
+      case "tip":
+        return "text-emerald-500";
+      case "info":
+        return "text-blue-500";
+      case "warning":
+        return "text-amber-500";
+      case "danger":
+        return "text-red-500";
+    }
+  };
+
+  return (
+    <div
+      className="bg-background border border-border rounded-2xl overflow-hidden w-56 max-h-80 overflow-y-auto py-1.5 animate-in fade-in slide-in-from-top-1 duration-150 scrollbar-hide"
+      style={{ scrollbarWidth: "none" }}
+    >
+      <div className="px-3 py-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wide select-none">
+        {t("common.admonition.label")}
+      </div>
+      <div className="px-1">
+        {items.map((item, index) => {
+          const Icon = item.icon;
+          const isSelected = index === selectedIndex;
+          return (
+            <button
+              key={item.type}
+              className={cn(
+                "w-full flex items-center gap-2.5 px-2 py-1.5 rounded-md text-left transition-all duration-100 group outline-none",
+                isSelected
+                  ? "bg-accent text-accent-foreground"
+                  : "text-foreground hover:bg-accent/50"
+              )}
+              onClick={() => selectItem(index)}
+              onMouseEnter={() => setSelectedIndex(index)}
+            >
+              <div
                 className={cn(
-                  "w-full flex items-center gap-2.5 px-2 py-1.5 rounded-md text-left transition-all duration-100 group outline-none",
-                  isSelected
-                    ? "bg-accent text-accent-foreground"
-                    : "text-foreground hover:bg-accent/50"
+                  "flex items-center justify-center size-6 rounded-md transition-colors shrink-0",
+                  getIconColor(item.type)
                 )}
-                onClick={() => selectItem(index)}
-                onMouseEnter={() => setSelectedIndex(index)}
               >
-                <div
+                <Icon className="size-4" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <span
                   className={cn(
-                    "flex items-center justify-center size-6 rounded-md transition-colors shrink-0",
-                    getIconColor(item.type)
+                    "text-xs font-normal truncate block leading-tight",
+                    isSelected ? "text-accent-foreground" : "text-foreground"
                   )}
                 >
-                  <Icon className="size-4" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <span
-                    className={cn(
-                      "text-xs font-normal truncate block leading-tight",
-                      isSelected ? "text-accent-foreground" : "text-foreground"
-                    )}
-                  >
-                    {item.label}
-                  </span>
-                </div>
-              </button>
-            );
-          })}
-        </div>
+                  {item.label}
+                </span>
+              </div>
+            </button>
+          );
+        })}
       </div>
-    );
-  }
-);
+    </div>
+  );
+});
 
 AdmonitionMenuComponent.displayName = "AdmonitionMenuComponent";
 
@@ -330,7 +344,7 @@ export const Admonition = Node.create({
             .command(({ tr, state }) => {
               const { selection } = state;
               const { $anchor } = selection;
-              
+
               // 找到 admonition 节点
               for (let d = $anchor.depth; d > 0; d--) {
                 const node = $anchor.node(d);
@@ -341,7 +355,9 @@ export const Admonition = Node.create({
                   tr.insert(endPos + 1, paragraph);
                   // 移动光标到新段落
                   const { TextSelection } = require("@tiptap/pm/state");
-                  tr.setSelection(TextSelection.near(tr.doc.resolve(endPos + 2)));
+                  tr.setSelection(
+                    TextSelection.near(tr.doc.resolve(endPos + 2))
+                  );
                   return true;
                 }
               }
@@ -356,17 +372,18 @@ export const Admonition = Node.create({
 
   addProseMirrorPlugins() {
     const nodeType = this.type;
-    
+
     return [
       Suggestion({
         editor: this.editor,
         pluginKey: new PluginKey("admonitionSuggestion"),
         char: ":::",
         items: ({ query }) => {
+          const items = getAdmonitionMenuItems();
           if (!query) {
-            return ADMONITION_MENU_ITEMS;
+            return items;
           }
-          return ADMONITION_MENU_ITEMS.filter((item) => {
+          return items.filter((item) => {
             const lowerQuery = query.toLowerCase();
             // 普通文本匹配
             if (

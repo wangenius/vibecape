@@ -4,19 +4,34 @@
  */
 
 import { Node, mergeAttributes } from "@tiptap/core";
-import { ReactNodeViewRenderer, NodeViewWrapper, ReactRenderer } from "@tiptap/react";
+import {
+  ReactNodeViewRenderer,
+  NodeViewWrapper,
+  ReactRenderer,
+} from "@tiptap/react";
 import { NodeViewProps } from "@tiptap/react";
 import Suggestion from "@tiptap/suggestion";
 import { PluginKey } from "@tiptap/pm/state";
 import tippy, { Instance as TippyInstance } from "tippy.js";
-import { forwardRef, useCallback, useImperativeHandle, useState, useEffect } from "react";
+import {
+  forwardRef,
+  useCallback,
+  useImperativeHandle,
+  useState,
+  useEffect,
+} from "react";
 import { TbScript } from "react-icons/tb";
 import { ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { DocTreeNode } from "@common/schema/docs";
 import PinyinMatch from "pinyin-match";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "react-i18next";
 
 declare module "@tiptap/core" {
   interface Commands<ReturnType> {
@@ -28,10 +43,14 @@ declare module "@tiptap/core" {
 
 // Mention 节点组件
 const MentionComponent = ({ node }: NodeViewProps) => {
-  const title = node.attrs.title || "未知文档";
+  const { t } = useTranslation();
+  const title = node.attrs.title || t("common.mention.unknownDoc");
   const docId = node.attrs.id;
   const [open, setOpen] = useState(false);
-  const [docInfo, setDocInfo] = useState<{ title: string; description: string } | null>(null);
+  const [docInfo, setDocInfo] = useState<{
+    title: string;
+    description: string;
+  } | null>(null);
   const [loading, setLoading] = useState(false);
 
   // 获取文档详情
@@ -43,13 +62,13 @@ const MentionComponent = ({ node }: NodeViewProps) => {
       if (api?.getDoc) {
         const doc = await api.getDoc(docId);
         setDocInfo({
-          title: doc.title || "无标题",
-          description: doc.metadata?.description || "暂无描述",
+          title: doc.title || t("common.mention.untitled"),
+          description: doc.metadata?.description || t("common.mention.noDesc"),
         });
       }
     } catch (err) {
       console.error("Failed to fetch doc info:", err);
-      setDocInfo({ title, description: "无法加载文档信息" });
+      setDocInfo({ title, description: t("common.mention.loadFailed") });
     } finally {
       setLoading(false);
     }
@@ -83,13 +102,15 @@ const MentionComponent = ({ node }: NodeViewProps) => {
             <span>{title}</span>
           </span>
         </PopoverTrigger>
-        <PopoverContent 
-          className="w-72 p-0" 
+        <PopoverContent
+          className="w-72 p-0"
           align="start"
           onOpenAutoFocus={(e) => e.preventDefault()}
         >
           {loading ? (
-            <div className="p-4 text-sm text-muted-foreground">加载中...</div>
+            <div className="p-4 text-sm text-muted-foreground">
+              {t("common.mention.loading")}
+            </div>
           ) : docInfo ? (
             <div className="flex flex-col">
               <div className="p-3 border-b border-border">
@@ -107,7 +128,7 @@ const MentionComponent = ({ node }: NodeViewProps) => {
                 onClick={handleNavigate}
               >
                 <ExternalLink className="size-3.5" />
-                打开文档
+                {t("common.mention.openDoc")}
               </Button>
             </div>
           ) : null}
@@ -134,6 +155,7 @@ interface MentionMenuRef {
 
 const MentionMenuComponent = forwardRef<MentionMenuRef, MentionMenuProps>(
   ({ items, command }, ref) => {
+    const { t } = useTranslation();
     const [selectedIndex, setSelectedIndex] = useState(0);
 
     useEffect(() => {
@@ -177,7 +199,7 @@ const MentionMenuComponent = forwardRef<MentionMenuRef, MentionMenuProps>(
     if (items.length === 0) {
       return (
         <div className="bg-background border border-border rounded-2xl overflow-hidden w-56 py-3 px-3 text-sm text-muted-foreground">
-          未找到文档
+          {t("common.mention.noDocsFound")}
         </div>
       );
     }
@@ -188,7 +210,7 @@ const MentionMenuComponent = forwardRef<MentionMenuRef, MentionMenuProps>(
         style={{ scrollbarWidth: "none" }}
       >
         <div className="px-3 py-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wide select-none">
-          文档
+          {t("common.mention.docs")}
         </div>
         <div className="px-1">
           {items.map((item, index) => {
@@ -215,7 +237,7 @@ const MentionMenuComponent = forwardRef<MentionMenuRef, MentionMenuProps>(
                       isSelected ? "text-accent-foreground" : "text-foreground"
                     )}
                   >
-                    {item.title || "无标题"}
+                    {item.title || t("common.mention.untitled")}
                   </span>
                 </div>
               </button>
@@ -232,7 +254,7 @@ MentionMenuComponent.displayName = "MentionMenuComponent";
 // 扁平化文档树
 function flattenDocTree(nodes: DocTreeNode[]): MentionMenuItem[] {
   const result: MentionMenuItem[] = [];
-  
+
   function traverse(items: DocTreeNode[]) {
     for (const item of items) {
       result.push({ id: item.id, title: item.title });
@@ -241,7 +263,7 @@ function flattenDocTree(nodes: DocTreeNode[]): MentionMenuItem[] {
       }
     }
   }
-  
+
   traverse(nodes);
   return result;
 }
@@ -336,20 +358,22 @@ export const Mention = Node.create({
         items: ({ query }) => {
           // 刷新文档列表
           fetchDocs();
-          
+
           if (!query) {
             return cachedDocs.slice(0, 10);
           }
-          
-          return cachedDocs.filter((doc) => {
-            // 普通文本匹配
-            if (doc.title.toLowerCase().includes(query.toLowerCase())) {
-              return true;
-            }
-            // 拼音匹配
-            const match = PinyinMatch.match(doc.title, query);
-            return match !== false;
-          }).slice(0, 10);
+
+          return cachedDocs
+            .filter((doc) => {
+              // 普通文本匹配
+              if (doc.title.toLowerCase().includes(query.toLowerCase())) {
+                return true;
+              }
+              // 拼音匹配
+              const match = PinyinMatch.match(doc.title, query);
+              return match !== false;
+            })
+            .slice(0, 10);
         },
         render: () => {
           let popup: TippyInstance[] | null = null;

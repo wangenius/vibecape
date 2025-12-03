@@ -5,6 +5,7 @@ import { PiArrowsCounterClockwise, PiCopy } from "react-icons/pi";
 import { TbMenuDeep, TbPencil, TbSignature } from "react-icons/tb";
 import { toast } from "sonner";
 import { Portal } from ".";
+import { useTranslation } from "react-i18next";
 
 export const SelectedContextMenu = ({
   position,
@@ -13,6 +14,7 @@ export const SelectedContextMenu = ({
   position: { x: number; y: number };
   onClose: () => void;
 }) => {
+  const { t } = useTranslation();
   const menuRef = useRef<HTMLDivElement>(null);
   // 直接使用浏览器选中的文本
   const selectedText = window.getSelection()?.toString() || "";
@@ -35,11 +37,11 @@ export const SelectedContextMenu = ({
 
     try {
       navigator.clipboard.writeText(selectedText).then(() => {
-        toast.success("复制成功");
+        toast.success(t("common.contextMenu.copySuccess"));
       });
       onClose();
     } catch (err) {
-      toast.error("复制失败");
+      toast.error(t("common.contextMenu.copyFailed"));
     }
   };
 
@@ -142,7 +144,9 @@ export const SelectedContextMenu = ({
             className="w-full flex items-center text-sm gap-2 px-2 py-1 hover:bg-muted cursor-pointer"
           >
             <PiCopy />
-            <span className="text-xs flex-1">复制</span>
+            <span className="text-xs flex-1">
+              {t("common.contextMenu.copy")}
+            </span>
           </Button>
           <Button
             onMouseDown={(e) => {
@@ -153,7 +157,9 @@ export const SelectedContextMenu = ({
             onClick={expand_submit}
           >
             <TbMenuDeep className="h-3.5 w-3.5" />
-            <span className="text-xs flex-1">扩写</span>
+            <span className="text-xs flex-1">
+              {t("common.contextMenu.expand")}
+            </span>
           </Button>
 
           <Button
@@ -165,7 +171,9 @@ export const SelectedContextMenu = ({
             onClick={embellish_submit}
           >
             <TbSignature className="h-3.5 w-3.5" />
-            <span className="text-xs flex-1">润色</span>
+            <span className="text-xs flex-1">
+              {t("common.contextMenu.polish")}
+            </span>
           </Button>
 
           <Button
@@ -177,7 +185,9 @@ export const SelectedContextMenu = ({
             onClick={rewrite_submit}
           >
             <TbPencil className="h-3.5 w-3.5" />
-            <span className="text-xs flex-1">改写</span>
+            <span className="text-xs flex-1">
+              {t("common.contextMenu.rewrite")}
+            </span>
           </Button>
           {selectedText.length < 6 && (
             <Button
@@ -190,7 +200,7 @@ export const SelectedContextMenu = ({
               className="w-full flex items-center text-sm gap-2 px-2 py-1 hover:bg-muted cursor-pointer"
             >
               <PiArrowsCounterClockwise />
-              近义词替换
+              {t("common.contextMenu.synonymReplace")}
             </Button>
           )}
         </Menu>

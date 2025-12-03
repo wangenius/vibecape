@@ -1,0 +1,20 @@
+{
+  "agent": {
+    "switchAgent": "Switch Agent",
+    "selectAgent": "Select Agent",
+    "selectAgentDesc": "Switch to different AI assistant roles",
+    "useThisAgent": "Use this Agent",
+    "defaultName": "Assistant",
+    "intro": "Introduction"
+  },
+  "input": {
+    "placeholder": "Type your message...",
+    "stopGeneration": "Stop generation"
+  },
+  "thread": {
+    "newChat": "New Chat",
+    "untitled": "Untitled Chat",
+    "initializing": "Initializing...",
+    "loadFailed": "Load failed, please try creating a new chat"
+  }
+}

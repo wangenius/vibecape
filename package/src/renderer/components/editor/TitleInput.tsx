@@ -1,5 +1,6 @@
 import { Input } from "@/components/ui/input";
 import { memo, useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 
 export const TitleInput = memo(
   ({
@@ -9,6 +10,7 @@ export const TitleInput = memo(
     value: string;
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   }) => {
+    const { t } = useTranslation();
     const inputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
@@ -25,7 +27,7 @@ export const TitleInput = memo(
         className="w-full text-4xl font-medium tracking-tight bg-transparent border-none 
           focus:bg-transparent
           placeholder:text-muted-foreground/30 px-0 h-20"
-        placeholder="输入标题..."
+        placeholder={t("common.settings.enterTitle")}
       />
     );
   }

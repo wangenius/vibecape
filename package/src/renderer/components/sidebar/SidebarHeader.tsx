@@ -11,12 +11,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { dialog } from "@/components/custom/DialogModal";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 interface SidebarHeaderProps {
   onCreateDoc: (parentId: string | null) => void;
 }
 
 export const SidebarHeader = ({ onCreateDoc }: SidebarHeaderProps) => {
+  const { t } = useTranslation();
   const workspace = useVibecapeStore((state) => state.workspace);
   const loading = useVibecapeStore((state) => state.loading);
   const closeWorkspace = useVibecapeStore((state) => state.closeWorkspace);
@@ -30,24 +32,26 @@ export const SidebarHeader = ({ onCreateDoc }: SidebarHeaderProps) => {
 
   const handleImport = () => {
     dialog.confirm({
-      title: "从 docs 导入",
+      title: t("common.settings.importFromDocs"),
       content: (
         <p className="text-sm text-muted-foreground">
-          将从 docs 目录导入所有 MDX 文件到数据库。
+          {t("common.settings.importFromDocsDesc")}
           <br />
           <strong className="text-destructive">
-            注意：这将覆盖数据库中的现有文档。
+            {t("common.settings.importWarning")}
           </strong>
         </p>
       ),
-      okText: "确认导入",
+      okText: t("common.settings.confirmImport"),
       variants: "destructive",
       onOk: async () => {
         try {
           const result = await importFromDocs();
-          toast.success(`成功导入 ${result.imported} 个文档`);
+          toast.success(
+            t("common.settings.importSuccess", { count: result.imported })
+          );
         } catch (error: any) {
-          toast.error(error?.message ?? "导入失败");
+          toast.error(error?.message ?? t("common.settings.importFailed"));
         }
       },
     });
@@ -55,24 +59,26 @@ export const SidebarHeader = ({ onCreateDoc }: SidebarHeaderProps) => {
 
   const handleExport = () => {
     dialog.confirm({
-      title: "导出到 docs",
+      title: t("common.settings.exportToDocs"),
       content: (
         <p className="text-sm text-muted-foreground">
-          将数据库中的文档导出到 docs 目录。
+          {t("common.settings.exportToDocsDesc")}
           <br />
           <strong className="text-destructive">
-            注意：这将覆盖 docs 目录中的现有文件。
+            {t("common.settings.exportWarning")}
           </strong>
         </p>
       ),
-      okText: "确认导出",
+      okText: t("common.settings.confirmExport"),
       variants: "destructive",
       onOk: async () => {
         try {
           const result = await exportToDocs();
-          toast.success(`成功导出 ${result.exported} 个文档`);
+          toast.success(
+            t("common.settings.exportSuccess", { count: result.exported })
+          );
         } catch (error: any) {
-          toast.error(error?.message ?? "导出失败");
+          toast.error(error?.message ?? t("common.settings.exportFailed"));
         }
       },
     });
@@ -94,7 +100,7 @@ export const SidebarHeader = ({ onCreateDoc }: SidebarHeaderProps) => {
           size="icon"
           className="size-7 hover:bg-muted-foreground/10"
           onClick={() => onCreateDoc(null)}
-          title="新建文档"
+          title={t("common.settings.newDoc")}
         >
           <Plus className="size-3.5" />
         </Button>
@@ -116,17 +122,18 @@ export const SidebarHeader = ({ onCreateDoc }: SidebarHeaderProps) => {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={handleImport}>
-              <Download className="size-3.5" />从 docs 导入
+              <Download className="size-3.5" />
+              {t("common.settings.importFromDocs")}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={handleExport}>
               <Upload className="size-3.5" />
-              导出到 docs
+              {t("common.settings.exportToDocs")}
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => void window.api.vibecape.openInFinder()}
             >
               <FolderOpen className="size-3.5" />
-              在 Finder 中打开
+              {t("common.settings.openInFinder")}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
@@ -134,7 +141,7 @@ export const SidebarHeader = ({ onCreateDoc }: SidebarHeaderProps) => {
               onClick={() => void closeWorkspace()}
             >
               <X className="size-3.5 stroke-destructive" />
-              关闭工作区
+              {t("common.settings.closeWorkspace")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

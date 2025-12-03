@@ -7,6 +7,7 @@ import { memo, useState, useCallback } from "react";
 import { Editor } from "@tiptap/react";
 import { PolishDiffView } from "./PolishDiffView";
 import { Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface PolishRequest {
   id: string;
@@ -27,6 +28,7 @@ interface PolishManagerProps {
 }
 
 export const PolishManager = memo(({ editor }: PolishManagerProps) => {
+  const { t } = useTranslation();
   const [activePolish, setActivePolish] = useState<PolishResult | null>(null);
 
   // 开始润色请求
@@ -45,7 +47,7 @@ export const PolishManager = memo(({ editor }: PolishManagerProps) => {
         // 调用润色 API（兼容缺失场景）
         const aiApi = (window as any).api?.ai;
         if (!aiApi?.optimiseStart) {
-          throw new Error("AI 润色接口未启用");
+          throw new Error(t("common.polish.interfaceNotEnabled"));
         }
 
         const result = await aiApi.optimiseStart({
@@ -71,7 +73,9 @@ export const PolishManager = memo(({ editor }: PolishManagerProps) => {
                     : null
                 );
               } else if (payload?.type === "end") {
-                window.electron?.ipcRenderer.removeAllListeners(result.channel!);
+                window.electron?.ipcRenderer.removeAllListeners(
+                  result.channel!
+                );
                 setActivePolish((prev) =>
                   prev
                     ? {
@@ -83,17 +87,19 @@ export const PolishManager = memo(({ editor }: PolishManagerProps) => {
                 );
                 resolve();
               } else if (payload?.type === "error") {
-                window.electron?.ipcRenderer.removeAllListeners(result.channel!);
+                window.electron?.ipcRenderer.removeAllListeners(
+                  result.channel!
+                );
                 setActivePolish((prev) =>
                   prev
                     ? {
                         ...prev,
                         status: "error",
-                        error: payload.message || "润色失败",
+                        error: payload.message || t("common.polish.failed"),
                       }
                     : null
                 );
-                reject(new Error(payload.message || "润色失败"));
+                reject(new Error(payload.message || t("common.polish.failed")));
               }
             };
             window.electron?.ipcRenderer.on(result.channel, handler);
@@ -106,7 +112,10 @@ export const PolishManager = memo(({ editor }: PolishManagerProps) => {
             ? {
                 ...prev,
                 status: "error",
-                error: error instanceof Error ? error.message : "未知错误",
+                error:
+                  error instanceof Error
+                    ? error.message
+                    : t("common.polish.unknownError"),
               }
             : null
         );
@@ -158,7 +167,7 @@ export const PolishManager = memo(({ editor }: PolishManagerProps) => {
         <div className="rounded-lg border border-border bg-popover shadow-lg p-4">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Loader2 className="h-4 w-4 animate-spin" />
-            <span>AI 正在润色中...</span>
+            <span>{t("common.polish.polishing")}</span>
           </div>
           {activePolish.polishedText && (
             <div className="mt-2 text-sm text-foreground/80 max-w-[400px]">
@@ -177,7 +186,7 @@ export const PolishManager = memo(({ editor }: PolishManagerProps) => {
       ) : (
         <div className="rounded-lg border border-destructive bg-destructive/10 p-4">
           <div className="text-sm text-destructive-foreground">
-            润色失败：{activePolish.error}
+            {t("common.polish.failed")}：{activePolish.error}
           </div>
         </div>
       )}

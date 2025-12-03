@@ -1,5 +1,11 @@
 import { ChatThreadMeta, ChatThread } from "@common/schema";
-import type { Agent } from "../../main/agents/types";
+import type { HeroInfo } from "@common/types/hero";
+
+/** Hero 信息（用于 UI 展示） */
+export type { HeroInfo };
+
+/** @deprecated 使用 HeroInfo */
+export type Agent = HeroInfo;
 
 export interface ChatAPI {
   // 获取聊天线程
@@ -23,10 +29,14 @@ export interface ChatAPI {
     id: string;
     thread: string;
     prompt: string;
+    heroId?: string;
+    /** @deprecated 使用 heroId */
     agentId?: string;
   }) => Promise<{ success: boolean }>;
-  // 获取所有 Agents
-  agents: () => Promise<Agent[]>;
+  /** 获取所有 Heroes */
+  heroes: () => Promise<HeroInfo[]>;
+  /** @deprecated 使用 heroes */
+  agents: () => Promise<HeroInfo[]>;
   // 取消聊天
   cancel: (id: string) => Promise<{ success: boolean }>;
   // 监听线程标题更新事件
@@ -34,5 +44,3 @@ export interface ChatAPI {
     callback: (data: { threadId: string; title: string }) => void
   ) => () => void;
 }
-
-export type { Agent };

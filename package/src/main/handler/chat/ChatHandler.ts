@@ -5,12 +5,12 @@ import { streamText, stepCountIs } from "ai";
 import type { ChatThread } from "@common/schema/chat";
 import type { MessagePart } from "@common/types/message";
 import {
-  getAllAgents,
-  getAgentModule,
-  getDefaultAgentModule,
-  type Agent,
-  type AgentModule,
-} from "../../agents";
+  getAllHeroes,
+  getHero,
+  getDefaultHero,
+  Hero,
+  type HeroMeta,
+} from "../../heroes";
 
 // 流式请求状态管理
 interface StreamState {
@@ -32,6 +32,8 @@ interface ChatStreamPayload {
   thread: string;
   prompt: string;
   messages?: any[];
+  heroId?: string;
+  /** @deprecated 使用 heroId */
   agentId?: string;
 }
 
@@ -91,8 +93,8 @@ async function generateThreadTitle(
 /**
  * 获取 Agent 模块
  */
-function getAgentModuleForPayload(agentId?: string): AgentModule {
-  return agentId ? getAgentModule(agentId) ?? getDefaultAgentModule() : getDefaultAgentModule();
+function getHeroForPayload(heroId?: string): Hero {
+  return heroId ? getHero(heroId) ?? getDefaultHero() : getDefaultHero();
 }
 
 /**
@@ -100,12 +102,11 @@ function getAgentModuleForPayload(agentId?: string): AgentModule {
  */
 async function buildMessages(
   thread: ChatThread | null,
-  payload: { prompt: string; messages?: any[]; agentId?: string }
+  payload: { prompt: string; messages?: any[]; heroId?: string }
 ) {
-  // 获取 Agent 配置
-  const agentModule = getAgentModuleForPayload(payload.agentId);
-  const config = agentModule.getConfig();
-  const systemMessage = { role: "system" as const, content: config.system };
+  // 获取 Hero 配置
+  const hero = getHeroForPayload(payload.heroId);
+  const systemMessage = { role: "system" as const, content: hero.getSystemPrompt() };
 
   if (!thread) {
     // 非聊天场景：使用前端传来的消息
@@ -149,11 +150,10 @@ async function handleStreamResponse(
   messages: any[],
   channel: string,
   webContents: WebContents,
-  agentModule: AgentModule
+  hero: Hero
 ): Promise<void> {
   const main = await Model.get();
   const abortController = new AbortController();
-  const agentConfig = agentModule.getConfig();
 
   const state: StreamState = {
     abortController,
@@ -179,9 +179,9 @@ async function handleStreamResponse(
   const result = streamText({
     model: main,
     messages,
-    tools: agentConfig.tools ?? {},
+    tools: hero.tools,
     abortSignal: abortController.signal,
-    stopWhen: stepCountIs(agentConfig.maxSteps ?? 20),
+    stopWhen: stepCountIs(hero.maxSteps),
 
     onChunk: ({ chunk }) => {
       if (chunk.type === "text-delta") {
@@ -291,10 +291,11 @@ ipcMain.handle("chat:stream", async (event, payload: ChatStreamPayload) => {
 
     const isEmptyTitle = !thread.title.trim();
 
-    const agentModule = getAgentModuleForPayload(payload.agentId);
+    const heroId = payload.heroId || payload.agentId;
+    const hero = getHeroForPayload(heroId);
     const messages = await buildMessages(thread, {
       prompt: payload.prompt,
-      agentId: payload.agentId,
+      heroId,
     });
 
     if (isEmptyTitle && payload.prompt) {
@@ -306,7 +307,7 @@ ipcMain.handle("chat:stream", async (event, payload: ChatStreamPayload) => {
       messages,
       channel,
       event.sender,
-      agentModule
+      hero
     );
 
     return { success: true };
@@ -343,7 +344,12 @@ ipcMain.handle("chat:cancel", async (_event, id: string) => {
   return { success: true };
 });
 
-// 获取所有 Agents
-ipcMain.handle("chat:agents", async (): Promise<Agent[]> => {
-  return getAllAgents();
+// 获取所有 Heroes
+ipcMain.handle("chat:heroes", async (): Promise<HeroMeta[]> => {
+  return getAllHeroes().map((h) => h.getMeta());
+});
+
+// 兼容旧接口
+ipcMain.handle("chat:agents", async (): Promise<HeroMeta[]> => {
+  return getAllHeroes().map((h) => h.getMeta());
 });

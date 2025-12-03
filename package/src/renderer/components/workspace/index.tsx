@@ -1,7 +1,12 @@
 import { useEffect } from "react";
 import { useVibecapeStore } from "@/hook/useVibecapeStore";
 import { useViewManager } from "@/hook/app/useViewManager";
-import { GeneralSettings, ModelSettings, StorageSettings, AboutSettings } from "../SettingsModal";
+import {
+  GeneralSettings,
+  ModelSettings,
+  StorageSettings,
+  AboutSettings,
+} from "../settings";
 import { InitProgressDialog } from "./InitProgressDialog";
 import { WelcomePage } from "./WelcomePage";
 import { EmptyDocState } from "./EmptyDocState";
@@ -29,7 +34,10 @@ export const Workspace = () => {
     };
     window.addEventListener("doc:navigate", handleNavigate as EventListener);
     return () => {
-      window.removeEventListener("doc:navigate", handleNavigate as EventListener);
+      window.removeEventListener(
+        "doc:navigate",
+        handleNavigate as EventListener
+      );
     };
   }, [openDoc]);
 

@@ -7,7 +7,8 @@ import type {
   ToolPart,
   MessagePart,
 } from "@common/types/message";
-import { useAgentStore } from "./useAgent";
+import { useHeroStore } from "./useHero";
+import { lang } from "@/locales/i18n";
 
 const STREAM_CHANNEL_PREFIX = "llm:stream:";
 const getStreamChannel = (id: string) => `${STREAM_CHANNEL_PREFIX}${id}`;
@@ -50,7 +51,11 @@ interface ChatStore {
   setThreadId: (chatId: string, threadId: string) => void;
 
   // 发送消息
-  sendMessage: (chatId: string, text: string, agentId?: string) => Promise<void>;
+  sendMessage: (
+    chatId: string,
+    text: string,
+    heroId?: string
+  ) => Promise<void>;
 
   // 停止生成
   stop: (chatId: string) => void;
@@ -220,7 +225,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     });
   },
 
-  sendMessage: async (chatId, text, agentId) => {
+  sendMessage: async (chatId, text, heroId) => {
     const { addMessage, setStatus, setError } = get();
 
     setStatus(chatId, "submitted");
@@ -228,7 +233,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
     const ipc = window.electron?.ipcRenderer;
     if (!ipc) {
-      setError(chatId, new Error("通信通道不可用"));
+      setError(chatId, new Error(lang("common.chat.channelUnavailable")));
       setStatus(chatId, "error");
       return;
     }
@@ -252,16 +257,21 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
       const requestId = gen.id();
 
-      console.log("[useChat] Starting stream with threadId:", chatId, "agentId:", agentId);
+      console.log(
+        "[useChat] Starting stream with threadId:",
+        chatId,
+        "heroId:",
+        heroId
+      );
       const response = await window.api.chat.stream({
         id: requestId,
         thread: chatId,
         prompt: text,
-        agentId,
+        heroId,
       });
 
       if (!response?.success) {
-        throw new Error("启动流式对话失败");
+        throw new Error(lang("common.chat.startStreamFailed"));
       }
 
       const channel = getStreamChannel(requestId);
@@ -278,7 +288,10 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       // flush 当前累积的内容到 parts
       const flush = () => {
         if (currentReasoning) {
-          parts.push({ type: "reasoning", text: currentReasoning } as ReasoningPart);
+          parts.push({
+            type: "reasoning",
+            text: currentReasoning,
+          } as ReasoningPart);
           currentReasoning = "";
         }
         if (currentText) {
@@ -290,9 +303,16 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       // 构建显示用的 parts
       const buildDisplayParts = (): UIMessage["parts"] => {
         const display: MessagePart[] = [...parts];
-        if (currentReasoning) display.push({ type: "reasoning", text: currentReasoning } as ReasoningPart);
-        if (currentText) display.push({ type: "text", text: currentText } as TextPart);
-        return (display.length > 0 ? display : [{ type: "text", text: "" }]) as UIMessage["parts"];
+        if (currentReasoning)
+          display.push({
+            type: "reasoning",
+            text: currentReasoning,
+          } as ReasoningPart);
+        if (currentText)
+          display.push({ type: "text", text: currentText } as TextPart);
+        return (
+          display.length > 0 ? display : [{ type: "text", text: "" }]
+        ) as UIMessage["parts"];
       };
 
       const updateMessage = () => {
@@ -300,7 +320,18 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       };
 
       // 监听流式数据
-      const handler = (_event: unknown, chunk: { type: string; text?: string; toolCallId?: string; toolName?: string; args?: unknown; result?: unknown; message?: string }) => {
+      const handler = (
+        _event: unknown,
+        chunk: {
+          type: string;
+          text?: string;
+          toolCallId?: string;
+          toolName?: string;
+          args?: unknown;
+          result?: unknown;
+          message?: string;
+        }
+      ) => {
         if (!chunk || typeof chunk !== "object") return;
 
         if (chunk.type === "text-delta") {
@@ -323,9 +354,10 @@ export const useChatStore = create<ChatStore>((set, get) => ({
           parts.push(toolPart);
           updateMessage();
         } else if (chunk.type === "tool-result") {
-          const tc = parts.find((p): p is ToolPart => 
-            p.type.startsWith("tool-") && 
-            (p as ToolPart).toolCallId === chunk.toolCallId
+          const tc = parts.find(
+            (p): p is ToolPart =>
+              p.type.startsWith("tool-") &&
+              (p as ToolPart).toolCallId === chunk.toolCallId
           );
           if (tc) {
             tc.state = "output-available";
@@ -339,7 +371,10 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         } else if (chunk.type === "error") {
           console.error("[useChat] Stream error:", chunk.message);
           cleanup();
-          setError(chatId, new Error(chunk.message || "生成失败"));
+          setError(
+            chatId,
+            new Error(chunk.message || lang("common.chat.generationFailed"))
+          );
           setStatus(chatId, "error");
         }
       };
@@ -422,8 +457,8 @@ export function useChat(chatId: string) {
   const error = useChatStore((state) => state.chats.get(chatId)?.error ?? null);
   const threadId = useChatStore((state) => state.chats.get(chatId)?.threadId);
 
-  // 获取当前选中的 Agent ID
-  const currentAgentId = useAgentStore((state) => state.currentAgentId);
+  // 获取当前选中的 Hero ID
+  const currentHeroId = useHeroStore((state) => state.currentHeroId);
 
   const sendMessageFn = useChatStore((state) => state.sendMessage);
   const stop = useChatStore((state) => state.stop);
@@ -435,7 +470,7 @@ export function useChat(chatId: string) {
     status,
     error,
     threadId,
-    sendMessage: (text: string) => sendMessageFn(chatId, text, currentAgentId),
+    sendMessage: (text: string) => sendMessageFn(chatId, text, currentHeroId),
     stop: () => stop(chatId),
     regenerate: () => regenerate(chatId),
     clearError: () => setError(chatId, null),

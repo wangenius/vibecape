@@ -4,19 +4,21 @@ import { Input } from "@/components/ui/input";
 import { useVibecapeStore } from "@/hook/useVibecapeStore";
 import { dialog } from "@/components/custom/DialogModal";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 export const useCreateDocDialog = () => {
+  const { t } = useTranslation();
   const createDoc = useVibecapeStore((state) => state.createDoc);
 
   return useCallback(
     (parentId: string | null) => {
       let title = "";
       dialog({
-        title: "新建文档",
+        title: t("common.settings.newDoc"),
         className: "max-w-sm",
         content: (
           <Input
-            placeholder="输入文档名称"
+            placeholder={t("common.settings.docNamePlaceholder")}
             onChange={(e) => (title = e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter" && title.trim()) {
@@ -32,14 +34,14 @@ export const useCreateDocDialog = () => {
         footer: (close) => (
           <div className="flex justify-end gap-2">
             <Button variant="ghost" size="sm" onClick={close}>
-              取消
+              {t("common.actions.cancel")}
             </Button>
             <Button
               size="sm"
               data-create-doc-btn
               onClick={async () => {
                 if (!title.trim()) {
-                  toast.error("请输入文档名称");
+                  toast.error(t("common.settings.enterDocName"));
                   return;
                 }
                 try {
@@ -47,19 +49,21 @@ export const useCreateDocDialog = () => {
                     parent_id: parentId,
                     title: title.trim(),
                   });
-                  toast.success("文档已创建");
+                  toast.success(t("common.settings.docCreated"));
                   close();
                 } catch (error: any) {
-                  toast.error(error?.message ?? "创建失败");
+                  toast.error(
+                    error?.message ?? t("common.settings.createFailed")
+                  );
                 }
               }}
             >
-              创建
+              {t("common.settings.create")}
             </Button>
           </div>
         ),
       });
     },
-    [createDoc]
+    [createDoc, t]
   );
 };

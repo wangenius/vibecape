@@ -5,7 +5,14 @@
 
 import { ReactRenderer } from "@tiptap/react";
 import tippy, { Instance as TippyInstance } from "tippy.js";
-import { useCallback, useEffect, useState, forwardRef, useImperativeHandle, useRef } from "react";
+import {
+  useCallback,
+  useEffect,
+  useState,
+  forwardRef,
+  useImperativeHandle,
+  useRef,
+} from "react";
 import { Editor } from "@tiptap/core";
 import { cn } from "@/lib/utils";
 import PinyinMatch from "pinyin-match";
@@ -40,16 +47,16 @@ export interface SlashMenuItem {
   command: ({ editor, range }: { editor: Editor; range: any }) => void;
 }
 
-const getCategoryLabel = (category: SlashMenuCategory) => {
+const getCategoryLabel = (category: SlashMenuCategory, t: any) => {
   switch (category) {
     case "ai":
-      return "AI";
+      return t("common.slashMenu.category.ai");
     case "heading":
-      return "标题";
+      return t("common.slashMenu.category.heading");
     case "list":
-      return "列表";
+      return t("common.slashMenu.category.list");
     case "insert":
-      return "插入";
+      return t("common.slashMenu.category.insert");
   }
 };
 
@@ -66,10 +73,10 @@ const getCategoryColor = (category: SlashMenuCategory) => {
   }
 };
 
-export const SLASH_MENU_ITEMS: SlashMenuItem[] = [
+export const getSlashMenuItems = (t: any): SlashMenuItem[] => [
   {
-    title: "AI 改写",
-    description: "使用 AI 改写或生成内容",
+    title: t("common.slashMenu.aiRewrite"),
+    description: t("common.slashMenu.aiRewriteDesc"),
     icon: <Wand2 className="size-4" />,
     category: "ai",
     command: ({ editor }) => {
@@ -77,8 +84,8 @@ export const SLASH_MENU_ITEMS: SlashMenuItem[] = [
     },
   },
   {
-    title: "AI 续写",
-    description: "AI 帮你续写内容",
+    title: t("common.slashMenu.aiContinue"),
+    description: t("common.slashMenu.aiContinueDesc"),
     icon: <Sparkles className="size-4" />,
     category: "ai",
     command: ({ editor }) => {
@@ -90,8 +97,8 @@ export const SLASH_MENU_ITEMS: SlashMenuItem[] = [
     },
   },
   {
-    title: "一级标题",
-    description: "大标题",
+    title: t("common.slashMenu.h1"),
+    description: t("common.slashMenu.h1Desc"),
     icon: <Heading1 className="size-4" />,
     category: "heading",
     command: ({ editor }) => {
@@ -99,8 +106,8 @@ export const SLASH_MENU_ITEMS: SlashMenuItem[] = [
     },
   },
   {
-    title: "二级标题",
-    description: "中标题",
+    title: t("common.slashMenu.h2"),
+    description: t("common.slashMenu.h2Desc"),
     icon: <Heading2 className="size-4" />,
     category: "heading",
     command: ({ editor }) => {
@@ -108,8 +115,8 @@ export const SLASH_MENU_ITEMS: SlashMenuItem[] = [
     },
   },
   {
-    title: "三级标题",
-    description: "小标题",
+    title: t("common.slashMenu.h3"),
+    description: t("common.slashMenu.h3Desc"),
     icon: <Heading3 className="size-4" />,
     category: "heading",
     command: ({ editor }) => {
@@ -117,8 +124,8 @@ export const SLASH_MENU_ITEMS: SlashMenuItem[] = [
     },
   },
   {
-    title: "无序列表",
-    description: "创建无序列表",
+    title: t("common.slashMenu.bulletList"),
+    description: t("common.slashMenu.bulletListDesc"),
     icon: <List className="size-4" />,
     category: "list",
     command: ({ editor }) => {
@@ -126,8 +133,8 @@ export const SLASH_MENU_ITEMS: SlashMenuItem[] = [
     },
   },
   {
-    title: "有序列表",
-    description: "创建有序列表",
+    title: t("common.slashMenu.orderedList"),
+    description: t("common.slashMenu.orderedListDesc"),
     icon: <ListOrdered className="size-4" />,
     category: "list",
     command: ({ editor }) => {
@@ -135,8 +142,8 @@ export const SLASH_MENU_ITEMS: SlashMenuItem[] = [
     },
   },
   {
-    title: "待办列表",
-    description: "创建待办列表",
+    title: t("common.slashMenu.taskList"),
+    description: t("common.slashMenu.taskListDesc"),
     icon: <CheckSquare className="size-4" />,
     category: "list",
     command: ({ editor }) => {
@@ -144,8 +151,8 @@ export const SLASH_MENU_ITEMS: SlashMenuItem[] = [
     },
   },
   {
-    title: "引用",
-    description: "创建引用块",
+    title: t("common.slashMenu.quote"),
+    description: t("common.slashMenu.quoteDesc"),
     icon: <Quote className="size-4" />,
     category: "insert",
     command: ({ editor }) => {
@@ -153,8 +160,8 @@ export const SLASH_MENU_ITEMS: SlashMenuItem[] = [
     },
   },
   {
-    title: "代码块",
-    description: "创建代码块",
+    title: t("common.slashMenu.codeBlock"),
+    description: t("common.slashMenu.codeBlockDesc"),
     icon: <Code className="size-4" />,
     category: "insert",
     command: ({ editor }) => {
@@ -162,8 +169,8 @@ export const SLASH_MENU_ITEMS: SlashMenuItem[] = [
     },
   },
   {
-    title: "分割线",
-    description: "插入分割线",
+    title: t("common.slashMenu.divider"),
+    description: t("common.slashMenu.dividerDesc"),
     icon: <Minus className="size-4" />,
     category: "insert",
     command: ({ editor }) => {
@@ -171,8 +178,8 @@ export const SLASH_MENU_ITEMS: SlashMenuItem[] = [
     },
   },
   {
-    title: "提示 Note",
-    description: "灰色提示框",
+    title: t("common.slashMenu.note"),
+    description: t("common.slashMenu.noteDesc"),
     icon: <MessageCircle className="size-4" />,
     category: "insert",
     command: ({ editor }) => {
@@ -180,8 +187,8 @@ export const SLASH_MENU_ITEMS: SlashMenuItem[] = [
     },
   },
   {
-    title: "技巧 Tip",
-    description: "绿色技巧框",
+    title: t("common.slashMenu.tip"),
+    description: t("common.slashMenu.tipDesc"),
     icon: <Lightbulb className="size-4" />,
     category: "insert",
     command: ({ editor }) => {
@@ -189,8 +196,8 @@ export const SLASH_MENU_ITEMS: SlashMenuItem[] = [
     },
   },
   {
-    title: "信息 Info",
-    description: "蓝色信息框",
+    title: t("common.slashMenu.info"),
+    description: t("common.slashMenu.infoDesc"),
     icon: <Info className="size-4" />,
     category: "insert",
     command: ({ editor }) => {
@@ -198,8 +205,8 @@ export const SLASH_MENU_ITEMS: SlashMenuItem[] = [
     },
   },
   {
-    title: "警告 Warning",
-    description: "黄色警告框",
+    title: t("common.slashMenu.warning"),
+    description: t("common.slashMenu.warningDesc"),
     icon: <AlertTriangle className="size-4" />,
     category: "insert",
     command: ({ editor }) => {
@@ -207,8 +214,8 @@ export const SLASH_MENU_ITEMS: SlashMenuItem[] = [
     },
   },
   {
-    title: "危险 Danger",
-    description: "红色危险框",
+    title: t("common.slashMenu.danger"),
+    description: t("common.slashMenu.dangerDesc"),
     icon: <AlertCircle className="size-4" />,
     category: "insert",
     command: ({ editor }) => {
@@ -216,8 +223,8 @@ export const SLASH_MENU_ITEMS: SlashMenuItem[] = [
     },
   },
   {
-    title: "图片",
-    description: "插入本地或网络图片",
+    title: t("common.slashMenu.image"),
+    description: t("common.slashMenu.imageDesc"),
     icon: <ImageIcon className="size-4" />,
     category: "insert",
     command: ({ editor }) => {
@@ -225,8 +232,8 @@ export const SLASH_MENU_ITEMS: SlashMenuItem[] = [
     },
   },
   {
-    title: "链接",
-    description: "插入链接卡片",
+    title: t("common.slashMenu.link"),
+    description: t("common.slashMenu.linkDesc"),
     icon: <Link2 className="size-4" />,
     category: "insert",
     command: ({ editor }) => {
@@ -238,6 +245,7 @@ export const SLASH_MENU_ITEMS: SlashMenuItem[] = [
 interface SlashMenuProps {
   items: SlashMenuItem[];
   command: (item: SlashMenuItem) => void;
+  t: any;
 }
 
 export interface SlashMenuRef {
@@ -245,7 +253,7 @@ export interface SlashMenuRef {
 }
 
 export const SlashMenuComponent = forwardRef<SlashMenuRef, SlashMenuProps>(
-  ({ items, command }, ref) => {
+  ({ items, command, t }, ref) => {
     const [selectedIndex, setSelectedIndex] = useState(0);
     const containerRef = useRef<HTMLDivElement>(null);
     const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -326,12 +334,17 @@ export const SlashMenuComponent = forwardRef<SlashMenuRef, SlashMenuProps>(
       {} as Record<SlashMenuCategory, SlashMenuItem[]>
     );
 
-    const allGroupedItems: Array<{ category: SlashMenuCategory; items: SlashMenuItem[] }> = [];
-    (["ai", "heading", "list", "insert"] as SlashMenuCategory[]).forEach((category) => {
-      if (groupedItems[category] && groupedItems[category].length > 0) {
-        allGroupedItems.push({ category, items: groupedItems[category] });
+    const allGroupedItems: Array<{
+      category: SlashMenuCategory;
+      items: SlashMenuItem[];
+    }> = [];
+    (["ai", "heading", "list", "insert"] as SlashMenuCategory[]).forEach(
+      (category) => {
+        if (groupedItems[category] && groupedItems[category].length > 0) {
+          allGroupedItems.push({ category, items: groupedItems[category] });
+        }
       }
-    });
+    );
 
     // 计算全局索引
     const getGlobalIndex = (groupIndex: number, itemIndex: number): number => {
@@ -355,7 +368,7 @@ export const SlashMenuComponent = forwardRef<SlashMenuRef, SlashMenuProps>(
             {allGroupedItems.map((group, groupIndex) => (
               <div key={group.category}>
                 <div className="px-3 py-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wide select-none">
-                  {getCategoryLabel(group.category)}
+                  {getCategoryLabel(group.category, t)}
                 </div>
                 <div className="px-1">
                   {group.items.map((item, itemIndex) => {
@@ -403,7 +416,7 @@ export const SlashMenuComponent = forwardRef<SlashMenuRef, SlashMenuProps>(
           </div>
         ) : (
           <div className="px-3 py-6 text-sm text-muted-foreground text-center">
-            未找到匹配的命令
+            {t("common.slashMenu.noCommands")}
           </div>
         )}
       </div>
@@ -413,12 +426,13 @@ export const SlashMenuComponent = forwardRef<SlashMenuRef, SlashMenuProps>(
 
 SlashMenuComponent.displayName = "SlashMenuComponent";
 
-export const createSlashMenuPlugin = () => {
+export const createSlashMenuPlugin = (t: any) => {
   let popup: TippyInstance[] | null = null;
+  const SLASH_MENU_ITEMS = getSlashMenuItems(t);
 
   return {
     char: "/",
-    
+
     items: ({ query }: { query: string }) => {
       if (!query) {
         return SLASH_MENU_ITEMS;
@@ -444,21 +458,17 @@ export const createSlashMenuPlugin = () => {
 
       return {
         onStart: (props: any) => {
-          
           localComponent = new ReactRenderer(SlashMenuComponent, {
             props: {
               items: props.items,
+              t,
               command: (item: SlashMenuItem) => {
                 // 删除 / 字符和查询文本
-                props.editor
-                  .chain()
-                  .focus()
-                  .deleteRange(props.range)
-                  .run();
+                props.editor.chain().focus().deleteRange(props.range).run();
 
                 // 执行命令，传递 editor 和 range
                 item.command({ editor: props.editor, range: props.range });
-                
+
                 // 关闭菜单
                 popup?.[0]?.hide();
               },
@@ -500,11 +510,7 @@ export const createSlashMenuPlugin = () => {
           localComponent.updateProps({
             items: props.items,
             command: (item: SlashMenuItem) => {
-              props.editor
-                .chain()
-                .focus()
-                .deleteRange(props.range)
-                .run();
+              props.editor.chain().focus().deleteRange(props.range).run();
 
               item.command({ editor: props.editor, range: props.range });
               popup?.[0]?.hide();
@@ -537,4 +543,3 @@ export const createSlashMenuPlugin = () => {
     },
   };
 };
-

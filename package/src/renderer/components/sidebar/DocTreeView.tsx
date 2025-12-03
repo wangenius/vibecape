@@ -17,9 +17,11 @@ import { dialog } from "@/components/custom/DialogModal";
 import { toast } from "sonner";
 import { TreeNode } from "./TreeNode";
 import { DRAG_HOVER_DELAY } from "./constants";
+import { useTranslation } from "react-i18next";
 
 // 文档树视图
 export const DocTreeView = () => {
+  const { t } = useTranslation();
   const tree = useVibecapeStore((state) => state.tree);
   const activeDocId = useVibecapeStore((state) => state.activeDocId);
   const openDoc = useVibecapeStore((state) => state.openDoc);
@@ -53,11 +55,11 @@ export const DocTreeView = () => {
     (parentId: string | null) => {
       let title = "";
       dialog({
-        title: "新建文档",
+        title: t("common.settings.newDoc"),
         className: "max-w-sm",
         content: (
           <Input
-            placeholder="输入文档名称"
+            placeholder={t("common.settings.docNamePlaceholder")}
             onChange={(e) => (title = e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter" && title.trim()) {
@@ -73,14 +75,14 @@ export const DocTreeView = () => {
         footer: (close) => (
           <div className="flex justify-end gap-2">
             <Button variant="ghost" size="sm" onClick={close}>
-              取消
+              {t("common.actions.cancel")}
             </Button>
             <Button
               size="sm"
               data-create-child-btn
               onClick={async () => {
                 if (!title.trim()) {
-                  toast.error("请输入文档名称");
+                  toast.error(t("common.settings.enterDocName"));
                   return;
                 }
                 try {
@@ -88,14 +90,16 @@ export const DocTreeView = () => {
                     parent_id: parentId,
                     title: title.trim(),
                   });
-                  toast.success("文档已创建");
+                  toast.success(t("common.settings.docCreated"));
                   close();
                 } catch (error: any) {
-                  toast.error(error?.message ?? "创建失败");
+                  toast.error(
+                    error?.message ?? t("common.settings.createFailed")
+                  );
                 }
               }}
             >
-              创建
+              {t("common.settings.create")}
             </Button>
           </div>
         ),
@@ -109,22 +113,22 @@ export const DocTreeView = () => {
     (node: DocTreeNode) => {
       const hasChildren = (node.children?.length ?? 0) > 0;
       dialog.confirm({
-        title: "确认删除",
+        title: t("common.settings.confirmDelete"),
         content: (
           <p>
-            确定要删除 <strong>{node.title}</strong> 吗？
-            {hasChildren && "该文档下的所有子文档也会被删除。"}
+            {t("common.settings.deleteDocConfirm", { title: node.title })}
+            {hasChildren && t("common.settings.deleteDocChildrenWarning")}
           </p>
         ),
-        okText: "删除",
-        cancelText: "取消",
+        okText: t("common.settings.delete"),
+        cancelText: t("common.actions.cancel"),
         variants: "destructive",
         onOk: async () => {
           try {
             await deleteDoc(node.id);
-            toast.success("已删除");
+            toast.success(t("common.settings.deleted"));
           } catch (error: any) {
-            toast.error(error?.message ?? "删除失败");
+            toast.error(error?.message ?? t("common.settings.deleteFailed"));
           }
         },
       });
@@ -136,9 +140,9 @@ export const DocTreeView = () => {
   const handleExportMarkdown = useCallback(async (node: DocTreeNode) => {
     try {
       await window.api.vibecape.exportDocAsMarkdown(node.id);
-      toast.success("已导出为 Markdown");
+      toast.success(t("common.settings.exportMarkdownSuccess"));
     } catch (error: any) {
-      toast.error(error?.message ?? "导出失败");
+      toast.error(error?.message ?? t("common.settings.exportFailed"));
     }
   }, []);
 
@@ -146,9 +150,9 @@ export const DocTreeView = () => {
   const handleExportPdf = useCallback(async (node: DocTreeNode) => {
     try {
       await window.api.vibecape.exportDocAsPdf(node.id);
-      toast.success("已导出为 PDF");
+      toast.success(t("common.settings.exportPdfSuccess"));
     } catch (error: any) {
-      toast.error(error?.message ?? "导出失败");
+      toast.error(error?.message ?? t("common.settings.exportFailed"));
     }
   }, []);
 
@@ -196,14 +200,14 @@ export const DocTreeView = () => {
   if (tree.length === 0) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center text-sm text-muted-foreground px-4 text-center gap-3">
-        <span>文档库为空</span>
+        <span>{t("common.settings.emptyDocs")}</span>
         <Button
           size="sm"
           variant="outline"
           onClick={() => handleCreateDoc(null)}
         >
           <FilePlus className="h-4 w-4 mr-2" />
-          新建文档
+          {t("common.settings.newDoc")}
         </Button>
       </div>
     );
@@ -218,6 +222,7 @@ export const DocTreeView = () => {
 
 // DndContext 包装器
 export const DocTreeWithDnd = () => {
+  const { t } = useTranslation();
   const refreshTree = useVibecapeStore((state) => state.refreshTree);
   const [draggingNode, setDraggingNode] = useState<DocTreeNode | null>(null);
   const [hoveredFolderId, setHoveredFolderId] = useState<string | null>(null);
@@ -291,17 +296,17 @@ export const DocTreeWithDnd = () => {
             active.id as string,
             over.id as string
           );
-          toast.success("已移动到文件夹");
+          toast.success(t("common.settings.movedToFolder"));
         } else {
           await window.api.vibecape.reorderDoc(
             active.id as string,
             over.id as string
           );
-          toast.success("顺序已更新");
+          toast.success(t("common.settings.reordered"));
         }
         void refreshTree();
       } catch (error: any) {
-        toast.error(error?.message ?? "操作失败");
+        toast.error(error?.message ?? t("common.settings.operationFailed"));
       }
     },
     [refreshTree, hoveredFolderId, hoverTimerRef]

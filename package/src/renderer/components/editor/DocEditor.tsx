@@ -25,6 +25,7 @@ import { ImageNode } from "@/components/editor/extensions/ImageNode";
 import { LinkNode } from "@/components/editor/extensions/LinkNode";
 import { PolishManager } from "@/components/editor/PolishManager";
 import { CustomKeyboardExtension } from "@/components/editor/extensions/CustomKeyboardExtension";
+import { useTranslation } from "react-i18next";
 
 type Props = {
   doc: DocData;
@@ -33,12 +34,13 @@ type Props = {
 };
 
 export const DocEditor = ({ doc, onChange, onSave }: Props) => {
+  const { t } = useTranslation();
   // 用 ref 存储 save 函数，解决循环引用问题
   const handleSaveRef = useRef<() => void>(() => {});
   const containerRef = useRef<HTMLDivElement>(null);
 
   // 创建 Slash Menu 配置
-  const slashMenuConfig = useMemo(() => createSlashMenuPlugin(), []);
+  const slashMenuConfig = useMemo(() => createSlashMenuPlugin(t), [t]);
 
   // 创建 Tiptap 编辑器
   const editor = useEditor({
@@ -57,7 +59,7 @@ export const DocEditor = ({ doc, onChange, onSave }: Props) => {
       ImageNode,
       LinkNode,
       Placeholder.configure({
-        placeholder: "输入 / 打开命令菜单...",
+        placeholder: t("common.settings.slashPlaceholder"),
         showOnlyWhenEditable: true,
         showOnlyCurrent: true,
       }),

@@ -5,31 +5,35 @@ import { settingsShape } from "@common/config/settings";
 
 // English translations
 import enCommon from "./en/common.json";
-import enHome from "./en/home.json";
-import enAuth from "./en/auth.json";
-import enDashboard from "./en/dashboard.json";
+import enChat from "./en/chat.json";
+import enSettings from "./en/settings.json";
+import enEditor from "./en/editor.json";
 
 // Chinese translations
 import zhCommon from "./zh-CN/common.json";
-import zhHome from "./zh-CN/home.json";
-import zhAuth from "./zh-CN/auth.json";
-import zhDashboard from "./zh-CN/dashboard.json";
+import zhChat from "./zh-CN/chat.json";
+import zhSettings from "./zh-CN/settings.json";
+import zhEditor from "./zh-CN/editor.json";
 
 const resources = {
   "zh-CN": {
     translation: {
-      common: zhCommon,
-      home: zhHome,
-      auth: zhAuth,
-      dashboard: zhDashboard,
+      common: {
+        ...zhCommon,
+        settings: zhSettings,
+        ...zhEditor,
+      },
+      chat: zhChat,
     },
   },
   "en-US": {
     translation: {
-      common: enCommon,
-      home: enHome,
-      auth: enAuth,
-      dashboard: enDashboard,
+      common: {
+        ...enCommon,
+        settings: enSettings,
+        ...enEditor,
+      },
+      chat: enChat,
     },
   },
 };

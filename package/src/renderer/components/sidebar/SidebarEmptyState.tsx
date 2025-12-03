@@ -2,8 +2,10 @@ import { Button } from "@/components/ui/button";
 import { useVibecapeStore } from "@/hook/useVibecapeStore";
 import { Loader2, FolderOpen } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 export const SidebarEmptyState = () => {
+  const { t } = useTranslation();
   const loading = useVibecapeStore((state) => state.loading);
   const openWorkspace = useVibecapeStore((state) => state.openWorkspace);
 
@@ -11,10 +13,12 @@ export const SidebarEmptyState = () => {
     try {
       const result = await openWorkspace();
       if (result) {
-        toast.success("工作区已就绪");
+        toast.success(t("common.workspace.workspaceReady"));
       }
     } catch (error) {
-      toast.error((error as Error).message || "初始化失败");
+      toast.error(
+        (error as Error).message || t("common.workspace.initializationFailed")
+      );
     }
   };
   return (
@@ -37,7 +41,7 @@ export const SidebarEmptyState = () => {
             ) : (
               <FolderOpen className="h-4 w-4" />
             )}
-            Open Workspace
+            {t("common.workspace.openWorkspace")}
           </Button>
         </div>
       </div>

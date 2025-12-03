@@ -10,6 +10,7 @@ import { ReactNodeViewRenderer, NodeViewWrapper } from "@tiptap/react";
 import { useState, useCallback, useRef, useEffect, KeyboardEvent } from "react";
 import { Loader2, Sparkles, X, Check, BrainIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 export interface AIRewriteOptions {
   HTMLAttributes: Record<string, any>;
@@ -439,6 +440,7 @@ function getMarkedText(editor: Editor, markId: string): string {
 }
 
 function AIRewriteComponent(props: any) {
+  const { t } = useTranslation();
   const { node, editor, deleteNode, selected } = props;
   const nodeId = node.attrs.id as string;
   const mode = node.attrs.mode as "generate" | "polish";
@@ -542,7 +544,7 @@ ${textBefore}
           setStatus("success");
         } else if (payload?.type === "error") {
           (window as any).electron?.ipcRenderer.removeAllListeners(channel);
-          setError(payload.message || "生成失败");
+          setError(payload.message || t("common.aiRewrite.failed"));
           setStatus("error");
         }
       };
@@ -552,7 +554,7 @@ ${textBefore}
       // 使用 docs:ai:generate API
       const docsAI = (window as any).api?.docs?.ai;
       if (!docsAI?.generate) {
-        throw new Error("Docs AI API 未启用");
+        throw new Error(t("common.aiRewrite.apiNotEnabled"));
       }
 
       await docsAI.generate({
@@ -562,7 +564,9 @@ ${textBefore}
       });
     } catch (err) {
       console.error("AI 改写失败:", err);
-      setError(err instanceof Error ? err.message : "未知错误");
+      setError(
+        err instanceof Error ? err.message : t("common.aiRewrite.unknownError")
+      );
       setStatus("error");
       // 清理监听器
       (window as any).electron?.ipcRenderer.removeAllListeners(channel);
@@ -669,7 +673,11 @@ ${textBefore}
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={isPolishMode ? "润色需求..." : "输入指令..."}
+            placeholder={
+              isPolishMode
+                ? t("common.aiRewrite.polishPlaceholder")
+                : t("common.aiRewrite.generatePlaceholder")
+            }
             disabled={status === "loading"}
             className={cn(
               "flex-1 bg-transparent text-sm resize-none outline-none text-foreground",
@@ -707,7 +715,7 @@ ${textBefore}
         {reasoning && status === "loading" && !response && (
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground pl-2">
             <BrainIcon className="size-3" />
-            <span>思考中...</span>
+            <span>{t("common.aiRewrite.thinking")}</span>
           </div>
         )}
 

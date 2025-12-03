@@ -1,0 +1,180 @@
+{
+  "error": {
+    "notFound": "未找到任务",
+    "loadFailed": "无法加载任务详情，请返回重试"
+  },
+  "actions": {
+    "backToHome": "返回首页",
+    "back": "返回"
+  },
+  "details": {
+    "specialRequirements": "特殊要求",
+    "requirementDetails": "需求详情",
+    "noBrief": "无简报可用",
+    "attachments": "附件",
+    "timeline": "时间线",
+    "deadline": "截止日期",
+    "clientInfo": "客户信息",
+    "companyDescription": "公司描述"
+  },
+  "response": {
+    "title": "我的回复",
+    "submittedAt": "提交时间",
+    "accepted": "已接受",
+    "rejected": "已拒绝",
+    "proposal": "提案",
+    "quotation": "报价",
+    "remarks": "备注",
+    "attachments": "附件",
+    "attachment": "附件",
+    "respondTitle": "回复任务",
+    "actions": {
+      "accept": "接受任务",
+      "reject": "拒绝任务"
+    },
+    "form": {
+      "proposalLabel": "提案 *",
+      "proposalPlaceholder": "请描述您的提案和执行计划...",
+      "rejectReasonLabel": "拒绝原因 *",
+      "rejectReasonPlaceholder": "请说明拒绝的原因...",
+      "quotationLabel": "报价（可选）",
+      "quotationPlaceholder": "例如：50,000 - 80,000 元",
+      "attachmentsLabel": "附件（可选）",
+      "uploadFiles": "点击上传文件",
+      "supportedFormats": "支持PDF、图片等格式",
+      "submitting": "提交中...",
+      "submit": "提交回复"
+    }
+  },
+  "campaignDetail": {
+    "header": {
+      "back": "返回工作台",
+      "subtitle": "查看简报、联系详情，并在不离开工作区的情况下回复。"
+    },
+    "meta": {
+      "createdAt": "创建时间",
+      "assignedAt": "分配时间",
+      "deadline": "截止日期",
+      "viewedAt": "查看时间",
+      "respondedAt": "回复时间"
+    },
+    "overview": {
+      "requirementsTitle": "特殊要求"
+    },
+    "brief": {
+      "title": "简报详情",
+      "subtitle": "了解品牌分享的范围、目标和期望。",
+      "description": "活动描述",
+      "objectives": "目标",
+      "targetAudience": "目标受众",
+      "budget": "预算范围",
+      "budgetRange": "{min} - {max} {currency}",
+      "timeline": "时间线"
+    },
+    "attachments": {
+      "title": "附件"
+    },
+    "response": {
+      "title": "您的回复",
+      "proposal": "提案备注",
+      "quotation": "报价",
+      "attachments": "附件",
+      "attachmentName": "附件 {index}"
+    },
+    "client": {
+      "title": "品牌联系人"
+    },
+    "actions": {
+      "title": "回复简报",
+      "accept": "接受简报",
+      "reject": "拒绝简报"
+    },
+    "form": {
+      "decisionAccept": "接受简报",
+      "decisionReject": "拒绝简报",
+      "proposalLabelAccept": "提案备注 *",
+      "proposalLabelReject": "拒绝原因",
+      "proposalPlaceholderAccept": "分享您建议的方法、交付成果和时间线…",
+      "proposalPlaceholderReject": "可选择说明您拒绝此简报的原因…",
+      "quotationLabel": "报价（可选）",
+      "quotationPlaceholder": "例如 50,000 人民币",
+      "attachmentsLabel": "附件（可选）",
+      "attachmentsCta": "上传文件",
+      "attachmentsHelper": "支持格式：PDF、DOC、PPT",
+      "submit": "提交回复",
+      "submitting": "提交中…",
+      "cancel": "取消"
+    },
+    "empty": {
+      "title": "活动不可用",
+      "description": "找不到此简报或可能已被删除。",
+      "back": "返回工作台"
+    },
+    "alerts": {
+      "proposalRequired": "请在提交前添加提案备注。",
+      "submitAccept": "简报已接受。",
+      "submitReject": "简报已拒绝。",
+      "submitFailed": "提交回复失败。请稍后重试。",
+      "loadFailed": "加载活动详情失败。"
+    }
+  },
+  "invitation": {
+    "loading": "加载中...",
+    "loadFailed": "加载失败",
+    "missingParams": "缺少必要参数：邀请链接无效",
+    "fetchError": "获取项目信息失败",
+    "fetchErrorRetry": "获取项目信息失败，请稍后重试",
+    "projectUnavailable": "项目不可用",
+    "projectNotFound": "未找到相关项目信息",
+    "backToDashboard": "返回工作台",
+    "needProfile": "需要完善资料",
+    "needProfileDesc": "请先完成供应商申请，才能接受项目邀请",
+    "handleLater": "稍后处理",
+    "goToApplication": "前往申请",
+    "alreadyAssigned": "已经分配",
+    "alreadyAssignedDesc": "您已经被分配到此项目",
+    "processing": "处理中...",
+    "acceptSuccess": "接受成功",
+    "acceptMultiSuccess": "成功接受 {count} 个项目邀请",
+    "assignmentSuccess": "分配成功",
+    "operationFailed": "操作失败",
+    "retryLater": "请稍后重试",
+    "allAccepted": "所有邀请已接受",
+    "allAcceptedDesc": "您已接受所有 {count} 个项目的邀请。",
+    "goToProjects": "前往项目列表",
+    "confirmInvitation": "项目邀请确认",
+    "receivedInvitations": "您收到了 {count} 个项目的邀请",
+    "acceptedAndPending": "（其中 {accepted} 个已接受，{pending} 个待确认）",
+    "accepted": "已接受",
+    "tip": "温馨提示",
+    "acceptAllTip": "点击下方按钮后，将接受所有待确认的项目邀请。您可以在供应商工作台查看和管理这些项目。",
+    "confirmAcceptAll": "确认接受所有邀请 ({count})",
+    "alreadyAcceptedTitle": "已接受邀请",
+    "alreadyAcceptedDesc": "您已经接受过此项目的邀请",
+    "projectInvitation": "项目邀请",
+    "projectInvitationDesc": "您收到了一个新的项目邀请，请查看详情并决定是否接受",
+    "projectInfo": "项目信息",
+    "client": "客户",
+    "email": "邮箱",
+    "createdTime": "创建时间",
+    "projectBrief": "项目简介",
+    "acceptTip": "接受邀请后，您将可以查看完整的项目信息并与客户进行沟通",
+    "acceptInvitation": "接受邀请"
+  },
+  "api": {
+    "pleaseLogin": "请先登录",
+    "needVendorProfile": "需要完成供应商申请",
+    "invalidInvitationLink": "邀请链接无效或已失效",
+    "noActiveInvitations": "没有找到相关的项目邀请",
+    "campaignNotFound": "项目不存在",
+    "campaignClosed": "该项目已关闭",
+    "alreadyAssignedToProject": "您已经被分配到此项目",
+    "batchAssignSuccess": "成功接受 {count} 个项目邀请",
+    "allProcessed": "所有项目已处理完成",
+    "vendorJoinedViaBatch": "供应商 {companyName} 通过邀请链接批量加入",
+    "vendorJoinedViaLink": "供应商 {companyName} 通过邀请链接加入",
+    "missingParams": "缺少 sendId 或 campaignId 参数",
+    "assignFailed": "分配失败，请稍后重试",
+    "fetchInfoFailed": "获取项目信息失败"
+  }
+}

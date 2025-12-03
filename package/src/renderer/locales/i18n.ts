@@ -1,22 +1,42 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
-import enUS from "./en-US.json";
-import zhCN from "./zh-CN.json";
 import { getCurrentSettings, updateSettings } from "@/hook/app/useSettings";
 import { settingsShape } from "@common/config/settings";
 
+// English translations
+import enCommon from "./en/common.json";
+import enHome from "./en/home.json";
+import enAuth from "./en/auth.json";
+import enDashboard from "./en/dashboard.json";
+
+// Chinese translations
+import zhCommon from "./zh-CN/common.json";
+import zhHome from "./zh-CN/home.json";
+import zhAuth from "./zh-CN/auth.json";
+import zhDashboard from "./zh-CN/dashboard.json";
+
 const resources = {
   "zh-CN": {
-    translation: zhCN,
+    translation: {
+      common: zhCommon,
+      home: zhHome,
+      auth: zhAuth,
+      dashboard: zhDashboard,
+    },
   },
   "en-US": {
-    translation: enUS,
+    translation: {
+      common: enCommon,
+      home: enHome,
+      auth: enAuth,
+      dashboard: enDashboard,
+    },
   },
 };
 
 i18n.use(initReactI18next).init({
   resources,
-  fallbackLng: "zh-CN",
+  fallbackLng: "en-US",
   lng: getCurrentSettings().ui.language,
   interpolation: {
     escapeValue: false,

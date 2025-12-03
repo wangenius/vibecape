@@ -48,6 +48,7 @@ export const settings = sqliteTable("settings", {
         theme: "default",
         mode: "light",
         language: "zh-CN",
+        promptLanguage: "zh-CN",
         showChapterList: true,
       },
       general: {
@@ -76,6 +77,7 @@ export type SettingsData = {
     theme: string;
     mode: string;
     language: string;
+    promptLanguage: string;
     showChapterList: boolean;
   };
   model: {

@@ -1,0 +1,49 @@
+{
+  "title": "Demands Leads",
+  "subtitle": "Browse all available demand leads and find project opportunities that match you",
+  "search": {
+    "placeholder": "Search demands...",
+    "search": "Search"
+  },
+  "dialog": {
+    "contactTitle": "Contact Info",
+    "contactPerson": "Contact Person",
+    "contact": "Contact",
+    "deadline": "Deadline",
+    "goToBid": "Go to Bid",
+    "close": "Close",
+    "reportError": "Report Error"
+  },
+  "filters": {
+    "all": "All",
+    "high": "High Quality",
+    "medium": "Medium",
+    "low": "Low Quality"
+  },
+  "quality": {
+    "high": "High Quality",
+    "medium": "Medium",
+    "low": "Low Quality"
+  },
+  "meta": {
+    "createdAt": "Created"
+  },
+  "contactInfo": "Contact Info",
+  "viewSource": "View Source",
+  "loading": "Loading...",
+  "loadMore": "Load More",
+  "total": "Total {count} demands",
+  "empty": {
+    "title": "No demands found",
+    "description": "There are no available demands at the moment. Please try again later."
+  },
+  "subscriptionRequired": {
+    "title": "Subscription Required",
+    "description": "Viewing demands leads requires a subscription. Please subscribe to access this feature.",
+    "cta": "Go to Subscription"
+  },
+  "errors": {
+    "fetchFailed": "Failed to load demands. Please try again later."
+  }
+}
+

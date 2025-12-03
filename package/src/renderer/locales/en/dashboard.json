@@ -1,0 +1,76 @@
+{
+  "client": {
+    "campaignDetail": {
+      "emailOutreach": {
+        "justNow": "Just now",
+        "minutesAgo": "{minutes} minutes ago",
+        "hoursAgo": "{hours} hours ago"
+      },
+      "info": {
+        "days": "days",
+        "hours": "hours",
+        "minutes": "minutes",
+        "pausedAt": "Paused at",
+        "completedAt": "Completed at",
+        "closedAt": "Closed at",
+        "remainingTime": "Remaining time",
+        "editEndDate": "Edit end date",
+        "editEndDateDialog": {
+          "title": "Edit Campaign End Date",
+          "description": "Set a new end date for the campaign. The campaign will automatically end at this time.",
+          "currentEndDate": "Current end date",
+          "selectDate": "Select date",
+          "selectTime": "Select time",
+          "cancel": "Cancel",
+          "confirm": "Confirm",
+          "updating": "Updating...",
+          "error": "Update failed, please try again",
+          "validation": {
+            "mustBeFuture": "End date must be in the future"
+          }
+        }
+      },
+      "progress": {
+        "searching": "Matching"
+      },
+      "actions": {
+        "start": "Start",
+        "pause": "Pause",
+        "close": "Close"
+      },
+      "brief": {
+        "title": "Campaign brief"
+      },
+      "confirmations": {
+        "pause": {
+          "title": "Confirm Pause Campaign",
+          "description": "When paused, the campaign will stop matching new vendors, but existing matches can still respond.",
+          "cancel": "Cancel",
+          "confirm": "Confirm Pause"
+        },
+        "close": {
+          "title": "Confirm Close Campaign",
+          "description": "Once closed, the campaign cannot be reopened and all matching processes will stop. This action cannot be undone.",
+          "cancel": "Cancel",
+          "confirm": "Confirm Close"
+        }
+      },
+      "alerts": {
+        "started": "Campaign started",
+        "paused": "Campaign paused",
+        "closed": "Campaign closed",
+        "extended": "Campaign end date updated"
+      }
+    },
+    "statuses": {
+      "preparing": "Preparing",
+      "running": "Matching",
+      "paused": "Paused",
+      "reviewing": "Under review",
+      "completed": "Completed",
+      "closed": "Closed",
+      "unknown": "Unknown"
+    }
+  }
+}
+

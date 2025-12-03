@@ -1,0 +1,72 @@
+{
+  "add": "添加案例",
+  "addFirst": "添加您的第一个案例",
+  "empty": "暂无案例",
+  "emptyDescription": "添加您的第一个成功案例",
+  "list": {
+    "emptyTitle": "暂无信息",
+    "emptyDescription": "开始与AI聊天以收集公司信息",
+    "count": "个案例"
+  },
+  "fileCountSuffix": "个文件",
+  "edit": "编辑案例",
+  "addDescription": "填写案例信息以展示您的项目经验",
+  "upload": {
+    "successPrefix": "成功上传",
+    "successSuffix": "个文件",
+    "uploading": "上传中...",
+    "dragOrClick": "拖拽或点击上传",
+    "supportTypes": "支持图片、视频、音频、PDF、PPT、Word等文件，最大50MB"
+  },
+  "form": {
+    "title": "案例标题",
+    "titlePlaceholder": "例如：国际品牌年度营销活动",
+    "description": "案例描述",
+    "descriptionPlaceholder": "描述案例背景、执行过程、结果等...",
+    "media": "案例素材"
+  },
+  "fileTitlePlaceholder": "输入文件标题",
+  "detail": {
+    "title": "案例详情",
+    "description": "查看和编辑案例信息",
+    "edit": "编辑",
+    "mediaFiles": "媒体文件",
+    "createdTime": "创建时间",
+    "download": "下载",
+    "fileTypes": {
+      "image": "图片",
+      "video": "视频",
+      "audio": "音频",
+      "document": "文档",
+      "archive": "压缩包",
+      "file": "文件"
+    }
+  },
+  "delete": {
+    "title": "确认删除案例",
+    "descriptionPrefix": "您确定要删除案例",
+    "descriptionSuffix": "吗？",
+    "warning": "此操作还将删除案例中的所有媒体文件，且无法撤销。",
+    "cancel": "取消",
+    "confirm": "确认删除",
+    "deleting": "删除中..."
+  },
+  "dialog": {
+    "title": "添加案例",
+    "description": "填写案例信息以展示您的项目经验",
+    "titleLabel": "案例标题",
+    "titlePlaceholder": "例如：国际品牌年度营销活动",
+    "descriptionLabel": "案例描述",
+    "descriptionPlaceholder": "描述案例背景、执行过程、结果等...",
+    "mediaLabel": "案例图片",
+    "uploadText": "点击上传文件",
+    "uploadingText": "上传中...",
+    "uploadHint": "支持图片、视频、音频、PDF、PPT、Word等文件，最大50MB",
+    "uploadedFiles": "已上传文件",
+    "required": "必填",
+    "submit": "添加",
+    "adding": "添加中...",
+    "cancel": "取消"
+  },
+  "moreImages": "还有 {count} 张图片"
+}

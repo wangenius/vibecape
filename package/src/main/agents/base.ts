@@ -10,6 +10,7 @@ import {
   type LanguageModel,
 } from "ai";
 import type { AgentConfig, AgentMeta, AgentModule } from "./types";
+import { getSystemPrompt } from "@common/types/agent";
 
 export { tool };
 
@@ -23,10 +24,10 @@ export function defineAgent(
   return {
     meta,
     getConfig: () => config,
-    createAgent: (model: LanguageModel) => {
+    createAgent: (model: LanguageModel, language: "en-US" | "zh-CN" = "en-US") => {
       return new AIAgent({
         model,
-        system: config.system,
+        system: getSystemPrompt(config.system, language),
         tools: config.tools ?? {},
         stopWhen: stepCountIs(config.maxSteps ?? 20),
         toolChoice: config.toolChoice ?? "auto",

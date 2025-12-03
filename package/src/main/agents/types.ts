@@ -7,6 +7,9 @@ import type {
   LanguageModel,
   Tool,
 } from "ai";
+import type { BilingualSystem } from "@common/types/agent";
+
+export type { BilingualSystem };
 
 /** Agent 元数据（用于 UI 展示） */
 export interface AgentMeta {
@@ -24,8 +27,8 @@ export interface AgentMeta {
 
 /** Agent 配置选项 */
 export interface AgentConfig {
-  /** 系统提示词 */
-  system: string;
+  /** 系统提示词（支持字符串或多语言对象） */
+  system: string | BilingualSystem;
   /** 工具集 */
   tools?: Record<string, Tool>;
   /** 最大步数 */
@@ -41,12 +44,12 @@ export interface AgentModule {
   /** 获取配置 */
   getConfig(): AgentConfig;
   /** 创建 AI SDK Agent 实例 */
-  createAgent(model: LanguageModel): AIAgent<Record<string, Tool>>;
+  createAgent(model: LanguageModel, language?: "en-US" | "zh-CN"): AIAgent<Record<string, Tool>>;
 }
 
 export type AgentId = string;
 
 // 兼容旧接口
 export interface Agent extends AgentMeta {
-  systemPrompt: string;
+  systemPrompt: string | BilingualSystem;
 }

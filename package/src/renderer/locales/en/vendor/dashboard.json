@@ -1,0 +1,113 @@
+{
+  "header": {
+    "title": "Vendor workspace",
+    "subtitle": "Stay informed about new briefs and keep your profile ready for brands",
+    "profile": "Profile",
+    "manageProfile": "Manage profile",
+    "manageCases": "Case library",
+    "logout": "Sign out"
+  },
+  "navigation": {
+    "application": "Apply as Vendor",
+    "goToClient": "Go to Client",
+    "recommend": "My Recommendations",
+    "home": "Home",
+    "requirements": "Demands Leads",
+    "myShowcase": "My Showcase",
+    "profile": "Profile",
+    "cases": "Case Studies",
+    "showcaseHint": "Complete profiles and excellent cases will be shown to clients after matching, improving success rate"
+  },
+  "meta": {
+    "status": "Account status",
+    "lastUpdated": "Updated {relative}",
+    "refresh": "Refresh",
+    "refreshing": "Refreshing…"
+  },
+  "statsCard": {
+    "cases": "Case studies",
+    "verification": "Verification",
+    "established": "Founded",
+    "statuses": {
+      "verified": "Verified",
+      "pending": "Pending review",
+      "rejected": "Rejected",
+      "disabled": "Disabled"
+    }
+  },
+  "summaries": {
+    "total": "All briefs",
+    "pending": "Awaiting response",
+    "accepted": "Won briefs",
+    "rejected": "Declined"
+  },
+  "campaigns": {
+    "title": "Assigned briefs",
+    "subtitle": "Review campaign details, respond quickly, and keep brands informed.",
+    "responseAlert": "Please respond promptly to matched and recommended business requirements. Failure to respond for a long time may result in a decrease in rating and recommendation weight.",
+    "action": "Complete your profile",
+    "filterLabel": "Filter by status",
+    "empty": {
+      "title": "No briefs yet",
+      "description": "When a brand matches with you, the brief will appear here in real time.",
+      "cta": "Improve profile visibility"
+    }
+  },
+  "filters": {
+    "all": "All",
+    "pending": "Awaiting response",
+    "viewed": "Viewed",
+    "accepted": "Accepted",
+    "rejected": "Declined"
+  },
+  "statuses": {
+    "pending": "Awaiting response",
+    "viewed": "Viewed",
+    "accepted": "Accepted",
+    "rejected": "Declined",
+    "expired": "Expired"
+  },
+  "actionRequired": {
+    "title": "Action required",
+    "description": "Respond this brief",
+    "empty": "You are all caught up!"
+  },
+  "activity": {
+    "title": "Latest activity",
+    "empty": "Updates from brands will appear here."
+  },
+  "details": {
+    "customer": "Brand",
+    "unknownCustomer": "Unknown brand",
+    "assignedAt": "Assigned",
+    "viewedAt": "Viewed",
+    "respondedAt": "Responded",
+    "acceptRemark": "Acceptance note",
+    "rejectRemark": "Reason for decline",
+    "viewDetails": "Open brief",
+    "success": "Match complete"
+  },
+  "metaCards": {
+    "pending": "Awaiting or viewed",
+    "accepted": "Accepted briefs",
+    "rejected": "Declined briefs"
+  },
+  "companyCard": {
+    "title": "Company snapshot",
+    "manageProfile": "Edit profile",
+    "contact": "Primary contact",
+    "intro": "About",
+    "introPlaceholder": "Add a short introduction so brands can understand your focus.",
+    "services": "Service focus",
+    "servicesPlaceholder": "Add service tags to highlight your expertise."
+  },
+  "errors": {
+    "fetchAssignments": "Failed to load briefs"
+  },
+  "sidebar": {
+    "plan": {
+      "free": "Free",
+      "pro": "Pro"
+    }
+  }
+}

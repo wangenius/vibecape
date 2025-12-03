@@ -1,0 +1,331 @@
+{
+  "title": "My campaigns",
+  "description": "Manage all your marketing initiatives",
+  "create": "Create new campaign",
+  "stats": {
+    "total": "Total campaigns",
+    "running": "In progress",
+    "completed": "Completed",
+    "vendors": "Total vendors"
+  },
+  "searchPlaceholder": "Search by campaign name or description…",
+  "filters": {
+    "all": "All statuses",
+    "more": "More filters"
+  },
+  "loading": "Loading campaigns…",
+  "actions": {
+    "viewDetails": "View details"
+  },
+  "progress": {
+    "label": "Matching progress",
+    "summary": "{responses}/{total} responses"
+  },
+  "empty": {
+    "title": "No campaigns yet",
+    "description": "Create your first marketing campaign to start matching vendors",
+    "cta": "Create first campaign"
+  },
+  "filteredEmpty": {
+    "title": "No campaigns found",
+    "description": "Try adjusting your search or filter criteria",
+    "clear": "Clear filters"
+  },
+  "confirmDelete": "Confirm delete campaign",
+  "confirmDeleteMessage": "Are you sure you want to delete campaign \"{name}\"? This action cannot be undone.",
+  "delete": "Delete",
+  "cancel": "Cancel",
+  "newCampaign": {
+    "intro": {
+      "badge": "AI Brief Builder",
+      "title": "Create a marketing brief with AI",
+      "description": "Our AI assistant guides you through a quick conversation to produce a professional marketing brief.",
+      "highlights": {
+        "duration": "3-5 minutes",
+        "efficiency": "saves up to 80% of manual effort",
+        "connector": "—"
+      },
+      "steps": [
+        {
+          "title": "Describe your needs",
+          "description": "Share your marketing goals and requirements with AI"
+        },
+        {
+          "title": "Smart analysis",
+          "description": "AI understands the brief and asks the right follow-up questions"
+        },
+        {
+          "title": "Generate the brief",
+          "description": "Automatically produce a polished brief and vendor matching criteria"
+        }
+      ],
+      "assurance": {
+        "title": "AI ensures every brief includes the essentials",
+        "caption": "Budget • Channel mix • Target audience • Timeline • Expected outcomes"
+      },
+      "cta": "Start creating a brief"
+    },
+    "review": {
+      "title": "Brief ready to review",
+      "description": "Confirm the details below before matching with suppliers.",
+      "summary": {
+        "title": "Campaign overview",
+        "fields": {
+          "name": "Campaign name",
+          "company": "Company",
+          "budget": "Budget",
+          "audience": "Target audience"
+        }
+      },
+      "details": {
+        "toggle": "View full brief (Markdown)"
+      },
+      "channels": {
+        "title": "Recommended channels"
+      },
+      "objectives": {
+        "title": "Marketing objectives",
+        "empty": "No objectives yet"
+      },
+      "actions": {
+        "back": "Back to edit",
+        "confirm": "Confirm & start matching",
+        "creating": "Creating…"
+      }
+    },
+    "complete": {
+      "title": "Campaign created!",
+      "description": "Your marketing brief is ready. We are now matching suitable vendors and will notify you as soon as responses arrive.",
+      "nextSteps": {
+        "title": "What happens next?",
+        "items": [
+          "Automatically match suppliers from our directory",
+          "Match and connect with qualified vendor partners",
+          "Collect and organize supplier responses",
+          "Recommend the best-fit vendors for your campaign"
+        ]
+      },
+      "footer": {
+        "info": "Estimated matching time: 24–48 hours",
+        "redirect": "Redirecting to the campaign detail page…"
+      }
+    },
+    "alerts": {
+      "briefIncomplete": "Please finish the brief before submitting.",
+      "loginRequired": "Please sign in before creating a campaign.",
+      "saveFailed": "Failed to save the campaign, please try again later.",
+      "notFound": "Campaign not found",
+      "loadFailed": "Failed to load campaign",
+      "checkId": "Please check whether the campaign ID is correct."
+    },
+    "format": {
+      "budgetUnset": "Not set",
+      "targetUnset": "Not specified"
+    },
+    "defaults": {
+      "unknownCompany": "Unknown company",
+      "defaultChannel": "Marketing",
+      "generatedName": {
+        "objectives": "{objectives} – {channel} ({date})",
+        "company": "{company} campaign ({date})",
+        "fallback": "{channel} campaign ({date})"
+      }
+    }
+  },
+  "detail": {
+    "actions": {
+      "backToList": "Back to campaigns",
+      "exportBrief": "Export brief",
+      "contactVendors": "Contact vendors",
+      "contactNow": "Contact now"
+    },
+    "progress": {
+      "title": "Matching progress",
+      "searching": "Searching",
+      "contacted": "Contacted",
+      "confirmed": "Confirmed",
+      "rejected": "Rejected",
+      "upgrade": {
+        "title": "Upgrade to unlock vendor matching",
+        "description": "Subscribe to Pro to view matching progress and access complete vendor details.",
+        "cta": "Upgrade to Pro",
+        "benefitsTitle": "Pro benefits",
+        "benefits": [
+          "View real-time vendor matching progress",
+          "Access full vendor contact details",
+          "Export vendor performance reports"
+        ]
+      },
+      "matching": {
+        "title": "Matching in progress…",
+        "description": "AI is searching globally for the best vendors for you."
+      },
+      "stats": {
+        "outreachLabel": "Vendor matching",
+        "responsesLabel": "Vendor responses",
+        "waiting": {
+          "title": "Awaiting vendor matches",
+          "description": "We are matching qualified vendors for your campaign."
+        },
+        "success": {
+          "title": "Strong engagement",
+          "description": "{count} vendors have responded with high match quality."
+        },
+        "pending": {
+          "title": "Waiting for responses",
+          "description": "{count} vendors matched, awaiting their responses."
+        }
+      },
+      "empty": "No vendor data yet"
+    },
+    "ai": {
+      "title": "AI insights",
+      "budget": "Budget optimization",
+      "channel": "Channel recommendations",
+      "risk": "Risk assessment"
+    },
+    "vendors": {
+      "title": "Recommended",
+      "matchedCount": "Matched {count} vendors for you",
+      "interestedCount": "{count} vendors interested",
+      "badges": {
+        "verified": "Verified",
+        "pending": "Pending review",
+        "rejected": "Rejected",
+        "disabled": "Disabled",
+        "unverified": "Unverified"
+      },
+      "status": {
+        "interested": "Interested",
+        "contacted": "Contacted",
+        "pending": "Pending response",
+        "rejected": "Rejected",
+        "unknown": "Unknown"
+      },
+      "fields": {
+        "serviceTypes": "Services",
+        "contactPerson": "Contact",
+        "assignedAt": "Assigned",
+        "deadline": "Response deadline",
+        "respondedAt": "Responded",
+        "proposal": "Proposal",
+        "proposalEmpty": "No proposal provided"
+      },
+      "contact": {
+        "subscribeRequired": "Subscribe to view contact details",
+        "awaitAcceptance": "Contact details available once the vendor accepts",
+        "unavailable": "Contact details are currently unavailable",
+        "website": "Website"
+      },
+      "responseBadge": "Responded",
+      "website": "Website",
+      "subscriptionRequired": "Subscription required to view contact details",
+      "waitingAcceptance": "Waiting for vendor acceptance",
+      "viewDetails": "View details",
+      "waitingResponse": "Waiting for vendor response",
+      "showMore": "Show more ({count})",
+      "showLess": "Show less"
+    },
+    "brief": {
+      "title": "Campaign brief",
+      "empty": "No brief generated yet"
+    },
+    "info": {
+      "title": "Campaign info",
+      "createdAt": "Created",
+      "updatedAt": "Last updated",
+      "company": "Company",
+      "industry": "Industry"
+    },
+    "quickActions": {
+      "title": "Quick actions",
+      "exportPdf": "Download brief PDF",
+      "sendFollowUp": "Send follow-up email",
+      "viewReport": "View analytics report",
+      "comingSoon": "Coming soon"
+    },
+    "feedback": {
+      "vendorsEmpty": "No vendor data yet",
+      "vendorsSearching": "Finding the right vendors for you..."
+    },
+    "placeholders": {
+      "notSpecified": "Not specified",
+      "noDescription": "No description available",
+      "noServices": "No services listed",
+      "notProvided": "Not provided",
+      "unknown": "Unknown"
+    },
+    "notifications": {
+      "loading": "Loading campaign details…"
+    },
+    "emailOutreach": {
+      "justNow": "Just now",
+      "minutesAgo": "{minutes} minutes ago",
+      "hoursAgo": "{hours} hours ago"
+    },
+    "days": "days",
+    "hours": "hours",
+    "minutes": "minutes",
+    "pausedAt": "Paused at",
+    "completedAt": "Completed at",
+    "closedAt": "Closed at",
+    "remainingTime": "Remaining time",
+    "editEndDate": "Edit end date",
+    "editEndDateDialog": {
+      "title": "Edit Campaign End Date",
+      "description": "Set a new end date for the campaign. The campaign will automatically end at this time.",
+      "currentEndDate": "Current end date",
+      "selectDate": "Select date",
+      "selectTime": "Select time",
+      "cancel": "Cancel",
+      "confirm": "Confirm",
+      "updating": "Updating...",
+      "error": "Update failed, please try again",
+      "validation": {
+        "mustBeFuture": "End date must be in the future"
+      }
+    },
+    "leadDetail": {
+      "title": "Lead Details",
+      "name": "Name",
+      "location": "Location",
+      "website": "Website",
+      "email": "Email",
+      "phone": "Phone",
+      "services": "Services",
+      "fee": "Fee",
+      "language": "Language",
+      "description": "Description",
+      "comments": "Comments",
+      "tags": "Tags",
+      "sentAt": "Sent at"
+    },
+    "searching": "Matching",
+    "start": "Start",
+    "pause": "Pause",
+    "close": "Close",
+    "confirmations": {
+      "pause": {
+        "title": "Confirm Pause Campaign",
+        "description": "When paused, the campaign will stop matching new vendors, but existing matches can still respond.",
+        "cancel": "Cancel",
+        "confirm": "Confirm Pause"
+      },
+      "close": {
+        "title": "Confirm Close Campaign",
+        "description": "Once closed, the campaign cannot be reopened and all matching processes will stop. This action cannot be undone.",
+        "cancel": "Cancel",
+        "confirm": "Confirm Close"
+      }
+    },
+    "alerts": {
+      "started": "Campaign started",
+      "paused": "Campaign paused",
+      "closed": "Campaign closed",
+      "extended": "Campaign end date updated"
+    },
+    "paused": "Paused",
+    "completed": "Completed",
+    "closed": "Closed"
+  }
+}

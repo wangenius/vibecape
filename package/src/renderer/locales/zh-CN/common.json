@@ -1,0 +1,119 @@
+{
+  "brand": "CMOCHAT 供应商",
+  "actions": {
+    "login": "登录",
+    "logout": "退出登录",
+    "register": "注册",
+    "applyVendor": "申请成为供应商/登录",
+    "dashboard": "控制台",
+    "userCenter": "用户中心",
+    "startTrial": "开始免费试用",
+    "watchDemo": "观看演示",
+    "backHome": "返回首页",
+    "submit": "⌘I 快速输入，按Enter发送",
+    "cancel": "取消",
+    "loading": "加载中…",
+    "help": "帮助",
+    "quickMatch": "快速匹配",
+    "vendorDashboard": "Vendor 控制台",
+    "becomeVendor": "注册成为 Vendor"
+  },
+  "status": {
+    "loading": "加载中…"
+  },
+  "form": {
+    "email": "邮箱地址",
+    "password": "密码",
+    "remember": "记住我",
+    "forgotPassword": "忘记密码？",
+    "confirmPassword": "确认密码",
+    "required": "请输入内容",
+    "emptyMessage": "不能发送空消息，请输入文本内容或上传附件"
+  },
+  "misc": {
+    "or": "或者继续使用",
+    "demoMode": "演示模式",
+    "demoDescription": "无需登录体验所有功能（内部预览）",
+    "enterDemo": "进入演示模式",
+    "comingSoon": "即将推出"
+  },
+  "language": {
+    "chinese": "中文",
+    "english": "English",
+    "switch": "语言"
+  },
+  "time": {
+    "justNow": "刚刚",
+    "futureTime": "即将到来",
+    "minutesAgo": "{count} 分钟前",
+    "hoursAgo": "{count} 小时前",
+    "secondsAgo": "{count} 秒前",
+    "daysAgo": "{count} 天前",
+    "weeksAgo": "{count} 周前",
+    "monthsAgo": "{count} 个月前",
+    "yearsAgo": "{count} 年前",
+    "minutesLater": "{count} 分钟后",
+    "hoursLater": "{count} 小时后",
+    "daysLater": "{count} 天后",
+    "today": "今天",
+    "yesterday": "昨天",
+    "dayBeforeYesterday": "前天",
+    "tomorrow": "明天",
+    "dayAfterTomorrow": "后天",
+    "weekdays": {
+      "sunday": "星期日",
+      "monday": "星期一",
+      "tuesday": "星期二",
+      "wednesday": "星期三",
+      "thursday": "星期四",
+      "friday": "星期五",
+      "saturday": "星期六"
+    },
+    "monthDay": "{month}/{day}",
+    "fullDate": "{year}/{month}/{day}",
+    "invalidDate": "无效日期"
+  },
+  "user": {
+    "tags": {
+      "pro": "Pro",
+      "free": "免费"
+    },
+    "menu": {
+      "account": "账户",
+      "subscription": "订阅",
+      "logout": "退出登录"
+    }
+  },
+  "help": {
+    "title": "需要帮助？",
+    "description": "扫描下方二维码，添加微信客服获取帮助。",
+    "contactEmail": "或者通过邮箱联系我们："
+  },
+  "modals": {
+    "help": {
+      "title": "需要帮助？",
+      "description": "扫描下方二维码，添加微信客服获取帮助。",
+      "contactEmail": "或者通过邮箱联系我们："
+    },
+    "confirm": "确认",
+    "cancel": "取消"
+  },
+  "messageRenderer": {
+    "downloadDocument": "是否下载文档",
+    "uploadedImage": "上传的图片",
+    "imageLoadFailed": "图片加载失败",
+    "submitted": "已提交",
+    "submitSelection": "提交选择",
+    "thinkingProcess": "思考过程",
+    "executing": "执行中...",
+    "thinking": "思考中...",
+    "step": "步骤",
+    "completedAllOptions": "已完成所有选项 ({selected}/{total})",
+    "selectedOptions": "已选择 {selected}/{total} 个选项",
+    "pleaseCompleteOptions": "请完成选项选择 (0/{total})"
+  },
+  "errors": {
+    "unauthorized": "请先登录",
+    "serverError": "服务器错误，请稍后再试"
+  }
+}

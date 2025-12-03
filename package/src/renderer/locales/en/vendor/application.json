@@ -1,0 +1,307 @@
+{
+  "title": "Vendor Application",
+  "chat": {
+    "initialMessage": "Hello! I'm CMOMO, CMOCHAT onboarding assistant 👋\nPlease introduce your company through any of the following methods:\n\n**Provide company website** - Enter URL, I'll extract information automatically\n**Upload company materials** - Supports PDF, Word, PPT, images, etc.\n**Text description** - Tell me directly about your business and products\n\nLet's get started, looking forward to learning about your company and getting more leads",
+    "placeholder": "Feel free to ask me anything...",
+    "suggestions": [
+      {
+        "text": "Our website is: ",
+        "label": "📌 Enter company website"
+      },
+      {
+        "text": "We are a company focused on",
+        "label": "💬 Introduce company directly"
+      },
+      {
+        "text": "I want to learn about the onboarding process",
+        "label": "❓ Learn about onboarding"
+      }
+    ]
+  },
+  "methodSelector": {
+    "subtitle": "Choose your preferred application method",
+    "methods": {
+      "meeting": {
+        "title": "Vendor Application",
+        "subtitle": "Join our global network of premium marketing service providers",
+        "description": "Communicate with our team via online meeting"
+      },
+      "chat": {
+        "title": "AI Chat Application",
+        "description": "Complete application quickly through intelligent conversation"
+      },
+      "form": {
+        "title": "Form Application",
+        "description": "Submit application by filling standard form"
+      }
+    },
+    "redirecting": "Opening booking page..."
+  },
+  "form": {
+    "title": "Welcome Aboard, Unlock Global Opportunities",
+    "subtitle": "A few simple steps to let global clients discover your premium services",
+    "resetButton": "Clear & Restart",
+    "resetConfirm": "Are you sure you want to clear all data and restart? This action cannot be undone.",
+    "resetSuccess": "Form reset successfully",
+    "sectionTitles": {
+      "basicInfo": "Basic Information",
+      "contactInfo": "Contact Information",
+      "teamMarkets": "Team & Markets",
+      "servicesPricing": "Services & Pricing",
+      "caseExperience": "Case Studies & Experience",
+      "documents": "Documents",
+      "basicAndContact": "Basic Info & Contact",
+      "marketAndServices": "Markets & Services",
+      "experienceAndDocs": "Experience & Documents"
+    },
+    "saved": "Saved",
+    "saving": "Saving...",
+    "fields": {
+      "companyName": {
+        "label": "Company Name",
+        "placeholder": "Official Company Name"
+      },
+      "registeredAddress": {
+        "label": "Country & Region",
+        "placeholder": "e.g., Indonesia, China / Jakarta, Shanghai",
+        "selectCountry": "Select Country",
+        "selectRegion": "Select State/Province",
+        "selectCity": "Select City"
+      },
+      "registrationNumber": {
+        "label": "Business Registration Number",
+        "placeholder": "Registration Number"
+      },
+      "establishedYear": {
+        "label": "Year Established",
+        "placeholder": "e.g., 2020"
+      },
+      "entityType": {
+        "label": "Entity Type",
+        "placeholder": "e.g., LTD, PT, LLC"
+      },
+      "businessLicense": {
+        "label": "Business License",
+        "upload": "Click to upload Business License",
+        "uploaded": "Business License Uploaded"
+      },
+      "businessAddress": {
+        "label": "Office Address",
+        "placeholder": "Full Office Address"
+      },
+      "contactPerson": {
+        "label": "Contact Person",
+        "placeholder": "Contact Name"
+      },
+      "contactPosition": {
+        "label": "Position",
+        "placeholder": "e.g., CEO, Marketing Manager"
+      },
+      "phone": {
+        "label": "Phone",
+        "placeholder": "+62 xxx xxx xxxx"
+      },
+      "email": {
+        "label": "Login Email",
+        "placeholder": "contact@company.com",
+        "contactLabel": "Contact Email",
+        "contactPlaceholder": "personal@company.com"
+      },
+      "whatsapp": {
+        "label": "WhatsApp",
+        "placeholder": "+62 xxx xxx xxxx"
+      },
+      "wechat": {
+        "label": "WeChat",
+        "placeholder": "WeChat ID"
+      },
+      "otherContact": {
+        "label": "Other Contact",
+        "placeholder": "e.g., Telegram, Line, etc."
+      },
+      "website": {
+        "label": "Website",
+        "placeholder": "https://www.company.com"
+      },
+      "socialMedia": {
+        "label": "Social Media",
+        "placeholder": "https://instagram.com/,https://tiktok.com/,https://youtube.com/,https://linkedin.com/..."
+      },
+      "teamSize": {
+        "label": "Company/Team Size",
+        "placeholder": "Select team size"
+      },
+      "marketsCovered": {
+        "label": "Markets Served",
+        "placeholder": "e.g., Indonesia, China"
+      },
+      "mainServices": {
+        "label": "Service Types",
+        "placeholder": "e.g., Social Media Marketing, KOL Marketing, Content Creative Planning",
+        "hint": "Click tags to select service types, or add custom ones",
+        "customLabel": "Custom Service Types:",
+        "customPlaceholder": "Enter custom service type",
+        "addButton": "Add",
+        "types": {
+          "socialMedia": "Social Media Marketing",
+          "contentCreation": "Content Creation",
+          "kolInfluencer": "KOL/Influencer Marketing",
+          "videoProduction": "Video Production",
+          "liveStreaming": "Live Streaming",
+          "ecommerce": "E-commerce Operations",
+          "seoSem": "SEO/SEM",
+          "brandStrategy": "Brand Strategy",
+          "eventManagement": "Event Management",
+          "publicRelations": "Public Relations",
+          "mediaBuying": "Media Buying",
+          "creativeDesign": "Creative Design",
+          "dataAnalytics": "Data Analytics",
+          "communityManagement": "Community Management"
+        }
+      },
+      "pricingModel": {
+        "label": "Primary Pricing Model",
+        "placeholder": "Select pricing model",
+        "types": {
+          "retainer": "Retainer",
+          "performanceBased": "Performance-Based",
+          "hourlyRate": "Hourly Rate",
+          "projectBased": "Project-Based",
+          "hybridModel": "Hybrid Model"
+        }
+      },
+      "basicPriceRange": {
+        "label": "Basic Price Range",
+        "placeholder": "e.g., 100-500 USD",
+        "hint": "Unit price for one video/poster"
+      },
+      "monthlyRetainerRange": {
+        "label": "Monthly Retainer Range",
+        "placeholder": "e.g., 2000-5000 USD"
+      },
+      "paymentTerms": {
+        "label": "Standard Payment Terms",
+        "placeholder": "e.g., 50% deposit, 50% on delivery, USD accepted",
+        "hint": "Including currency and payment methods"
+      },
+      "industryExperience": {
+        "label": "Industry Experience",
+        "placeholder": "e.g., Beauty & Cosmetics, F&B, Electronics & Tech",
+        "hint": "Multiple industries separated by commas"
+      },
+      "keyClientBrands": {
+        "label": "Key Client Brands Served",
+        "placeholder": "e.g., L'Oréal, Nike, Starbucks (separated by commas)"
+      },
+      "businessIntro": {
+        "label": "Business Introduction",
+        "placeholder": "Brief introduction of your services and core competencies..."
+      },
+      "uploadFiles": {
+        "label": "Upload Files",
+        "description": "Business License, Portfolio, Case Studies (Max 10MB each)",
+        "buttonUpload": "Upload File",
+        "buttonUploading": "Uploading...",
+        "listTitle": "Uploaded Files:"
+      }
+    },
+    "actions": {
+      "view": "View File",
+      "cancel": "Cancel",
+      "previous": "Previous",
+      "next": "Next",
+      "submit": "Submit Application",
+      "submitting": "Submitting..."
+    },
+    "stepProgress": "Step {current} of {total}",
+    "validation": {
+      "companyNameRequired": "Please enter company name",
+      "addressRequired": "Please enter company address",
+      "contactPersonRequired": "Please enter contact person name",
+      "emailRequired": "Please enter your company email",
+      "contactRequired": "Please provide at least one contact method (Phone/Email/WhatsApp)",
+      "servicesRequired": "Please select at least one service type",
+      "fileSizeExceeded": "File size cannot exceed 10MB",
+      "uploadSuccess": "File uploaded successfully",
+      "uploadFailed": "File upload failed",
+      "customServiceEmpty": "Please enter a custom service type",
+      "customServiceDuplicate": "This service type already exists"
+    }
+  },
+  "sections": {
+    "company": {
+      "fields": {
+        "companyName": {
+          "label": "Company Name"
+        },
+        "address": {
+          "label": "Company Address"
+        },
+        "establishedYear": {
+          "label": "Established Year"
+        },
+        "website": {
+          "label": "Company Website"
+        }
+      },
+      "teamSize": {
+        "label": "Team Size"
+      }
+    },
+    "contact": {
+      "fields": {
+        "contactPerson": {
+          "label": "Contact Person"
+        },
+        "phone": {
+          "label": "Phone Number"
+        },
+        "wechat": {
+          "label": "WeChat ID"
+        }
+      }
+    },
+    "services": {
+      "title": "Service Types"
+    },
+    "competency": {
+      "title": "Core Competencies"
+    },
+    "clients": {
+      "title": "Target Client Types"
+    },
+    "industries": {
+      "title": "Industry Expertise"
+    }
+  },
+  "documents": {
+    "businessLicense": {
+      "label": "Business License"
+    },
+    "caseStudies": {
+      "label": "Case Studies Portfolio"
+    }
+  },
+  "errors": {
+    "uploadFailed": "Upload failed",
+    "submitFailed": "Submission failed",
+    "formDataMissing": "Form data is missing",
+    "invalidFormDataFormat": "Invalid form data format",
+    "companyNameAndContactRequired": "Company name and contact person are required",
+    "emailRequired": "Company email is required",
+    "emailAlreadyRegistered": "This email is already registered, please use a different email",
+    "createUserFailed": "Failed to create user, please try again later",
+    "failedToCreateAccount": "Failed to create user account",
+    "submissionFailed": "Submission failed, please try again later"
+  },
+  "actions": {
+    "submit": "Submit Application",
+    "submitting": "Submitting..."
+  },
+  "success": {
+    "title": "Submission successful. We will send you a password setup email. Please check your email",
+    "description": "We will review your application and get back to you soon.",
+    "submitted": "Application submitted successfully, we will contact you soon.",
+    "profileCreated": "Profile created successfully. Redirecting to vendor dashboard..."
+  }
+}

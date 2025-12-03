@@ -49,6 +49,7 @@ import { BsStars } from "react-icons/bs";
 import { MoreVertical, Plus, Server } from "lucide-react";
 import { RemoteModelsSheet } from "./RemoteModelsSheet";
 import iconImage from "@/assets/new-macOS-Default-1024x1024@2x.png";
+import { setLang } from "@/locales/i18n";
 
 const THEME_OPTIONS = [
   { value: "default", label: "默认" },
@@ -60,6 +61,11 @@ const THEME_OPTIONS = [
   { value: "ocean", label: "海洋" },
   { value: "sunset", label: "日落" },
   { value: "vercel", label: "极简" },
+];
+
+const LANGUAGE_OPTIONS = [
+  { value: "zh-CN", label: "中文" },
+  { value: "en-US", label: "English" },
 ];
 
 // 通用设置
@@ -111,6 +117,67 @@ export const GeneralSettings = () => {
               </SelectTrigger>
               <SelectContent align="end">
                 {THEME_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </section>
+
+      <section className="space-y-4">
+        <header>
+          <h3 className="text-base font-semibold">语言</h3>
+          <p className="text-sm text-muted-foreground mt-1">
+            设置系统显示语言和 AI 提示词语言
+          </p>
+        </header>
+
+        <div className="space-y-2">
+          <div className="flex items-center justify-between gap-4 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
+            <div className="flex flex-col gap-1">
+              <span className="text-sm font-medium">系统显示语言</span>
+              <p className="text-xs text-muted-foreground">
+                设置界面显示的语言
+              </p>
+            </div>
+            <Select
+              value={settings.ui.language}
+              onValueChange={(value) => setLang(value as "zh-CN" | "en-US")}
+            >
+              <SelectTrigger className="w-40">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent align="end">
+                {LANGUAGE_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex items-center justify-between gap-4 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
+            <div className="flex flex-col gap-1">
+              <span className="text-sm font-medium">AI 提示词语言</span>
+              <p className="text-xs text-muted-foreground">
+                设置 AI 回复使用的语言
+              </p>
+            </div>
+            <Select
+              value={settings.ui.promptLanguage}
+              onValueChange={(value) =>
+                updateSettings(settingsShape.ui.promptLanguage, value)
+              }
+            >
+              <SelectTrigger className="w-40">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent align="end">
+                {LANGUAGE_OPTIONS.map((option) => (
                   <SelectItem key={option.value} value={option.value}>
                     {option.label}
                   </SelectItem>

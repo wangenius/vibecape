@@ -1,0 +1,306 @@
+{
+  "title": "供应商申请",
+  "chat": {
+    "initialMessage": "您好！我是CMOMO，CMOCHAT入驻助手 👋\n请通过以下任一方式介绍您的公司：\n\n**提供公司网站** - 输入网址，我将自动提取信息\n**上传公司资料** - 支持PDF、Word、PPT、图片等\n**文字描述** - 直接告诉我您的业务和产品\n\n让我们开始吧，期待了解您的公司并获得更多商机",
+    "placeholder": "随时向我提问...",
+    "suggestions": [
+      {
+        "text": "我们的网站是：",
+        "label": "📌 输入公司网站"
+      },
+      {
+        "text": "我们是一家专注于",
+        "label": "💬 直接介绍公司"
+      },
+      {
+        "text": "我想了解入驻流程",
+        "label": "❓ 了解入驻流程"
+      }
+    ]
+  },
+  "methodSelector": {
+    "subtitle": "选择您偏好的申请方式",
+    "methods": {
+      "meeting": {
+        "title": "会议申请",
+        "description": "通过在线会议与我们的团队沟通"
+      },
+      "chat": {
+        "title": "AI 对话申请",
+        "description": "通过智能对话快速完成申请"
+      },
+      "form": {
+        "title": "表单申请",
+        "description": "填写标准表单提交申请"
+      }
+    },
+    "redirecting": "正在打开预约页面..."
+  },
+  "form": {
+    "title": "欢迎入驻，开启全球商机",
+    "subtitle": "简单几步，让全球客户发现您的优质服务",
+    "resetButton": "清空并重新开始",
+    "resetConfirm": "您确定要清空所有数据并重新开始吗？此操作无法撤销。",
+    "resetSuccess": "表单已重置",
+    "sectionTitles": {
+      "basicInfo": "基本信息",
+      "contactInfo": "联系方式",
+      "teamMarkets": "团队与市场",
+      "servicesPricing": "服务类型与价格",
+      "caseExperience": "案例与经验",
+      "documents": "附件文档",
+      "basicAndContact": "基本信息与联系方式",
+      "marketAndServices": "市场与服务",
+      "experienceAndDocs": "经验与文档"
+    },
+    "saved": "已保存",
+    "saving": "保存中...",
+    "fields": {
+      "companyName": {
+        "label": "公司全称",
+        "placeholder": "请输入公司全称"
+      },
+      "registeredAddress": {
+        "label": "国家和地区",
+        "placeholder": "例如：中国/上海，印尼/雅加达",
+        "selectCountry": "选择国家",
+        "selectRegion": "选择省份/州",
+        "selectCity": "选择城市"
+      },
+      "registrationNumber": {
+        "label": "公司注册号",
+        "placeholder": "请输入公司注册号"
+      },
+      "establishedYear": {
+        "label": "成立年份",
+        "placeholder": "例如：2020"
+      },
+      "entityType": {
+        "label": "公司类型",
+        "placeholder": "例如：有限公司、股份公司"
+      },
+      "businessLicense": {
+        "label": "营业执照",
+        "upload": "点击上传营业执照",
+        "uploaded": "营业执照已上传"
+      },
+      "businessAddress": {
+        "label": "办公地址",
+        "placeholder": "请输入详细地址"
+      },
+      "contactPerson": {
+        "label": "联系人姓名",
+        "placeholder": "请输入联系人姓名"
+      },
+      "contactPosition": {
+        "label": "职位",
+        "placeholder": "例如：CEO、市场经理"
+      },
+      "phone": {
+        "label": "联系电话",
+        "placeholder": "+86 xxx xxxx xxxx"
+      },
+      "email": {
+        "label": "登录邮箱",
+        "placeholder": "contact@company.com",
+        "contactLabel": "联系人邮箱",
+        "contactPlaceholder": "personal@company.com"
+      },
+      "whatsapp": {
+        "label": "WhatsApp",
+        "placeholder": "+62 xxx xxx xxxx"
+      },
+      "wechat": {
+        "label": "微信号",
+        "placeholder": "请输入微信号"
+      },
+      "otherContact": {
+        "label": "其他联系方式",
+        "placeholder": "例如：Telegram, Line 等"
+      },
+      "website": {
+        "label": "公司网站",
+        "placeholder": "https://www.company.com"
+      },
+      "socialMedia": {
+        "label": "社媒链接",
+        "placeholder": "https://instagram.com/,https://tiktok.com/,https://youtube.com/,https://linkedin.com/..."
+      },
+      "teamSize": {
+        "label": "团队规模",
+        "placeholder": "选择团队规模"
+      },
+      "marketsCovered": {
+        "label": "地区覆盖",
+        "placeholder": "例如：中国、印尼、东南亚"
+      },
+      "mainServices": {
+        "label": "服务类型",
+        "placeholder": "e.g., Social Media Marketing, KOL Marketing, Content Creative Planning",
+        "hint": "点击标签选择服务类型，也可以自定义添加",
+        "customLabel": "自定义服务类型：",
+        "customPlaceholder": "输入自定义服务类型",
+        "addButton": "添加",
+        "types": {
+          "socialMedia": "社媒营销",
+          "contentCreation": "内容创作",
+          "kolInfluencer": "KOL/网红营销",
+          "videoProduction": "视频制作",
+          "liveStreaming": "直播运营",
+          "ecommerce": "电商运营",
+          "seoSem": "SEO/SEM",
+          "brandStrategy": "品牌策略",
+          "eventManagement": "活动管理",
+          "publicRelations": "公共关系",
+          "mediaBuying": "媒介采购",
+          "creativeDesign": "创意设计",
+          "dataAnalytics": "数据分析",
+          "communityManagement": "社群管理"
+        }
+      },
+      "pricingModel": {
+        "label": "主要定价模式",
+        "placeholder": "选择定价模式",
+        "types": {
+          "retainer": "固定月费",
+          "performanceBased": "按效果付费",
+          "hourlyRate": "按小时计费",
+          "projectBased": "按项目计费",
+          "hybridModel": "混合模式"
+        }
+      },
+      "basicPriceRange": {
+        "label": "单价范围",
+        "placeholder": "例如：100-500 USD",
+        "hint": "做一个短视频/一张海报的价格"
+      },
+      "monthlyRetainerRange": {
+        "label": "月度服务费范围",
+        "placeholder": "例如：2000-5000 USD"
+      },
+      "paymentTerms": {
+        "label": "标准付款条款",
+        "placeholder": "例如：50%定金，50%交付，接受USD",
+        "hint": "包含币种和支付方式"
+      },
+      "industryExperience": {
+        "label": "行业经验",
+        "placeholder": "例如：美妆、食品饮料、电子科技",
+        "hint": "多个行业用逗号分隔"
+      },
+      "keyClientBrands": {
+        "label": "服务过的关键品牌",
+        "placeholder": "例如：欧莱雅、耐克、星巴克（用逗号分隔）"
+      },
+      "businessIntro": {
+        "label": "业务介绍",
+        "placeholder": "请简要介绍您的服务和核心竞争力..."
+      },
+      "uploadFiles": {
+        "label": "上传文件",
+        "description": "营业执照、作品集（最大10MB）",
+        "buttonUpload": "上传文件",
+        "buttonUploading": "上传中...",
+        "listTitle": "已上传文件："
+      }
+    },
+    "actions": {
+      "view": "查看文件",
+      "cancel": "取消",
+      "previous": "上一步",
+      "next": "下一步",
+      "submit": "提交申请",
+      "submitting": "提交中..."
+    },
+    "stepProgress": "第 {current} 步，共 {total} 步",
+    "validation": {
+      "companyNameRequired": "请填写公司全称",
+      "addressRequired": "请填写公司地址",
+      "contactPersonRequired": "请填写联系人姓名",
+      "emailRequired": "请填写公司邮箱",
+      "contactRequired": "请至少填写一种联系方式（电话/邮箱/WhatsApp）",
+      "servicesRequired": "请至少选择一种服务类型",
+      "fileSizeExceeded": "文件大小不能超过 10MB",
+      "uploadSuccess": "文件上传成功",
+      "uploadFailed": "文件上传失败",
+      "customServiceEmpty": "请输入自定义服务类型",
+      "customServiceDuplicate": "该服务类型已存在"
+    }
+  },
+  "sections": {
+    "company": {
+      "fields": {
+        "companyName": {
+          "label": "公司名称"
+        },
+        "address": {
+          "label": "公司地址"
+        },
+        "establishedYear": {
+          "label": "成立年份"
+        },
+        "website": {
+          "label": "公司网站"
+        }
+      },
+      "teamSize": {
+        "label": "团队规模"
+      }
+    },
+    "contact": {
+      "fields": {
+        "contactPerson": {
+          "label": "联系人"
+        },
+        "phone": {
+          "label": "联系电话"
+        },
+        "wechat": {
+          "label": "微信号"
+        }
+      }
+    },
+    "services": {
+      "title": "服务类型"
+    },
+    "competency": {
+      "title": "核心竞争力"
+    },
+    "clients": {
+      "title": "目标客户类型"
+    },
+    "industries": {
+      "title": "擅长服务行业"
+    }
+  },
+  "documents": {
+    "businessLicense": {
+      "label": "营业执照"
+    },
+    "caseStudies": {
+      "label": "案例作品集"
+    }
+  },
+  "errors": {
+    "uploadFailed": "上传失败",
+    "submitFailed": "提交失败",
+    "formDataMissing": "缺少表单数据",
+    "invalidFormDataFormat": "表单数据格式错误",
+    "companyNameAndContactRequired": "公司名称和联系人为必填项",
+    "emailRequired": "公司邮箱为必填项",
+    "emailAlreadyRegistered": "该邮箱已经注册过，请换一个邮箱",
+    "createUserFailed": "创建用户失败，请稍后重试",
+    "failedToCreateAccount": "无法创建用户账号",
+    "submissionFailed": "提交失败，请稍后再试"
+  },
+  "actions": {
+    "submit": "提交申请",
+    "submitting": "提交中..."
+  },
+  "success": {
+    "title": "提交成功，我们将发送设置密码邮件给您，请注意查收",
+    "description": "我们将审核您的申请并尽快回复您。",
+    "submitted": "申请已提交，我们会尽快与您联系。",
+    "profileCreated": "资料创建成功，正在跳转到供应商页面..."
+  }
+}

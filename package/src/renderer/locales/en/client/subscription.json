@@ -1,0 +1,243 @@
+{
+  "header": {
+    "title": "Subscription management",
+    "description": "Manage your subscription plans and usage"
+  },
+  "currentPlan": {
+    "title": "Current plan",
+    "description": {
+      "free": "You are currently using the Free plan",
+      "professional": "You are currently on the Professional plan",
+      "enterprise": "You are currently on the Enterprise plan"
+    },
+    "status": {
+      "active": "Active",
+      "expired": "Expired"
+    },
+    "expiresAt": "Expires at",
+    "expiredNote": "Your",
+    "expiredAt": "subscription expired on",
+    "expiredSuffix": ""
+  },
+  "code": {
+    "title": "Redeem membership code",
+    "description": "Have a membership code? Redeem it here to unlock the Professional plan. Contact support to obtain a code.",
+    "placeholder": "Enter membership code (e.g. ABCD-EFGH-1234)",
+    "button": "Redeem now",
+    "redeeming": "Redeeming…",
+    "helper": "Membership codes are case-sensitive. Successful redemption will extend your Professional subscription.",
+    "purchase": {
+      "title": "Purchase Gift Code",
+      "description": "Buy a Professional plan gift code, gift it to others or use it yourself",
+      "button": "Buy 1-month Professional",
+      "processing": "Redirecting to checkout...",
+      "purchasing": "Redirecting to checkout…",
+      "note": "After payment, your account will automatically receive one month of Professional access—no code required.",
+      "alerts": {
+        "failure": "Unable to create a checkout session. Please try again later.",
+        "network": "Network error. Please try again later."
+      }
+    },
+    "redeem": {
+      "title": "Redeem Gift Code",
+      "description": "If you have a gift code, redeem Professional membership here",
+      "placeholder": "Enter gift code",
+      "button": "Redeem",
+      "processing": "Redeeming...",
+      "note": "Gift codes are case-sensitive, subscription will be automatically extended after redemption",
+      "alerts": {
+        "empty": "Please enter a gift code",
+        "success": "Redeemed successfully!",
+        "failure": "Redemption failed, please try again later",
+        "network": "Redemption failed, please check your network connection"
+      }
+    },
+    "alerts": {
+      "empty": "Please enter a membership code.",
+      "success": "Code redeemed successfully!",
+      "failure": "Redemption failed. Please verify the code and try again.",
+      "network": "Network error. Please try again later.",
+      "invalidCode": "Please enter a valid redemption code",
+      "codeNotFound": "Redemption code does not exist",
+      "codeUsed": "This redemption code has already been used",
+      "codeExpired": "This redemption code has expired",
+      "activationFailed": "Activation failed, please try again later",
+      "successWithDate": "Redeemed successfully! Your Professional subscription is valid until {date}",
+      "activationSuccessWithDate": "Membership activated successfully! Your Professional subscription is valid until {date}"
+    }
+  },
+  "plans": {
+    "title": "Choose the plan that fits you best",
+    "description": "Pick a subscription tailored to your marketing needs.",
+    "current": "Current",
+    "currentPlan": "Current plan",
+    "freeUse": "Free to use",
+    "annualSavings": "Limited offer, save",
+    "cards": {
+      "free": {
+        "name": "Free",
+        "price": "Free",
+        "description": "Test AI matching features",
+        "features": [
+          "3 campaign credits",
+          "AI brief creation",
+          "Basic vendor matching",
+          "Redacted vendor details",
+          "Email template generator"
+        ],
+        "limitations": [
+          "Limited vendor information",
+          "No data export",
+          "No priority support"
+        ],
+        "button": "Current plan"
+      },
+      "professional": {
+        "name": "Professional",
+        "price": "¥799 / month",
+        "description": "Full features for growing marketing teams",
+        "features": [
+          "Unlimited campaigns",
+          "AI brief creation + optimization",
+          "Full vendor profiles",
+          "Contact export",
+          "Analytics dashboards",
+          "Priority email support",
+          "Campaign tracking",
+          "Vendor rating system"
+        ],
+        "button": "Upgrade now",
+        "savings": ""
+      },
+      "enterprise": {
+        "name": "Enterprise",
+        "price": "¥2,499 / month",
+        "description": "Custom solutions for large organizations",
+        "features": [
+          "All Professional features",
+          "API access",
+          "Custom feature development",
+          "Dedicated account manager",
+          "24/7 phone support",
+          "Private deployment options",
+          "Team collaboration",
+          "Advanced analytics",
+          "SSO integration",
+          "Compliance support"
+        ],
+        "button": "Contact sales"
+      }
+    },
+    "sections": {
+      "features": "What's included",
+      "limitations": "Limitations"
+    }
+  },
+  "comparison": {
+    "title": "Feature comparison",
+    "columns": ["Feature", "Free", "Professional", "Enterprise"],
+    "rows": [
+      {
+        "feature": "Campaign quota",
+        "values": ["3 campaigns", "Unlimited", "Unlimited"]
+      },
+      {
+        "feature": "Vendor information",
+        "values": ["Redacted", "Full access", "Full access"]
+      },
+      {
+        "feature": "Data export",
+        "values": ["Unavailable", "Included", "Included"]
+      },
+      {
+        "feature": "API access",
+        "values": ["Unavailable", "Unavailable", "Included"]
+      },
+      {
+        "feature": "Support",
+        "values": ["Community", "Email", "24/7 phone"]
+      }
+    ]
+  },
+  "testimonials": {
+    "title": "Customer testimonials",
+    "items": [
+      {
+        "name": "Li, CMO",
+        "company": "Tech company",
+        "content": "After three months with CMOCHAT, our supplier sourcing efficiency has improved fivefold with higher quality matches.",
+        "rating": 5
+      },
+      {
+        "name": "Wang, Marketing Lead",
+        "company": "Consumer brand",
+        "content": "The AI brief feature is impressive and saves us significant alignment time.",
+        "rating": 5
+      },
+      {
+        "name": "Zhang, Founder",
+        "company": "Agency",
+        "content": "The platform's vendor network is extensive and delivers highly relevant matches. Highly recommended.",
+        "rating": 5
+      }
+    ]
+  },
+  "methods": {
+    "title": "How to Subscribe",
+    "subscription": {
+      "title": "1. Through Subscription",
+      "description": "Select a plan above and click \"Upgrade now\" or \"Contact sales\" to subscribe"
+    },
+    "giftCode": {
+      "title": "Through Gift Code",
+      "description": "Purchase a gift code or use an existing gift code to get Professional membership"
+    }
+  },
+  "contact": {
+    "title": "Contact Us for Enterprise Plan",
+    "description": "Our sales team will provide you with customized enterprise solutions",
+    "emailTitle": "Email Contact",
+    "copy": "Copy",
+    "openEmail": "Open Email Client",
+    "emailNote": "If email client cannot open, please copy the email address and send manually",
+    "wechatTitle": "WeChat Contact",
+    "wechatNote": "Scan QR code to add enterprise WeChat",
+    "copySuccess": "Email address copied to clipboard",
+    "copyFailed": "Failed to copy, please copy manually"
+  },
+  "faq": {
+    "title": "Frequently asked questions",
+    "items": [
+      {
+        "question": "Can I cancel anytime?",
+        "answer": "Yes. You can cancel whenever you like and retain access until the current billing cycle ends."
+      },
+      {
+        "question": "Do upgrades take effect immediately?",
+        "answer": "Absolutely. Upgrading unlocks all features instantly so you can start using them right away."
+      },
+      {
+        "question": "Does the Free plan expire?",
+        "answer": "No. The Free plan is available indefinitely with a limit of three campaigns."
+      },
+      {
+        "question": "How do enterprise customizations work?",
+        "answer": "Contact our sales team and we will tailor a plan to your requirements, including bespoke features and integrations."
+      },
+      {
+        "question": "How do I use a membership code?",
+        "answer": "Enter your membership code in the \"Redeem membership code\" section and your Professional subscription will be extended automatically."
+      }
+    ]
+  },
+  "actions": {
+    "upgrading": "Processing…",
+    "contactSales": "Contact sales",
+    "mailSubject": "Enterprise plan inquiry"
+  },
+  "alerts": {
+    "checkoutUnavailable": "Checkout is temporarily unavailable. Please try again later.",
+    "checkoutFailed": "Failed to create checkout session. Please try again.",
+    "activationSuccess": "Membership activated successfully! You are now a professional user."
+  }
+}

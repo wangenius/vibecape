@@ -1,0 +1,113 @@
+{
+  "header": {
+    "title": "供应商工作台",
+    "subtitle": "及时了解新的需求简报，保持档案完善以获得品牌青睐",
+    "profile": "档案",
+    "manageProfile": "管理档案",
+    "manageCases": "案例库",
+    "logout": "退出登录"
+  },
+  "navigation": {
+    "application": "申请成为供应商",
+    "goToClient": "切换到客户端",
+    "recommend": "我的推荐",
+    "home": "首页",
+    "requirements": "需求线索",
+    "myShowcase": "我的展示",
+    "profile": "档案",
+    "cases": "案例研究",
+    "showcaseHint": "完善的档案和优秀的案例将在匹配后展示给客户，提高成功率"
+  },
+  "meta": {
+    "status": "账户状态",
+    "lastUpdated": "更新于 {relative}",
+    "refresh": "刷新",
+    "refreshing": "刷新中…"
+  },
+  "statsCard": {
+    "cases": "案例研究",
+    "verification": "认证状态",
+    "established": "成立时间",
+    "statuses": {
+      "verified": "已认证",
+      "pending": "待审核",
+      "rejected": "已拒绝",
+      "disabled": "已禁用"
+    }
+  },
+  "summaries": {
+    "total": "全部简报",
+    "pending": "待回复",
+    "accepted": "已获得",
+    "rejected": "已拒绝"
+  },
+  "campaigns": {
+    "title": "分配的简报",
+    "subtitle": "查看活动详情，快速回复，并与品牌保持沟通。",
+    "responseAlert": "请 Vendor 及时回复所匹配和推荐到的业务需求。如果长时间不回复，可能导致评分和推荐权重下降。",
+    "action": "完善您的档案",
+    "filterLabel": "按状态筛选",
+    "empty": {
+      "title": "暂无简报",
+      "description": "当品牌与您匹配时，简报将实时显示在这里。",
+      "cta": "提高档案可见性"
+    }
+  },
+  "filters": {
+    "all": "全部",
+    "pending": "待回复",
+    "viewed": "已查看",
+    "accepted": "已接受",
+    "rejected": "已拒绝"
+  },
+  "statuses": {
+    "pending": "待回复",
+    "viewed": "已查看",
+    "accepted": "已接受",
+    "rejected": "已拒绝",
+    "expired": "已过期"
+  },
+  "actionRequired": {
+    "title": "需要操作",
+    "description": "立即响应",
+    "empty": "您已处理完所有事项！"
+  },
+  "activity": {
+    "title": "最新动态",
+    "empty": "品牌的更新将显示在这里。"
+  },
+  "details": {
+    "customer": "品牌",
+    "unknownCustomer": "未知品牌",
+    "assignedAt": "分配时间",
+    "viewedAt": "查看时间",
+    "respondedAt": "回复时间",
+    "acceptRemark": "接受备注",
+    "rejectRemark": "拒绝原因",
+    "viewDetails": "打开简报",
+    "success": "匹配完成"
+  },
+  "metaCards": {
+    "pending": "待处理或已查看",
+    "accepted": "已接受的简报",
+    "rejected": "已拒绝的简报"
+  },
+  "companyCard": {
+    "title": "公司概览",
+    "manageProfile": "编辑档案",
+    "contact": "主要联系人",
+    "intro": "关于我们",
+    "introPlaceholder": "添加简短介绍，让品牌了解您的专业领域。",
+    "services": "服务重点",
+    "servicesPlaceholder": "添加服务标签以突出您的专业知识。"
+  },
+  "errors": {
+    "fetchAssignments": "加载简报失败"
+  },
+  "sidebar": {
+    "plan": {
+      "free": "免费版",
+      "pro": "专业版"
+    }
+  }
+}

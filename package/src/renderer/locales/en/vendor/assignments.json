@@ -1,0 +1,180 @@
+{
+  "error": {
+    "notFound": "Assignment not found",
+    "loadFailed": "Unable to load assignment details, please go back and try again"
+  },
+  "actions": {
+    "backToHome": "Back to Home",
+    "back": "Back"
+  },
+  "details": {
+    "specialRequirements": "Special Requirements",
+    "requirementDetails": "Requirement Details",
+    "noBrief": "No brief available",
+    "attachments": "Attachments",
+    "timeline": "Timeline",
+    "deadline": "Deadline",
+    "clientInfo": "Client Information",
+    "companyDescription": "Company Description"
+  },
+  "response": {
+    "title": "My Response",
+    "submittedAt": "Submitted at",
+    "accepted": "Accepted",
+    "rejected": "Rejected",
+    "proposal": "Proposal",
+    "quotation": "Quotation",
+    "remarks": "Remarks",
+    "attachments": "Attachments",
+    "attachment": "Attachment",
+    "respondTitle": "Respond to Assignment",
+    "actions": {
+      "accept": "Accept Assignment",
+      "reject": "Reject Assignment"
+    },
+    "form": {
+      "proposalLabel": "Proposal *",
+      "proposalPlaceholder": "Please describe your proposal and execution plan...",
+      "rejectReasonLabel": "Rejection Reason *",
+      "rejectReasonPlaceholder": "Please explain the reason for rejection...",
+      "quotationLabel": "Quotation (Optional)",
+      "quotationPlaceholder": "e.g.: $50,000 - $80,000",
+      "attachmentsLabel": "Attachments (Optional)",
+      "uploadFiles": "Click to upload files",
+      "supportedFormats": "Supports PDF, images, and other formats",
+      "submitting": "Submitting...",
+      "submit": "Submit Response"
+    }
+  },
+  "campaignDetail": {
+    "header": {
+      "back": "Back to dashboard",
+      "subtitle": "Review the brief, contact details, and respond without leaving your workspace."
+    },
+    "meta": {
+      "createdAt": "Created",
+      "assignedAt": "Assigned",
+      "deadline": "Deadline",
+      "viewedAt": "Viewed",
+      "respondedAt": "Responded"
+    },
+    "overview": {
+      "requirementsTitle": "Special requirements"
+    },
+    "brief": {
+      "title": "Brief details",
+      "subtitle": "Understand the scope, objectives, and expectations shared by the brand.",
+      "description": "Campaign description",
+      "objectives": "Objectives",
+      "targetAudience": "Target audience",
+      "budget": "Budget range",
+      "budgetRange": "{min} - {max} {currency}",
+      "timeline": "Timeline"
+    },
+    "attachments": {
+      "title": "Attachments"
+    },
+    "response": {
+      "title": "Your response",
+      "proposal": "Proposal notes",
+      "quotation": "Quotation",
+      "attachments": "Attachments",
+      "attachmentName": "Attachment {index}"
+    },
+    "client": {
+      "title": "Brand contact"
+    },
+    "actions": {
+      "title": "Respond to brief",
+      "accept": "Accept brief",
+      "reject": "Decline brief"
+    },
+    "form": {
+      "decisionAccept": "Accept brief",
+      "decisionReject": "Decline brief",
+      "proposalLabelAccept": "Proposal notes *",
+      "proposalLabelReject": "Reason for decline",
+      "proposalPlaceholderAccept": "Share your proposed approach, deliverables, and timeline…",
+      "proposalPlaceholderReject": "Optionally explain why you are declining this brief…",
+      "quotationLabel": "Quotation (optional)",
+      "quotationPlaceholder": "e.g. 50,000 CNY",
+      "attachmentsLabel": "Attachments (optional)",
+      "attachmentsCta": "Upload files",
+      "attachmentsHelper": "Supported formats: PDF, DOC, PPT",
+      "submit": "Submit response",
+      "submitting": "Submitting…",
+      "cancel": "Cancel"
+    },
+    "empty": {
+      "title": "Campaign unavailable",
+      "description": "This brief could not be found or may have been removed.",
+      "back": "Back to dashboard"
+    },
+    "alerts": {
+      "proposalRequired": "Please add proposal notes before submitting.",
+      "submitAccept": "Brief accepted.",
+      "submitReject": "Brief declined.",
+      "submitFailed": "Failed to submit your response. Please try again later.",
+      "loadFailed": "Failed to load campaign details."
+    }
+  },
+  "invitation": {
+    "loading": "Loading...",
+    "loadFailed": "Load Failed",
+    "missingParams": "Missing required parameters: Invalid invitation link",
+    "fetchError": "Failed to fetch project information",
+    "fetchErrorRetry": "Failed to fetch project information, please try again later",
+    "projectUnavailable": "Project Unavailable",
+    "projectNotFound": "Project information not found",
+    "backToDashboard": "Back to Dashboard",
+    "needProfile": "Profile Required",
+    "needProfileDesc": "Please complete your vendor application before accepting project invitations",
+    "handleLater": "Handle Later",
+    "goToApplication": "Go to Application",
+    "alreadyAssigned": "Already Assigned",
+    "alreadyAssignedDesc": "You have already been assigned to this project",
+    "processing": "Processing...",
+    "acceptSuccess": "Accept Success",
+    "acceptMultiSuccess": "Successfully accepted {count} project invitations",
+    "assignmentSuccess": "Assignment Successful",
+    "operationFailed": "Operation Failed",
+    "retryLater": "Please try again later",
+    "allAccepted": "All Invitations Accepted",
+    "allAcceptedDesc": "You have accepted all {count} project invitations.",
+    "goToProjects": "Go to Project List",
+    "confirmInvitation": "Project Invitation Confirmation",
+    "receivedInvitations": "You have received {count} project invitation(s)",
+    "acceptedAndPending": "({accepted} accepted, {pending} pending confirmation)",
+    "accepted": "Accepted",
+    "tip": "Reminder",
+    "acceptAllTip": "By clicking the button below, you will accept all pending project invitations. You can view and manage these projects in your vendor dashboard.",
+    "confirmAcceptAll": "Confirm Accept All Invitations ({count})",
+    "alreadyAcceptedTitle": "Invitation Already Accepted",
+    "alreadyAcceptedDesc": "You have already accepted this project invitation",
+    "projectInvitation": "Project Invitation",
+    "projectInvitationDesc": "You have received a new project invitation, please review the details and decide whether to accept",
+    "projectInfo": "Project Information",
+    "client": "Client",
+    "email": "Email",
+    "createdTime": "Created",
+    "projectBrief": "Project Brief",
+    "acceptTip": "After accepting the invitation, you will be able to view complete project information and communicate with the client",
+    "acceptInvitation": "Accept Invitation"
+  },
+  "api": {
+    "pleaseLogin": "Please login first",
+    "needVendorProfile": "Please complete vendor application",
+    "invalidInvitationLink": "Invitation link is invalid or expired",
+    "noActiveInvitations": "No related project invitations found",
+    "campaignNotFound": "Project not found",
+    "campaignClosed": "This project has been closed",
+    "alreadyAssignedToProject": "You have already been assigned to this project",
+    "batchAssignSuccess": "Successfully accepted {count} project invitations",
+    "allProcessed": "All projects have been processed",
+    "vendorJoinedViaBatch": "Vendor {companyName} joined via batch invitation link",
+    "vendorJoinedViaLink": "Vendor {companyName} joined via invitation link",
+    "missingParams": "Missing sendId or campaignId parameter",
+    "assignFailed": "Assignment failed, please try again later",
+    "fetchInfoFailed": "Failed to fetch project information"
+  }
+}

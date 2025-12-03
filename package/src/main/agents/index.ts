@@ -86,7 +86,10 @@ export function createAgentInstance(id: AgentId, model: LanguageModel) {
 }
 
 // 导出类型
-export type { Agent, AgentId, AgentMeta, AgentModule, AgentConfig } from "./types";
+export type { Agent, AgentId, AgentMeta, AgentModule, AgentConfig, BilingualSystem } from "./types";
+
+// 导出辅助函数
+export { getSystemPrompt } from "@common/types/agent";
 
 // 导出工具函数
 export { defineAgent, tool, toAgent } from "./base";

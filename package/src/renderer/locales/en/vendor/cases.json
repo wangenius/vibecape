@@ -1,0 +1,72 @@
+{
+  "add": "Add Case",
+  "addFirst": "Add Your First Case",
+  "empty": "No cases yet",
+  "emptyDescription": "Add your first successful case",
+  "list": {
+    "emptyTitle": "No information available",
+    "emptyDescription": "Start chatting with AI to collect company information",
+    "count": "cases"
+  },
+  "fileCountSuffix": "files",
+  "edit": "Edit Case",
+  "addDescription": "Fill in case information to showcase your project experience",
+  "upload": {
+    "successPrefix": "Successfully uploaded",
+    "successSuffix": "files",
+    "uploading": "Uploading...",
+    "dragOrClick": "Drag or click to upload",
+    "supportTypes": "Supports images, videos, audio, PDF, PPT, Word and other files, max 50MB"
+  },
+  "form": {
+    "title": "Case Title",
+    "titlePlaceholder": "E.g., Annual Marketing Campaign for International Brand",
+    "description": "Case Description",
+    "descriptionPlaceholder": "Describe case background, execution process, results, etc...",
+    "media": "Case Media"
+  },
+  "fileTitlePlaceholder": "Enter file title",
+  "detail": {
+    "title": "Case Details",
+    "description": "View and edit case information",
+    "edit": "Edit",
+    "mediaFiles": "Media Files",
+    "createdTime": "Created Time",
+    "download": "Download",
+    "fileTypes": {
+      "image": "Image",
+      "video": "Video",
+      "audio": "Audio",
+      "document": "Document",
+      "archive": "Archive",
+      "file": "File"
+    }
+  },
+  "delete": {
+    "title": "Confirm Delete Case",
+    "descriptionPrefix": "Are you sure you want to delete case",
+    "descriptionSuffix": "?",
+    "warning": "This action will also delete all media files in the case and cannot be undone.",
+    "cancel": "Cancel",
+    "confirm": "Confirm Delete",
+    "deleting": "Deleting..."
+  },
+  "dialog": {
+    "title": "Add Case",
+    "description": "Fill in case information to showcase your project experience",
+    "titleLabel": "Case Title",
+    "titlePlaceholder": "E.g., Annual Marketing Campaign for International Brand",
+    "descriptionLabel": "Case Description",
+    "descriptionPlaceholder": "Describe case background, execution process, results, etc...",
+    "mediaLabel": "Case Images",
+    "uploadText": "Click to upload files",
+    "uploadingText": "Uploading...",
+    "uploadHint": "Supports images, videos, audio, PDF, PPT, Word and other files, max 50MB",
+    "uploadedFiles": "Uploaded Files",
+    "required": "Required",
+    "submit": "Add",
+    "adding": "Adding...",
+    "cancel": "Cancel"
+  },
+  "moreImages": "{count} more images"
+}

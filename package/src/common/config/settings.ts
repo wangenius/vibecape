@@ -5,7 +5,8 @@ export const SETTINGS_DEFAULTS: SettingsData = {
   ui: {
     theme: "default",
     mode: "light",
-    language: "zh-CN",
+    language: "en-US",
+    promptLanguage: "en-US",
     showChapterList: true,
   },
   model: {

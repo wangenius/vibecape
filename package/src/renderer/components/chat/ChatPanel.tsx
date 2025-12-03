@@ -40,8 +40,9 @@ export const ChatPanel = () => {
 
   const handleSelectHero = useCallback(
     (heroId: string) => {
+      console.log("[ChatPanel] handleSelectHero called:", heroId);
       setCurrentHeroId(heroId);
-      setAgentOpen(false);
+      // 注意：AgentSelector 内部已经调用 onOpenChange(false) 关闭 popover
     },
     [setCurrentHeroId]
   );

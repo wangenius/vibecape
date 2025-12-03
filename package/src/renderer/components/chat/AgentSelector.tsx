@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,10 +28,14 @@ export const AgentSelector: React.FC<AgentSelectorProps> = ({
 }) => {
   const { t } = useTranslation();
   
-  const handleSelectAgent = (agentId: string) => {
-    onSelect(agentId);
-    onOpenChange(false);
-  };
+  const handleSelectAgent = useCallback(
+    (agentId: string) => {
+      console.log("[AgentSelector] handleSelectAgent:", agentId);
+      onSelect(agentId);
+      onOpenChange(false);
+    },
+    [onSelect, onOpenChange]
+  );
 
   return (
     <Popover open={open} onOpenChange={onOpenChange}>

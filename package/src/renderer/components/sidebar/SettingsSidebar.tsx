@@ -9,7 +9,7 @@ export const SettingsSidebar = () => {
     useViewManager((state) => state.previewCosmosId) || "general";
 
   return (
-    <div className="h-full w-[360px] flex flex-col border-r border-border overflow-hidden">
+    <div className="h-full w-[360px] flex flex-col border-r border-border overflow-hidden shrink-0 whitespace-nowrap">
       <div className="p-3">
         <div className="text-sm font-medium">
           {t("common.settings.settingsTitle")}

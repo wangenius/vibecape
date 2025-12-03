@@ -35,7 +35,7 @@ export const Baybar = () => {
         !isBayBarOpen && "pointer-events-none"
       )}
     >
-      <div className="h-full w-[400px] flex flex-col overflow-hidden pt-8">
+      <div className="h-full w-[400px] flex flex-col overflow-hidden">
         <ChatPanel />
       </div>
     </motion.div>

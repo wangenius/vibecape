@@ -124,7 +124,7 @@ export const ChatCore: React.FC<ChatCoreProps> = ({ chatId }) => {
         <ConversationScrollButton />
       </Conversation>
 
-      <div className="p-0 border-t border-muted-foreground/20 bg-muted-foreground/10">
+      <div className="m-2 rounded-xl bg-muted-foreground/10">
         <ChatInputEditor
           status={inputStatus}
           onSubmit={handleInputSubmit}

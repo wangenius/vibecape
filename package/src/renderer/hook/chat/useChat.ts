@@ -457,9 +457,6 @@ export function useChat(chatId: string) {
   const error = useChatStore((state) => state.chats.get(chatId)?.error ?? null);
   const threadId = useChatStore((state) => state.chats.get(chatId)?.threadId);
 
-  // 获取当前选中的 Hero ID
-  const currentHeroId = useHeroStore((state) => state.currentHeroId);
-
   const sendMessageFn = useChatStore((state) => state.sendMessage);
   const stop = useChatStore((state) => state.stop);
   const regenerate = useChatStore((state) => state.regenerate);
@@ -470,7 +467,12 @@ export function useChat(chatId: string) {
     status,
     error,
     threadId,
-    sendMessage: (text: string) => sendMessageFn(chatId, text, currentHeroId),
+    // 在调用时动态获取 currentHeroId，避免闭包捕获旧值
+    sendMessage: (text: string) => {
+      const currentHeroId = useHeroStore.getState().currentHeroId;
+      console.log("[useChat] sendMessage called with heroId:", currentHeroId);
+      return sendMessageFn(chatId, text, currentHeroId);
+    },
     stop: () => stop(chatId),
     regenerate: () => regenerate(chatId),
     clearError: () => setError(chatId, null),

@@ -106,7 +106,10 @@ async function buildMessages(
 ) {
   // 获取 Hero 配置
   const hero = getHeroForPayload(payload.heroId);
-  const systemMessage = { role: "system" as const, content: hero.getSystemPrompt() };
+  const systemPrompt = hero.getSystemPrompt();
+  console.log("[ChatHandler] buildMessages - heroId:", payload.heroId, "hero.id:", hero.id);
+  console.log("[ChatHandler] systemPrompt (first 200 chars):", systemPrompt.substring(0, 200));
+  const systemMessage = { role: "system" as const, content: systemPrompt };
 
   if (!thread) {
     // 非聊天场景：使用前端传来的消息

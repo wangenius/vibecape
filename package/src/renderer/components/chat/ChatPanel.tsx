@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from "react";
 import { TbPlus } from "react-icons/tb";
 import { Button } from "@/components/ui/button";
 import { useThread } from "@/hook/chat/useThread";
-import { useAgent } from "@/hook/chat/useAgent";
+import { useHero } from "@/hook/chat/useHero";
 import { ChatCore } from "./ChatCore";
 import { AgentSelector } from "./AgentSelector";
 import { HistoryPopover } from "./HistoryPopover";
@@ -22,7 +22,7 @@ export const ChatPanel = () => {
     selectThread,
   } = useThread();
 
-  const { agents, currentAgent, setCurrentAgentId } = useAgent();
+  const { heroes, currentHero, setCurrentHeroId } = useHero();
 
   useEffect(() => {
     if (historyOpen) {
@@ -38,12 +38,12 @@ export const ChatPanel = () => {
     [selectThread]
   );
 
-  const handleSelectAgent = useCallback(
-    (agentId: string) => {
-      setCurrentAgentId(agentId);
+  const handleSelectHero = useCallback(
+    (heroId: string) => {
+      setCurrentHeroId(heroId);
       setAgentOpen(false);
     },
-    [setCurrentAgentId]
+    [setCurrentHeroId]
   );
 
   return (
@@ -54,9 +54,9 @@ export const ChatPanel = () => {
         <AgentSelector
           open={agentOpen}
           onOpenChange={setAgentOpen}
-          agents={agents}
-          currentAgent={currentAgent}
-          onSelect={handleSelectAgent}
+          agents={heroes}
+          currentAgent={currentHero}
+          onSelect={handleSelectHero}
         />
 
         {/* 右侧：操作按钮 */}

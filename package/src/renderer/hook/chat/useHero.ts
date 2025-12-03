@@ -20,12 +20,13 @@ interface HeroState {
 
 export const useHeroStore = create<HeroState>((set, get) => ({
   heroes: [],
-  currentHeroId: "assistant", // 默认使用通用助手
+  currentHeroId: "nova", // 默认使用 Nova 通用助手
   loaded: false,
 
   setHeroes: (heroes) => set({ heroes }),
 
   setCurrentHeroId: (id) => {
+    console.log("[useHeroStore] setCurrentHeroId:", id);
     set({ currentHeroId: id });
     // 保存到 localStorage
     if (typeof window !== "undefined") {
@@ -83,19 +84,3 @@ export function useHero() {
   };
 }
 
-// ============ 兼容旧接口 ============
-
-/** @deprecated 使用 useHeroStore */
-export const useAgentStore = useHeroStore;
-
-/** @deprecated 使用 useHero */
-export function useAgent() {
-  const { heroes, currentHero, currentHeroId, setCurrentHeroId, loaded } = useHero();
-  return {
-    agents: heroes,
-    currentAgent: currentHero,
-    currentAgentId: currentHeroId,
-    setCurrentAgentId: setCurrentHeroId,
-    loaded,
-  };
-}

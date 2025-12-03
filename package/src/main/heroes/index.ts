@@ -8,22 +8,22 @@ import { HeroesManager } from "./HeroesManager";
 
 // 导入预设 Heroes
 import {
-  assistant,
-  writer,
-  translator,
-  coder,
-  analyst,
-  creative,
+  nova,
+  iris,
+  luca,
+  max,
+  sage,
+  muse,
 } from "./presets";
 
 // 注册所有预设 Heroes
 HeroesManager.registerAll([
-  assistant,
-  writer,
-  translator,
-  coder,
-  analyst,
-  creative,
+  nova,
+  iris,
+  luca,
+  max,
+  sage,
+  muse,
 ]);
 
 // ============ 导出 API ============

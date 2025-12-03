@@ -7,6 +7,7 @@ import type {
   ToolPart,
   MessagePart,
 } from "@common/types/message";
+import { useAgentStore } from "./useAgent";
 
 const STREAM_CHANNEL_PREFIX = "llm:stream:";
 const getStreamChannel = (id: string) => `${STREAM_CHANNEL_PREFIX}${id}`;
@@ -49,7 +50,7 @@ interface ChatStore {
   setThreadId: (chatId: string, threadId: string) => void;
 
   // 发送消息
-  sendMessage: (chatId: string, text: string) => Promise<void>;
+  sendMessage: (chatId: string, text: string, agentId?: string) => Promise<void>;
 
   // 停止生成
   stop: (chatId: string) => void;
@@ -219,7 +220,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     });
   },
 
-  sendMessage: async (chatId, text) => {
+  sendMessage: async (chatId, text, agentId) => {
     const { addMessage, setStatus, setError } = get();
 
     setStatus(chatId, "submitted");
@@ -251,11 +252,12 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
       const requestId = gen.id();
 
-      console.log("[useChat] Starting stream with threadId:", chatId);
+      console.log("[useChat] Starting stream with threadId:", chatId, "agentId:", agentId);
       const response = await window.api.chat.stream({
         id: requestId,
         thread: chatId,
         prompt: text,
+        agentId,
       });
 
       if (!response?.success) {
@@ -420,7 +422,10 @@ export function useChat(chatId: string) {
   const error = useChatStore((state) => state.chats.get(chatId)?.error ?? null);
   const threadId = useChatStore((state) => state.chats.get(chatId)?.threadId);
 
-  const sendMessage = useChatStore((state) => state.sendMessage);
+  // 获取当前选中的 Agent ID
+  const currentAgentId = useAgentStore((state) => state.currentAgentId);
+
+  const sendMessageFn = useChatStore((state) => state.sendMessage);
   const stop = useChatStore((state) => state.stop);
   const regenerate = useChatStore((state) => state.regenerate);
   const setError = useChatStore((state) => state.setError);
@@ -430,7 +435,7 @@ export function useChat(chatId: string) {
     status,
     error,
     threadId,
-    sendMessage: (text: string) => sendMessage(chatId, text),
+    sendMessage: (text: string) => sendMessageFn(chatId, text, currentAgentId),
     stop: () => stop(chatId),
     regenerate: () => regenerate(chatId),
     clearError: () => setError(chatId, null),

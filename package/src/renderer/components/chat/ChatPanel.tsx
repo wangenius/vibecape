@@ -1,5 +1,10 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import { TbHistory, TbSparkles, TbPlus, TbSquareRoundedX } from "react-icons/tb";
+import {
+  TbHistory,
+  TbSparkles,
+  TbPlus,
+  TbSquareRoundedX,
+} from "react-icons/tb";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -7,6 +12,14 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import type { Agent } from "@common/types/agent";
+import { CachedAvatar } from "@/hook/util/useAvatarCache";
 import {
   Conversation,
   ConversationContent,
@@ -19,6 +32,7 @@ import { StopIcon } from "@radix-ui/react-icons";
 import { ArrowUp } from "lucide-react";
 import { useChat, useChatStore } from "@/hook/chat/useChat";
 import { useThread } from "@/hook/chat/useThread";
+import { useAgent } from "@/hook/chat/useAgent";
 import type { UIMessage } from "ai";
 import type { ChatThreadMeta } from "@common/schema/chat";
 import { MessageRenderer, ErrorMessage } from "./MessageRenderer";
@@ -319,6 +333,8 @@ const ChatCore: React.FC<ChatCoreProps> = ({ chatId }) => {
 
 export const ChatPanel = () => {
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [agentOpen, setAgentOpen] = useState(false);
+  const [detailAgent, setDetailAgent] = useState<Agent | null>(null);
 
   const {
     activeChatId,
@@ -328,6 +344,8 @@ export const ChatPanel = () => {
     refreshThreads,
     selectThread,
   } = useThread();
+
+  const { agents, currentAgent, setCurrentAgentId } = useAgent();
 
   useEffect(() => {
     if (historyOpen) {
@@ -343,10 +361,89 @@ export const ChatPanel = () => {
     [selectThread]
   );
 
+  const handleSelectAgent = useCallback(
+    (agentId: string) => {
+      setCurrentAgentId(agentId);
+      setAgentOpen(false);
+    },
+    [setCurrentAgentId]
+  );
+
   return (
     <div className="h-full w-full flex flex-col overflow-hidden bg-transparent">
       {/* 顶部固定栏 */}
-      <div className="flex h-10 flex-none items-center justify-end px-2">
+      <div className="flex h-10 flex-none items-center justify-between px-2">
+        {/* 左侧：Agent 切换 */}
+        <Popover open={agentOpen} onOpenChange={setAgentOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 gap-1.5 pl-0 pr-2 text-xs rounded-full"
+              title="切换 Agent"
+            >
+              <CachedAvatar
+                src={currentAgent?.avatar || "https://avatar.iran.liara.run/public/girl?username=Maria"}
+                alt=""
+                className="size-5 rounded-full"
+              />
+              <span className="max-w-20 truncate">
+                {currentAgent?.name || "助手"}
+              </span>
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent
+            side="bottom"
+            align="start"
+            className="w-64 p-2"
+            sideOffset={5}
+          >
+            <div className="space-y-2">
+              <div className="px-2 py-1">
+                <h4 className="text-xs font-medium text-foreground">
+                  选择 Agent
+                </h4>
+                <p className="text-[10px] text-muted-foreground">
+                  切换不同的 AI 助手角色
+                </p>
+              </div>
+              <div className="max-h-[50vh] space-y-0.5 overflow-y-auto">
+                {agents.map((agent) => (
+                  <div
+                    key={agent.id}
+                    className={cn(
+                      "w-full rounded-md px-2 py-2 text-left transition flex items-start gap-2 cursor-pointer",
+                      agent.id === currentAgent?.id
+                        ? "bg-primary/10 text-primary"
+                        : "hover:bg-muted"
+                    )}
+                    onClick={() => handleSelectAgent(agent.id)}
+                  >
+                    <CachedAvatar
+                      src={agent.avatar}
+                      alt=""
+                      className="size-7 rounded-full shrink-0 cursor-pointer hover:ring-2 hover:ring-primary/50 transition"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDetailAgent(agent);
+                      }}
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="text-[11px] font-medium truncate">
+                        {agent.name}
+                      </div>
+                      <div className="text-[10px] text-muted-foreground line-clamp-2">
+                        {agent.description}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </PopoverContent>
+        </Popover>
+
+        {/* 右侧：操作按钮 */}
         <div className="flex items-center gap-1">
           <Button
             variant="ghost"
@@ -426,6 +523,44 @@ export const ChatPanel = () => {
           </div>
         </div>
       )}
+
+      {/* Agent 详情弹窗 */}
+      <Dialog open={!!detailAgent} onOpenChange={() => setDetailAgent(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-3">
+              {detailAgent && (
+                <>
+                  <CachedAvatar
+                    src={detailAgent.avatar}
+                    alt=""
+                    className="size-10 rounded-full"
+                  />
+                  <span>{detailAgent.name}</span>
+                </>
+              )}
+            </DialogTitle>
+          </DialogHeader>
+          {detailAgent && (
+            <div className="space-y-4">
+              <div>
+                <div className="text-xs text-muted-foreground mb-1">简介</div>
+                <p className="text-sm">{detailAgent.description}</p>
+              </div>
+              <Button
+                className="w-full"
+                size="sm"
+                onClick={() => {
+                  handleSelectAgent(detailAgent.id);
+                  setDetailAgent(null);
+                }}
+              >
+                使用此 Agent
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

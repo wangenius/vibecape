@@ -1,14 +1,21 @@
+/**
+ * 通用工具集
+ */
+
 import { tool } from "ai";
 import { z } from "zod";
 
 /**
- * 工具定义（用于 streamText）
+ * 通用工具 - 所有 Agent 可用
  */
-export const chatTools = {
+export const commonTools = {
+  /**
+   * 获取当前日期和时间
+   */
   getCurrentTime: tool({
     description: "获取当前的日期和时间",
     inputSchema: z.object({}),
-    execute: () => {
+    execute: async () => {
       const now = new Date();
       return {
         date: now.toLocaleDateString("zh-CN"),

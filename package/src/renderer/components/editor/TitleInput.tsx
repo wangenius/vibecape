@@ -1,5 +1,5 @@
-import { Input } from '@/components/ui/input';
-import { memo, useEffect, useRef } from 'react';
+import { Input } from "@/components/ui/input";
+import { memo, useEffect, useRef } from "react";
 
 export const TitleInput = memo(
   ({
@@ -12,7 +12,7 @@ export const TitleInput = memo(
     const inputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
-      if (value === '') {
+      if (value === "") {
         inputRef.current?.focus();
       }
     }, [value]);

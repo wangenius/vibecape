@@ -75,6 +75,7 @@ const api = {
     delete: (threadId: string) => ipcRenderer.invoke("chat:delete", threadId),
     stream: (payload: any) => ipcRenderer.invoke("chat:stream", payload),
     cancel: (id: string) => ipcRenderer.invoke("chat:cancel", id),
+    agents: () => ipcRenderer.invoke("chat:agents"),
     onThreadUpdated: (
       callback: (data: { threadId: string; title: string }) => void
     ) => {

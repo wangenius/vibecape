@@ -12,7 +12,7 @@ import {
 import { NodeViewProps } from "@tiptap/react";
 import { codeToHtml } from "shiki";
 import { Check, Copy } from "lucide-react";
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import {
   Popover,
@@ -53,9 +53,19 @@ const CodeBlockComponent = ({ node, updateAttributes }: NodeViewProps) => {
   const [copied, setCopied] = useState(false);
   const [languageOpen, setLanguageOpen] = useState(false);
   const [highlightedHtml, setHighlightedHtml] = useState<string>("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [highlightedIndex, setHighlightedIndex] = useState(0);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const language = node.attrs.language || "plaintext";
   const code = node.textContent || "";
+
+  // 过滤语言列表
+  const filteredLanguages = useMemo(() => {
+    if (!searchQuery.trim()) return LANGUAGES;
+    const query = searchQuery.toLowerCase();
+    return LANGUAGES.filter((lang) => lang.toLowerCase().includes(query));
+  }, [searchQuery]);
 
   // 使用 Shiki 进行语法高亮
   useEffect(() => {
@@ -114,9 +124,51 @@ const CodeBlockComponent = ({ node, updateAttributes }: NodeViewProps) => {
     (lang: string) => {
       updateAttributes({ language: lang });
       setLanguageOpen(false);
+      setSearchQuery("");
+      setHighlightedIndex(0);
     },
     [updateAttributes]
   );
+
+  // 处理搜索框键盘事件
+  const handleSearchKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        setHighlightedIndex((prev) =>
+          prev < filteredLanguages.length - 1 ? prev + 1 : prev
+        );
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        setHighlightedIndex((prev) => (prev > 0 ? prev - 1 : 0));
+      } else if (e.key === "Enter") {
+        e.preventDefault();
+        if (filteredLanguages.length > 0) {
+          handleLanguageChange(filteredLanguages[highlightedIndex]);
+        }
+      } else if (e.key === "Escape") {
+        setLanguageOpen(false);
+        setSearchQuery("");
+        setHighlightedIndex(0);
+      }
+    },
+    [filteredLanguages, highlightedIndex, handleLanguageChange]
+  );
+
+  // 当搜索结果变化时重置高亮索引
+  useEffect(() => {
+    setHighlightedIndex(0);
+  }, [searchQuery]);
+
+  // 打开时聚焦搜索框
+  useEffect(() => {
+    if (languageOpen) {
+      setTimeout(() => searchInputRef.current?.focus(), 0);
+    } else {
+      setSearchQuery("");
+      setHighlightedIndex(0);
+    }
+  }, [languageOpen]);
 
   return (
     <NodeViewWrapper className="relative my-2" data-type="codeBlock">
@@ -135,22 +187,41 @@ const CodeBlockComponent = ({ node, updateAttributes }: NodeViewProps) => {
             </PopoverTrigger>
             <PopoverContent
               align="start"
-              className="p-1 max-h-52 overflow-y-auto w-32 scrollbar-hide"
+              className="p-1 w-36"
             >
-              {LANGUAGES.map((lang) => (
-                <button
-                  key={lang}
-                  onClick={() => handleLanguageChange(lang)}
-                  className={cn(
-                    "block w-full px-2 py-1 text-left text-[11px] font-mono rounded transition-colors",
-                    lang === language
-                      ? "bg-foreground/10 text-foreground"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                  )}
-                >
-                  {lang}
-                </button>
-              ))}
+              <input
+                ref={searchInputRef}
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={handleSearchKeyDown}
+                placeholder="搜索语言..."
+                className="w-full px-2 py-1 mb-1 text-[11px] bg-transparent border-b border-border outline-none placeholder:text-muted-foreground/50"
+              />
+              <div className="max-h-44 overflow-y-auto scrollbar-hide">
+                {filteredLanguages.length > 0 ? (
+                  filteredLanguages.map((lang, index) => (
+                    <button
+                      key={lang}
+                      onClick={() => handleLanguageChange(lang)}
+                      className={cn(
+                        "block w-full px-2 py-1 text-left text-[11px] font-mono rounded transition-colors",
+                        index === highlightedIndex
+                          ? "bg-foreground/10 text-foreground"
+                          : lang === language
+                            ? "text-foreground"
+                            : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                      )}
+                    >
+                      {lang}
+                    </button>
+                  ))
+                ) : (
+                  <div className="px-2 py-1 text-[11px] text-muted-foreground/50">
+                    无匹配结果
+                  </div>
+                )}
+              </div>
             </PopoverContent>
           </Popover>
 

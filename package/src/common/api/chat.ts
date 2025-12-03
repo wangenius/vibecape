@@ -1,4 +1,5 @@
 import { ChatThreadMeta, ChatThread } from "@common/schema";
+import type { Agent } from "../../main/agents/types";
 
 export interface ChatAPI {
   // 获取聊天线程
@@ -22,7 +23,10 @@ export interface ChatAPI {
     id: string;
     thread: string;
     prompt: string;
+    agentId?: string;
   }) => Promise<{ success: boolean }>;
+  // 获取所有 Agents
+  agents: () => Promise<Agent[]>;
   // 取消聊天
   cancel: (id: string) => Promise<{ success: boolean }>;
   // 监听线程标题更新事件
@@ -30,3 +34,5 @@ export interface ChatAPI {
     callback: (data: { threadId: string; title: string }) => void
   ) => () => void;
 }
+
+export type { Agent };

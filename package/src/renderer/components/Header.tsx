@@ -5,13 +5,13 @@ import {
   setViewManager,
   toggleBayBar,
 } from "@/hook/app/useViewManager";
+import { useVibecapeStore } from "@/hook/useVibecapeStore";
 import {
   BsLayoutSidebar,
   BsLayoutSidebarInset,
   BsLayoutSidebarInsetReverse,
   BsLayoutSidebarReverse,
 } from "react-icons/bs";
-import { motion } from "framer-motion";
 import { TbSettings } from "react-icons/tb";
 import { ModelSelector } from "./ModelSelector";
 
@@ -23,8 +23,10 @@ export function Header() {
   const activeSidebarPanel = useViewManager(
     (selector) => selector.activeSidebarPanel
   );
+  const workspace = useVibecapeStore((state) => state.workspace);
 
   const isSettingsMode = activeSidebarPanel === "settings";
+  const workspaceName = workspace?.root?.split("/").pop() || "";
 
   const toggleSidebar = () => {
     setViewManager({ isSidebarCollapsed: !isSidebarCollapsed });
@@ -44,20 +46,9 @@ export function Header() {
   return (
     <header
       id="body-header"
-      className="flex items-center bg-transparent pr-1 pl-20 h-8 flex-none select-none"
+      className="flex items-center bg-transparent pr-1 pl-20 h-8 flex-none select-none border-b border-border"
     >
-      <motion.div
-        id="sidebar-header"
-        className="flex-none flex items-center gap-1"
-        initial={false}
-        animate={{
-          width: isSidebarCollapsed ? 64 : 336,
-        }}
-        transition={{
-          duration: 0.3,
-          ease: [0.4, 0, 0.2, 1],
-        }}
-      >
+      <div className="flex-none flex items-center gap-1">
         <Button
           variant="ghost"
           size="icon"
@@ -88,15 +79,23 @@ export function Header() {
         >
           <TbSettings className="size-4" />
         </Button>
-      </motion.div>
+      </div>
 
-      {/* 中间：标题 + 拖拽区域 */}
+      {/* 中间：工作区名称 + 拖拽区域 */}
       <div
         id="viewport-header"
-        className="flex-1 flex items-center gap-2 min-w-0 overflow-hidden"
+        className="flex-1 flex items-center justify-center gap-2 min-w-0 overflow-hidden"
       >
         {/* 拖拽区域 */}
         <div id="header-drag-region" className="flex-1 h-full"></div>
+        {/* 工作区名称 */}
+        {workspaceName && (
+          <span className="text-xs text-muted-foreground/60 truncate max-w-[200px]">
+            {workspaceName}
+          </span>
+        )}
+        {/* 拖拽区域 */}
+        <div id="header-drag-region-right" className="flex-1 h-full"></div>
       </div>
 
       {/* 右侧：模型选择器 + AI对话 */}

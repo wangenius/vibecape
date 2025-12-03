@@ -24,7 +24,7 @@
 }
 
 body {
-  overflow:hidden;
+  overflow: hidden;
 }
 
 /* Shiki 双主题支持 */
@@ -37,4 +37,8 @@ body {
 .dark .shiki,
 .dark .shiki span {
   color: var(--shiki-dark);
+}
+
+* {
+  color: var(--color-muted-foreground);
 }

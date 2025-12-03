@@ -6,10 +6,11 @@ import { Hero } from "../../Hero";
 import en from "./en.txt";
 import zh from "./zh.txt";
 
-export const writer = new Hero({
-  id: "writer",
+export const iris = new Hero({
+  id: "iris",
   name: "Iris",
-  description: "Professional writing consultant for polishing and creating articles",
+  description:
+    "Professional writing consultant for polishing and creating articles",
   avatar: "https://avatar.iran.liara.run/public?username=writer",
   prompt: { en, zh },
   maxSteps: 10,

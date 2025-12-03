@@ -15,7 +15,7 @@ const DropdownMenuTrigger = React.forwardRef<
   <DropdownMenuPrimitive.Trigger
     ref={ref}
     className={cn(
-      "outline-none ring-0 focus:ring-0 focus-visible:ring-0 focus:outline-none focus-visible:outline-none active:outline-none data-[state=open]:outline-none border-none hover:bg-muted select-none data-[state=closed]:outline-none data-[state=closed]:ring-0 focus:shadow-none active:ring-0 ring-offset-0 focus:ring-offset-0 focus-visible:ring-offset-0 data-[state=open]:bg-muted rounded-lg",
+      "outline-none ring-0 focus:ring-0 focus-visible:ring-0 focus:outline-none focus-visible:outline-none active:outline-none data-[state=open]:outline-none border-none hover:bg-muted select-none data-[state=closed]:outline-none data-[state=closed]:ring-0 focus:shadow-none active:ring-0 ring-offset-0 focus:ring-offset-0 focus-visible:ring-offset-0 data-[state=open]:bg-muted rounded-md h-7 text-muted-foreground",
       className
     )}
     {...props}
@@ -61,7 +61,7 @@ const DropdownMenuSubTrigger = React.forwardRef<
   <DropdownMenuPrimitive.SubTrigger
     ref={ref}
     className={cn(
-      "relative flex cursor-default select-none items-center gap-2 rounded-lg pl-2 pr-3 py-1.5 text-xs outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:text-muted-foreground hover:bg-accent/50",
+      "relative flex cursor-default select-none items-center gap-2 rounded-md h-7 pl-2 pr-3 text-xs text-muted-foreground outline-none transition-colors focus:bg-muted data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:text-muted-foreground hover:bg-muted",
       inset && "pl-8",
       className
     )}
@@ -121,7 +121,7 @@ const DropdownMenuItem = React.forwardRef<
   <DropdownMenuPrimitive.Item
     ref={ref}
     className={cn(
-      "relative flex cursor-default select-none items-center gap-2 rounded-lg pl-2 pr-3 py-1.5 text-xs outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:text-muted-foreground hover:bg-accent/50",
+      "relative flex cursor-default select-none items-center gap-2 rounded-md h-7 pl-2 pr-3 text-xs text-muted-foreground outline-none transition-colors focus:bg-muted data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:text-muted-foreground hover:bg-muted",
       inset && "pl-8",
       hidden && "hidden",
       variant === "destructive" &&

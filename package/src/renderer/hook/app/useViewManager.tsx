@@ -34,6 +34,11 @@ export type SidebarSection =
   | "meta"; // 世界观信息
 
 /**
+ * 侧边栏视图模式 - 文档树或目录
+ */
+export type SidebarViewMode = "tree" | "toc";
+
+/**
  * 视口接口
  */
 export interface ViewProps {
@@ -91,6 +96,10 @@ export interface ViewManagerState {
   loreFilter: "all" | string;
   /** 预览的项目ID（未打开项目时） */
   previewCosmosId: string | null;
+
+  // ========== 侧边栏视图模式 ==========
+  /** 侧边栏视图模式：tree=文档树, toc=目录 */
+  sidebarViewMode: SidebarViewMode;
 
   // ========== 历史记录 ==========
   /**
@@ -161,6 +170,7 @@ const useViewManagerStore = create<ViewManagerStore>()(
       actantFilter: "all",
       loreFilter: "all",
       previewCosmosId: null,
+      sidebarViewMode: "tree",
       history: [],
 
       // ========== 基础状态操作 ==========
@@ -560,6 +570,21 @@ export function setActantFilter(filter: "all" | string) {
  */
 export function setLoreFilter(filter: "all" | string) {
   updateViewManagerKey("loreFilter", filter);
+}
+
+/**
+ * 切换侧边栏视图模式
+ */
+export function toggleSidebarViewMode() {
+  const current = useViewManagerStore.getState().sidebarViewMode;
+  updateViewManagerKey("sidebarViewMode", current === "tree" ? "toc" : "tree");
+}
+
+/**
+ * 设置侧边栏视图模式
+ */
+export function setSidebarViewMode(mode: SidebarViewMode) {
+  updateViewManagerKey("sidebarViewMode", mode);
 }
 
 // ========== 辅助函数 ==========

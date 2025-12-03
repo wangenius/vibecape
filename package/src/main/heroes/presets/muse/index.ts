@@ -6,8 +6,8 @@ import { Hero } from "../../Hero";
 import en from "./en.txt";
 import zh from "./zh.txt";
 
-export const creative = new Hero({
-  id: "creative",
+export const muse = new Hero({
+  id: "muse",
   name: "Muse",
   description: "Inspire creativity and provide innovative solutions",
   avatar: "https://avatar.iran.liara.run/public?username=creative",

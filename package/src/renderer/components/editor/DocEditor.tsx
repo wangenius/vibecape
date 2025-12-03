@@ -148,7 +148,7 @@ export const DocEditor = ({ doc, onChange, onSave }: Props) => {
     >
       <EditorContent
         editor={editor}
-        className="w-full h-full [&_p]:mb-2 [&_.ProseMirror]:min-h-[400px] px-2"
+        className="w-full h-full [&_p]:mb-2 [&_.ProseMirror]:min-h-[400px]"
       />
       <EditorBubbleMenu editor={editor} />
       <PolishManager editor={editor} />

@@ -148,5 +148,10 @@
   "enterDesc": "Enter description...",
   "initializingWorkspace": "Initializing Workspace",
   "enterTitle": "Enter title...",
-  "slashPlaceholder": "Type / to open command menu..."
+  "slashPlaceholder": "Type / to open command menu...",
+  "toc": "TOC",
+  "showToc": "Show Table of Contents",
+  "showDocTree": "Show Document Tree",
+  "noDocOpen": "Please open a document first",
+  "noHeadings": "No headings in current document"
 }

@@ -3,6 +3,7 @@ import { useViewManager } from "@/hook/app/useViewManager";
 import { useVibecapeStore } from "@/hook/useVibecapeStore";
 import { SidebarHeader } from "./SidebarHeader";
 import { DocTreeWithDnd } from "./DocTreeView";
+import { DocTocView } from "./DocTocView";
 import { SettingsSidebar } from "./SettingsSidebar";
 import { SidebarEmptyState } from "./SidebarEmptyState";
 import { useCreateDocDialog } from "./useCreateDocDialog";
@@ -14,13 +15,15 @@ export const Sidebar = () => {
   const activeSidebarPanel = useViewManager(
     (selector) => selector.activeSidebarPanel
   );
+  const sidebarViewMode = useViewManager(
+    (selector) => selector.sidebarViewMode
+  );
   const workspace = useVibecapeStore((state) => state.workspace);
   const handleCreateDoc = useCreateDocDialog();
   const isSettingsMode = activeSidebarPanel === "settings";
 
   return (
     <motion.div
-      id="vibecape-sidebar"
       initial={false}
       animate={{
         width: isSidebarCollapsed ? "0px" : "360px",
@@ -34,9 +37,17 @@ export const Sidebar = () => {
       {isSettingsMode ? (
         <SettingsSidebar />
       ) : (
-        <div className="h-full w-[360px] flex flex-col bg-accent overflow-hidden pt-10">
+        <div className="h-full w-[360px] flex flex-col border-r border-border overflow-hidden">
           <SidebarHeader onCreateDoc={handleCreateDoc} />
-          {workspace?.initialized ? <DocTreeWithDnd /> : <SidebarEmptyState />}
+          {workspace?.initialized ? (
+            sidebarViewMode === "toc" ? (
+              <DocTocView />
+            ) : (
+              <DocTreeWithDnd />
+            )
+          ) : (
+            <SidebarEmptyState />
+          )}
         </div>
       )}
     </motion.div>

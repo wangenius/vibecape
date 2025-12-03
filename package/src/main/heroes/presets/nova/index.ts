@@ -7,8 +7,8 @@ import { commonTools } from "../../tools";
 import en from "./en.txt";
 import zh from "./zh.txt";
 
-export const assistant = new Hero({
-  id: "assistant",
+export const nova = new Hero({
+  id: "nova",
   name: "Nova",
   description: "Intelligent assistant that helps you complete various tasks",
   avatar: "https://avatar.iran.liara.run/public?username=assistant",

@@ -101,7 +101,7 @@ export const Textarea = forwardRef<CustomTextAreaRef, TextAreaProps>(
             onChange?.(e.target.value);
           }}
           className={cn(
-            "flex w-full rounded-md px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none bg-muted disabled:cursor-not-allowed disabled:opacity-50",
+            "flex w-full rounded-md px-2 py-2 text-sm text-muted-foreground ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none hover:bg-muted focus:bg-muted transition disabled:cursor-not-allowed disabled:opacity-50",
             rest.variant === "secondary" &&
               "bg-muted outline-none focus-visible:outline-none border-none focus-visible:ring-0",
             rest.variant === "ghost" &&

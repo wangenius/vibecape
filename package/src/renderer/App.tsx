@@ -22,9 +22,9 @@ const App = () => {
 
   return (
     <TooltipProvider>
-      <div className="w-screen h-screen relative flex bg-background overflow-hidden">
+      <div className="w-screen h-screen relative flex bg-background overflow-hidden flex-col">
         {/* Header Layer - Fixed Top */}
-        <div className="absolute top-0 left-0 w-full h-10 z-50 pointer-events-none">
+        <div className="w-full h-8 z-50 pointer-events-none">
           <div className="w-full h-full pointer-events-auto">
             <Header />
           </div>

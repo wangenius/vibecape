@@ -141,7 +141,7 @@ export const DocWorkspace = ({ doc, onSave }: Props) => {
                   transition={{ duration: 0.2, ease: "easeInOut" }}
                   className="overflow-hidden"
                 >
-                  <div className="mt-5 bg-muted rounded-lg">
+                  <div className="bg-muted rounded-lg">
                     <AutoResizeTextarea
                       value={description}
                       onValueChange={(value) => {

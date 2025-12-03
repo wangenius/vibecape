@@ -1,7 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { useVibecapeStore } from "@/hook/useVibecapeStore";
+import { useViewManager, setSidebarViewMode } from "@/hook/app/useViewManager";
 import { Loader2, X, Download, Upload, Plus, FolderOpen } from "lucide-react";
 import { TbDots } from "react-icons/tb";
+import { ViewModeSwitch } from "./ViewModeSwitch";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,6 +26,7 @@ export const SidebarHeader = ({ onCreateDoc }: SidebarHeaderProps) => {
   const closeWorkspace = useVibecapeStore((state) => state.closeWorkspace);
   const importFromDocs = useVibecapeStore((state) => state.importFromDocs);
   const exportToDocs = useVibecapeStore((state) => state.exportToDocs);
+  const sidebarViewMode = useViewManager((state) => state.sidebarViewMode);
 
   // 未打开工作区时不显示头部
   if (!workspace?.initialized) {
@@ -85,14 +88,14 @@ export const SidebarHeader = ({ onCreateDoc }: SidebarHeaderProps) => {
   };
 
   return (
-    <div className="px-2">
-      <div className="flex items-center gap-1">
-        {/* 左侧：目录名称 */}
-        <div className="flex-1 flex items-center gap-2 min-w-0 px-2">
-          <span className="text-sm truncate text-muted-foreground">
-            {workspace.root.split("/").pop()}
-          </span>
-        </div>
+    <div className="px-1 w-full shrink-0">
+      <div className="flex items-center gap-1 whitespace-nowrap">
+        {/* 左侧：Switch 切换按钮 */}
+        <ViewModeSwitch
+          mode={sidebarViewMode}
+          onModeChange={setSidebarViewMode}
+        />
+        <div className="flex-1"></div>
 
         {/* 右侧：新建 + 更多操作 */}
         <Button

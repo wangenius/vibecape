@@ -148,5 +148,10 @@
   "enterDesc": "输入描述...",
   "initializingWorkspace": "初始化工作区",
   "enterTitle": "输入标题...",
-  "slashPlaceholder": "输入 / 打开命令菜单..."
+  "slashPlaceholder": "输入 / 打开命令菜单...",
+  "toc": "目录",
+  "showToc": "显示目录",
+  "showDocTree": "显示文档树",
+  "noDocOpen": "请先打开一个文档",
+  "noHeadings": "当前文档没有标题"
 }

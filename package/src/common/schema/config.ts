@@ -30,6 +30,21 @@ export type ProxyConfig = {
   url: string;
 };
 
+// ==================== MCP 配置 ====================
+
+export type MCPServerConfig = {
+  name: string;
+  command: string;
+  args: string[];
+  env?: Record<string, string>;
+  enabled: boolean;
+};
+
+export type MCPConfig = {
+  enabled: boolean;
+  servers: MCPServerConfig[];
+};
+
 // ==================== OSS 配置 ====================
 
 export type OSSConfig = {
@@ -84,6 +99,11 @@ export const DEFAULT_OSS_CONFIG: OSSConfig = {
   access_key_secret: "",
   endpoint: "",
   custom_domain: "",
+};
+
+export const DEFAULT_MCP_CONFIG: MCPConfig = {
+  enabled: false,
+  servers: [],
 };
 
 export const DEFAULT_APP_CONFIG: AppConfig = {

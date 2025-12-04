@@ -2,6 +2,7 @@ import { contextBridge, ipcRenderer } from "electron";
 import { electronAPI } from "@electron-toolkit/preload";
 import { ModelInsert, ProviderInsert } from "@common/schema";
 import type { Shape } from "@common/lib/shape";
+import type { MCPConfig } from "@common/schema/config";
 
 const api = {
   docs: {
@@ -65,6 +66,22 @@ const api = {
       get: () => ipcRenderer.invoke("settings:get"),
       update: (path: Shape, value: unknown) =>
         ipcRenderer.invoke("settings:update", path, value),
+    },
+    mcp: {
+      get: () => ipcRenderer.invoke("mcp:get"),
+      set: (config: MCPConfig) => ipcRenderer.invoke("mcp:set", config),
+      connect: (serverName: string) => ipcRenderer.invoke("mcp:connect", serverName),
+      disconnect: (serverName: string) => ipcRenderer.invoke("mcp:disconnect", serverName),
+      status: () => ipcRenderer.invoke("mcp:status"),
+      tools: () => ipcRenderer.invoke("mcp:tools"),
+      callTool: (toolName: string, args: Record<string, unknown>) =>
+        ipcRenderer.invoke("mcp:callTool", toolName, args),
+      reload: () => ipcRenderer.invoke("mcp:reload"),
+      onStatusChanged: (callback: () => void) => {
+        const handler = () => callback();
+        ipcRenderer.on("mcp:status-changed", handler);
+        return () => ipcRenderer.removeListener("mcp:status-changed", handler);
+      },
     },
   },
   chat: {

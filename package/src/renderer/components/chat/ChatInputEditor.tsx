@@ -86,11 +86,6 @@ export const ChatInputEditor = ({
     handleSubmitRef.current = handleSubmit;
   }, [handleSubmit]);
 
-  useEffect(() => {
-    if (editor) {
-      editor.setEditable(!isStreaming);
-    }
-  }, [editor, isStreaming]);
 
   return (
     <div className="chat-input-wrapper">

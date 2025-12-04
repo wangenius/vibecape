@@ -8,7 +8,9 @@ import path from "path";
 import os from "os";
 import {
   type AppConfig,
+  type MCPConfig,
   DEFAULT_APP_CONFIG,
+  DEFAULT_MCP_CONFIG,
 } from "@common/schema/config";
 import {
   type WorkspacesIndex,
@@ -20,6 +22,7 @@ import {
 
 const VIBECAPE_DIR = path.join(os.homedir(), "vibecape");
 const CONFIG_PATH = path.join(VIBECAPE_DIR, "config.json");
+const MCP_PATH = path.join(VIBECAPE_DIR, "mcp.json");
 const WORKSPACES_PATH = path.join(VIBECAPE_DIR, "workspaces.json");
 const CACHE_DIR = path.join(VIBECAPE_DIR, "cache");
 const DEFAULT_DOCS_ROOT = path.join(VIBECAPE_DIR, "root");
@@ -87,9 +90,24 @@ export function getUserDataPaths() {
   return {
     vibecapeDir: VIBECAPE_DIR,
     configPath: CONFIG_PATH,
+    mcpPath: MCP_PATH,
     workspacesPath: WORKSPACES_PATH,
     cacheDir: CACHE_DIR,
   };
+}
+
+// ==================== MCPConfig 操作 ====================
+
+export function getMCPConfig(): MCPConfig {
+  const stored = readJsonFile<Partial<MCPConfig>>(MCP_PATH, {});
+  return {
+    enabled: stored.enabled ?? DEFAULT_MCP_CONFIG.enabled,
+    servers: stored.servers ?? DEFAULT_MCP_CONFIG.servers,
+  };
+}
+
+export function setMCPConfig(config: MCPConfig): void {
+  writeJsonFile(MCP_PATH, config);
 }
 
 // ==================== AppConfig 操作 ====================

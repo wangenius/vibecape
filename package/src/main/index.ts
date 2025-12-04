@@ -122,6 +122,12 @@ app.whenReady().then(async () => {
   const { initProxyConfig } = await import("./utils/proxy");
   await initProxyConfig();
 
+  // 初始化 MCP 连接
+  const { MCPManager } = await import("./services/MCPManager");
+  MCPManager.initialize().catch((error) => {
+    console.error("[MCP] Failed to initialize MCP:", error);
+  });
+
   // IPC test
   ipcMain.on("ping", () => console.log("pong"));
 

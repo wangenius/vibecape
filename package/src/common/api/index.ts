@@ -1,5 +1,5 @@
 import { ElectronAPI } from "@electron-toolkit/preload";
-import { ModelAPI, ProviderAPI, SettingsAPI } from "./app";
+import { MCPAPI, ModelAPI, ProviderAPI, SettingsAPI } from "./app";
 import { ChatAPI } from "./chat";
 import { VibecapeAPI } from "./vibecape";
 
@@ -11,6 +11,7 @@ declare global {
         provider: ProviderAPI;
         model: ModelAPI;
         settings: SettingsAPI;
+        mcp: MCPAPI;
       };
       chat: ChatAPI;
       vibecape: VibecapeAPI;

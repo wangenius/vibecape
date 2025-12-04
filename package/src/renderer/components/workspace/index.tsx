@@ -6,6 +6,7 @@ import {
   ModelSettings,
   StorageSettings,
   AboutSettings,
+  MCPSettings,
 } from "../settings";
 import { InitProgressDialog } from "./InitProgressDialog";
 import { WelcomePage } from "./WelcomePage";
@@ -49,6 +50,8 @@ export const Workspace = () => {
       switch (settingsSection) {
         case "models":
           return <ModelSettings />;
+        case "mcp":
+          return <MCPSettings />;
         case "storage":
           return <StorageSettings />;
         case "about":

@@ -1,6 +1,7 @@
 import { ipcMain, type WebContents } from "electron";
 import { Chat } from "../../services/Chat";
 import { Model } from "../../services/Model";
+import { MCPManager } from "../../services/MCPManager";
 import { streamText, stepCountIs } from "ai";
 import type { ChatThread } from "@common/schema/chat";
 import type { MessagePart } from "@common/types/message";
@@ -179,10 +180,15 @@ async function handleStreamResponse(
     }
   };
 
+  // 合并 Hero 工具和 MCP 工具（AI SDK MCP 已返回可直接使用的工具格式）
+  const mcpTools = MCPManager.getAllTools();
+  const allTools = { ...hero.tools, ...mcpTools };
+  console.log(`[ChatHandler] Using ${Object.keys(hero.tools).length} hero tools + ${Object.keys(mcpTools).length} MCP tools`);
+
   const result = streamText({
     model: main,
     messages,
-    tools: hero.tools,
+    tools: allTools,
     abortSignal: abortController.signal,
     stopWhen: stepCountIs(hero.maxSteps),
 

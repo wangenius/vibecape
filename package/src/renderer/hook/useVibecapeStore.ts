@@ -235,7 +235,7 @@ export const useVibecapeStore = create<VibecapeState & VibecapeActions>()(
           const updated = await window.api.vibecape.updateDoc(activeDocId, data);
           if (updated) {
             set({ activeDoc: updated });
-            if (data.title && data.title !== activeDoc?.title) {
+            if (data.title !== undefined && data.title !== activeDoc?.title) {
               const tree = await window.api.vibecape.getTree();
               set({ tree });
             }

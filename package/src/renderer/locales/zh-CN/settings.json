@@ -130,6 +130,7 @@
   "docNamePlaceholder": "输入文档名称",
   "enterDocName": "请输入文档名称",
   "docCreated": "文档已创建",
+  "untitledDoc": "未命名文档",
   "createFailed": "创建失败",
   "create": "创建",
   "confirmDelete": "确认删除",

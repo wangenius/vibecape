@@ -130,6 +130,7 @@
   "docNamePlaceholder": "Enter document name",
   "enterDocName": "Please enter document name",
   "docCreated": "Document created",
+  "untitledDoc": "Untitled",
   "createFailed": "Creation failed",
   "create": "Create",
   "confirmDelete": "Confirm Delete",

@@ -143,10 +143,11 @@ export const TreeNode = memo(
                 "flex-1 min-w-0 text-[13px] truncate",
                 "text-foreground",
                 "transition-colors duration-200",
-                selected && "text-foreground font-medium"
+                selected && "text-foreground font-medium",
+                !node.title && "text-muted-foreground italic"
               )}
             >
-              {node.title}
+              {node.title || t("common.settings.untitledDoc")}
             </div>
 
             {/* 右侧操作菜单 */}

@@ -4,6 +4,9 @@ import type {
   DocData,
   VibecapeWorkspace,
 } from "@common/schema/docs";
+import type { WorkspaceHistoryEntry } from "@common/schema/app";
+
+export type WorkspaceHistoryItem = WorkspaceHistoryEntry & { exists: boolean };
 
 export interface VibecapeAPI {
   // ==================== 工作区管理 ====================
@@ -11,7 +14,7 @@ export interface VibecapeAPI {
   /** 获取当前工作区 */
   getWorkspace: () => Promise<VibecapeWorkspace | null>;
   
-  /** 创建新工作区 (选择目录并初始化 .vibecape) */
+  /** 创建新工作区 (选择目录并初始化 vibecape 目录) */
   createWorkspace: () => Promise<VibecapeWorkspace | null>;
   
   /** 打开已有工作区 */
@@ -19,6 +22,12 @@ export interface VibecapeAPI {
   
   /** 仅选择 docs 目录 */
   pickDocsFolder: () => Promise<string | null>;
+  
+  /** 获取最近打开的工作区历史 */
+  getWorkspaceHistory: () => Promise<WorkspaceHistoryItem[]>;
+
+  /** 从历史记录中移除工作区 */
+  removeWorkspaceFromHistory: (path: string) => Promise<void>;
   
   /** 初始化指定目录的工作区 */
   initWorkspace: (docsDir: string) => Promise<{

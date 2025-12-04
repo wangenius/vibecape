@@ -8,12 +8,12 @@ import {
   type LanguageModel,
   type Tool,
 } from "ai";
-
-/** 多语言提示词 */
-export interface BilingualPrompt {
-  en: string;
-  zh: string;
-}
+import {
+  normalizeLanguage,
+  type LocaleLike,
+  type BilingualPrompt,
+  type Language,
+} from "@common/types/hero";
 
 /** Hero 配置选项 */
 export interface HeroConfig {
@@ -22,7 +22,7 @@ export interface HeroConfig {
   /** 显示名称 */
   name: string;
   /** 简短描述 */
-  description: string;
+  description: BilingualPrompt;
   /** 形象图标 (emoji 或图片路径) */
   avatar: string;
   /** 系统提示词 */
@@ -41,13 +41,10 @@ export interface HeroConfig {
 export interface HeroMeta {
   id: string;
   name: string;
-  description: string;
+  description: BilingualPrompt;
   avatar: string;
   isDefault?: boolean;
 }
-
-/** 语言类型 */
-export type Language = "en" | "zh";
 
 /**
  * Hero 类 - 封装 AI SDK Agent 的创建和管理
@@ -55,7 +52,7 @@ export type Language = "en" | "zh";
 export class Hero {
   readonly id: string;
   readonly name: string;
-  readonly description: string;
+  readonly description: BilingualPrompt;
   readonly avatar: string;
   readonly prompt: BilingualPrompt;
   readonly tools: Record<string, Tool>;
@@ -87,18 +84,25 @@ export class Hero {
   }
 
   /** 根据语言获取系统提示词 */
-  getSystemPrompt(language: Language = "en"): string {
-    return this.prompt[language] || this.prompt.en;
+  getSystemPrompt(language: LocaleLike = "en"): string {
+    const lang = normalizeLanguage(language);
+    return this.prompt[lang] || this.prompt.en;
   }
 
   /** 创建 AI SDK Agent 实例 */
-  createAgent(model: LanguageModel, language: Language = "en"): AIAgent<Record<string, Tool>> {
+  createAgent(
+    model: LanguageModel,
+    language: LocaleLike = "en"
+  ): AIAgent<Record<string, Tool>> {
+    const lang = normalizeLanguage(language);
     return new AIAgent({
       model,
-      system: this.getSystemPrompt(language),
+      system: this.getSystemPrompt(lang),
       tools: this.tools,
       stopWhen: stepCountIs(this.maxSteps),
       toolChoice: this.toolChoice,
     });
   }
 }
+
+export type { BilingualPrompt, Language, LocaleLike };

@@ -1,0 +1,9 @@
+{
+  "id": "sage",
+  "name": "Sage",
+  "description": {
+    "en": "Data analysis and logical reasoning expert",
+    "zh": "数据分析与逻辑推理专家"
+  },
+  "avatar": "https://avatar.iran.liara.run/public?username=sage"
+}

@@ -4,15 +4,12 @@
 
 import { Hero } from "../../Hero";
 import { commonTools } from "../../tools";
+import info from "./info.json";
 import en from "./en.txt";
 import zh from "./zh.txt";
 
 export const nova = new Hero({
-  id: "nova",
-  name: "Nova",
-  description: "Intelligent assistant that helps you complete various tasks",
-  avatar: "https://avatar.iran.liara.run/public?username=assistant",
-  isDefault: true,
+  ...info,
   prompt: { en, zh },
   tools: commonTools,
   maxSteps: 20,

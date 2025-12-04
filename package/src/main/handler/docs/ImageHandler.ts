@@ -24,12 +24,11 @@ ipcMain.handle(
         return null;
       }
 
-      // /img/xxx -> .vibecape/asset/img/xxx
+      // /img/xxx -> vibecape/asset/img/xxx
       if (assetPath.startsWith("/img/")) {
         const relativePath = assetPath.slice(1); // 移除开头的 /
         const fullPath = path.join(
-          workspace.docsPath,
-          ".vibecape",
+          workspace.vibecapePath,
           "asset",
           relativePath
         );
@@ -109,7 +108,7 @@ ipcMain.handle(
 );
 
 /**
- * 保存图片到本地 .vibecape/asset/img/ 目录
+ * 保存图片到本地 vibecape/asset/img/ 目录
  */
 async function saveToLocal(
   buffer: Buffer,
@@ -121,7 +120,7 @@ async function saveToLocal(
   }
 
   // 确保目录存在
-  const imgDir = path.join(workspace.docsPath, ".vibecape", "asset", "img");
+  const imgDir = path.join(workspace.vibecapePath, "asset", "img");
   await fs.mkdir(imgDir, { recursive: true });
 
   // 保存文件

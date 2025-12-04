@@ -119,7 +119,15 @@
   "workspace": {
     "openWorkspace": "Open Workspace",
     "workspaceReady": "Workspace is ready",
-    "initializationFailed": "Initialization failed"
+    "initializationFailed": "Initialization failed",
+    "recentTitle": "Recent workspaces",
+    "refreshHistory": "Refresh",
+    "noHistory": "No recent workspace records yet",
+    "missing": "Missing",
+    "lastOpened": "Last opened: {{time}}",
+    "openRecent": "Open workspace",
+    "removeRecent": "Remove from list",
+    "removedFromHistory": "Removed from history"
   },
   "unfindTitle": "No related content found",
   "unfindDesc": "Try searching with different keywords",

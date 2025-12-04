@@ -3,14 +3,12 @@
  */
 
 import { Hero } from "../../Hero";
+import info from "./info.json";
 import en from "./en.txt";
 import zh from "./zh.txt";
 
 export const max = new Hero({
-  id: "max",
-  name: "Max",
-  description: "Senior programmer helping with code writing and optimization",
-  avatar: "https://avatar.iran.liara.run/public?username=coder",
+  ...info,
   prompt: { en, zh },
   maxSteps: 20,
 });

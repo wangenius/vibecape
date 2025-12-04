@@ -8,11 +8,18 @@ export interface BilingualPrompt {
   zh: string;
 }
 
+export type LocaleLike = "en" | "zh" | "en-US" | "zh-CN";
+
+export function normalizeLanguage(language: LocaleLike = "en"): "en" | "zh" {
+  if (language === "zh" || language === "zh-CN") return "zh";
+  return "en";
+}
+
 /** Hero 基础信息（用于 UI 展示） */
 export interface HeroInfo {
   id: string;
   name: string;
-  description: string;
+  description: BilingualPrompt;
   avatar: string;
   isDefault?: boolean;
 }
@@ -23,12 +30,13 @@ export type Language = "en" | "zh";
 /** 根据语言获取提示词 */
 export function getPrompt(
   prompt: string | BilingualPrompt,
-  language: Language = "en"
+  language: LocaleLike = "en"
 ): string {
   if (typeof prompt === "string") {
     return prompt;
   }
-  return prompt[language] || prompt.en;
+  const lang = normalizeLanguage(language);
+  return prompt[lang] || prompt.en;
 }
 
 // ============ 兼容旧接口 ============

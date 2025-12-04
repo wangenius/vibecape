@@ -3,15 +3,12 @@
  */
 
 import { Hero } from "../../Hero";
+import info from "./info.json";
 import en from "./en.txt";
 import zh from "./zh.txt";
 
 export const iris = new Hero({
-  id: "iris",
-  name: "Iris",
-  description:
-    "Professional writing consultant for polishing and creating articles",
-  avatar: "https://avatar.iran.liara.run/public?username=writer",
+  ...info,
   prompt: { en, zh },
   maxSteps: 10,
 });

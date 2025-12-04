@@ -33,6 +33,7 @@ export const SETTINGS_DEFAULTS: SettingsData = {
     },
     docsRoot: "",
     vibecapeRoot: "",
+    recentWorkspaces: [],
   },
 };
 

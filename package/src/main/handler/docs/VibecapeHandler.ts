@@ -20,6 +20,16 @@ ipcMain.handle("vibecape:pickDocsFolder", () =>
   VibecapeDocsService.pickDocsFolder()
 );
 
+ipcMain.handle("vibecape:getWorkspaceHistory", () =>
+  VibecapeDocsService.getWorkspaceHistory()
+);
+
+ipcMain.handle(
+  "vibecape:removeWorkspaceFromHistory",
+  (_event, targetPath: string) =>
+    VibecapeDocsService.removeWorkspaceFromHistory(targetPath)
+);
+
 ipcMain.handle("vibecape:initWorkspace", (_event, docsDir: string) =>
   VibecapeDocsService.initWorkspace(docsDir)
 );

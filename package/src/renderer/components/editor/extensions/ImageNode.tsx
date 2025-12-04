@@ -1,7 +1,7 @@
 /**
  * Image 扩展
  * 支持本地图片 (/img/xxx) 和远程图片 (https://xxx)
- * 本地图片路径 /img/xxx 映射到 .vibecape/asset/img/xxx
+ * 本地图片路径 /img/xxx 映射到 vibecape/asset/img/xxx
  */
 
 import { Node, mergeAttributes, nodeInputRule } from "@tiptap/core";
@@ -71,7 +71,7 @@ const ImageComponent = ({
         return;
       }
 
-      // 本地图片路径 /img/xxx -> .vibecape/asset/img/xxx
+      // 本地图片路径 /img/xxx -> vibecape/asset/img/xxx
       if (src.startsWith("/img/")) {
         try {
           const api = (window as any).api?.vibecape;

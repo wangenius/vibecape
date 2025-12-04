@@ -15,6 +15,7 @@
 , "src/renderer/App.tsx"  ],
   "compilerOptions": {
     "composite": true,
+    "resolveJsonModule": true,
     "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {

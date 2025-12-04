@@ -7,10 +7,11 @@ import type { Extension } from "@tiptap/core";
 import { MentionNode } from "./MentionNode";
 import { MentionCommand } from "./MentionCommand";
 import { createMentionPlugin } from "../menus/MentionMenu";
+import { lang } from "@/locales/i18n";
 
 export const MentionExtension: Extension[] = [
   MentionNode as unknown as Extension,
   MentionCommand.configure({
-    suggestion: createMentionPlugin(),
+    suggestion: createMentionPlugin(lang),
   }),
 ];

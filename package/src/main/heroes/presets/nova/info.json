@@ -1,0 +1,10 @@
+{
+  "id": "nova",
+  "name": "Nova",
+  "description": {
+    "en": "Intelligent assistant that helps you complete various tasks",
+    "zh": "智能助手，帮助你完成各种任务"
+  },
+  "avatar": "https://avatar.iran.liara.run/public?username=nova",
+  "isDefault": true
+}

@@ -25,6 +25,13 @@ function mergeSettings(
         ...SETTINGS_DEFAULTS.general.proxy,
         ...(stored?.general?.proxy ?? {}),
       },
+      oss: {
+        ...SETTINGS_DEFAULTS.general.oss,
+        ...(stored?.general?.oss ?? {}),
+      },
+      recentWorkspaces:
+        stored?.general?.recentWorkspaces ??
+        SETTINGS_DEFAULTS.general.recentWorkspaces,
     },
   };
 }

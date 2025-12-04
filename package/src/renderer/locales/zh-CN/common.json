@@ -119,7 +119,15 @@
   "workspace": {
     "openWorkspace": "打开工作区",
     "workspaceReady": "工作区已就绪",
-    "initializationFailed": "初始化失败"
+    "initializationFailed": "初始化失败",
+    "recentTitle": "最近打开",
+    "refreshHistory": "刷新",
+    "noHistory": "暂无历史记录",
+    "missing": "路径不存在",
+    "lastOpened": "上次打开：{{time}}",
+    "openRecent": "打开工作区",
+    "removeRecent": "从列表移除",
+    "removedFromHistory": "已从历史记录移除"
   },
   "unfindTitle": "未找到相关内容",
   "unfindDesc": "尝试使用不同的关键词搜索",

@@ -9,6 +9,7 @@ import {
 import { dialog } from "@/components/custom/DialogModal";
 import { CachedAvatar } from "@/hook/util/useAvatarCache";
 import type { Agent } from "@common/api/chat";
+import { getPrompt, type LocaleLike } from "@common/types/hero";
 import { useTranslation } from "react-i18next";
 
 interface AgentSelectorProps {
@@ -26,7 +27,10 @@ export const AgentSelector: React.FC<AgentSelectorProps> = ({
   currentAgent,
   onSelect,
 }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const locale: LocaleLike = i18n.language?.startsWith("zh")
+    ? "zh-CN"
+    : "en-US";
   
   const handleSelectAgent = useCallback(
     (agentId: string) => {
@@ -107,7 +111,9 @@ export const AgentSelector: React.FC<AgentSelectorProps> = ({
                             <div className="text-xs text-muted-foreground mb-1">
                               {t("chat.agent.intro")}
                             </div>
-                            <p className="text-sm">{agent.description}</p>
+                            <p className="text-sm">
+                              {getPrompt(agent.description, locale)}
+                            </p>
                           </div>
                           <Button
                             className="w-full"
@@ -129,7 +135,7 @@ export const AgentSelector: React.FC<AgentSelectorProps> = ({
                     {agent.name}
                   </div>
                   <div className="text-[10px] text-muted-foreground line-clamp-2">
-                    {agent.description}
+                    {getPrompt(agent.description, locale)}
                   </div>
                 </div>
               </div>

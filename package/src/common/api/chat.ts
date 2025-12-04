@@ -1,7 +1,7 @@
 import { ChatThreadMeta, ChatThread } from "@common/schema";
 import type { HeroInfo } from "@common/types/hero";
 
-/** Hero 信息（用于 UI 展示） */
+/** Hero 信息（用于 UI 展示，包含双语描述） */
 export type { HeroInfo };
 
 /** @deprecated 使用 HeroInfo */

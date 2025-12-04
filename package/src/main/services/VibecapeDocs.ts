@@ -4,10 +4,21 @@
  */
 
 import fs from "fs/promises";
+import fsSync from "fs";
 import path from "path";
 import { dialog } from "electron";
 import { eq, isNull, asc } from "drizzle-orm";
-import { docs, type DocTreeNode, type DocData, type VibecapeWorkspace } from "@common/schema/docs";
+import {
+  docs,
+  type DocTreeNode,
+  type DocData,
+  type VibecapeWorkspace,
+  DEFAULT_WORKSPACE_CONFIG,
+  type WorkspaceConfig,
+  WORKSPACE_DIR_NAME,
+  LEGACY_WORKSPACE_DIR_NAME,
+} from "@common/schema/docs";
+import type { WorkspaceHistoryEntry } from "@common/schema/app";
 import {
   getDocsDb,
   getWorkspaceInfo,
@@ -17,6 +28,25 @@ import { SettingsService } from "./Settings";
 import type { JSONContent } from "@tiptap/core";
 
 const DOC_EXTENSIONS = [".md", ".mdx", ".mdoc"];
+const WORKSPACE_DIR_BLACKLIST = new Set([
+  WORKSPACE_DIR_NAME,
+  LEGACY_WORKSPACE_DIR_NAME,
+]);
+
+function mergeWorkspaceConfig(
+  stored?: Partial<WorkspaceConfig>
+): WorkspaceConfig {
+  return {
+    fumadocs: {
+      ...DEFAULT_WORKSPACE_CONFIG.fumadocs,
+      ...(stored?.fumadocs ?? {}),
+    },
+    publishing: {
+      ...DEFAULT_WORKSPACE_CONFIG.publishing,
+      ...(stored?.publishing ?? {}),
+    },
+  };
+}
 
 // ==================== Markdown 解析工具 ====================
 
@@ -191,6 +221,77 @@ function extractText(node: JSONContent): string {
 export class VibecapeDocsService {
   private static currentWorkspace: VibecapeWorkspace | null = null;
 
+  private static async ensureWorkspaceConfig(
+    workspace: VibecapeWorkspace
+  ): Promise<WorkspaceConfig> {
+    const mergedDefaults = DEFAULT_WORKSPACE_CONFIG;
+    try {
+      await fs.mkdir(path.dirname(workspace.configPath), { recursive: true });
+      const raw = await fs.readFile(workspace.configPath, "utf-8");
+      const parsed = JSON.parse(raw) as Partial<WorkspaceConfig>;
+      const config = mergeWorkspaceConfig(parsed);
+      await fs.writeFile(
+        workspace.configPath,
+        JSON.stringify(config, null, 2),
+        "utf-8"
+      );
+      return config;
+    } catch (error) {
+      console.warn(
+        "[VibecapeDocsService] Failed to load workspace config, using defaults:",
+        error
+      );
+      await fs.writeFile(
+        workspace.configPath,
+        JSON.stringify(mergedDefaults, null, 2),
+        "utf-8"
+      );
+      return mergedDefaults;
+    }
+  }
+
+  private static async withWorkspaceConfig(
+    workspace: VibecapeWorkspace
+  ): Promise<VibecapeWorkspace> {
+    const config = await this.ensureWorkspaceConfig(workspace);
+    return { ...workspace, config };
+  }
+
+  private static async recordWorkspaceHistory(docsDir: string): Promise<void> {
+    const settings = await SettingsService.get();
+    const history = settings.general?.recentWorkspaces || [];
+    const now = Date.now();
+    const name = path.basename(docsDir);
+
+    const updated: WorkspaceHistoryEntry[] = [
+      { path: docsDir, name, lastOpenedAt: now },
+      ...history.filter((item) => item.path !== docsDir),
+    ].slice(0, 10);
+
+    await SettingsService.update(["general", "recentWorkspaces"], updated);
+  }
+
+  static async getWorkspaceHistory(): Promise<
+    (WorkspaceHistoryEntry & { exists: boolean })[]
+  > {
+    const settings = await SettingsService.get();
+    const history = settings.general?.recentWorkspaces || [];
+
+    return history
+      .map((item) => ({
+        ...item,
+        exists: fsSync.existsSync(item.path),
+      }))
+      .sort((a, b) => b.lastOpenedAt - a.lastOpenedAt);
+  }
+
+  static async removeWorkspaceFromHistory(targetPath: string): Promise<void> {
+    const settings = await SettingsService.get();
+    const history = settings.general?.recentWorkspaces || [];
+    const next = history.filter((item) => item.path !== targetPath);
+    await SettingsService.update(["general", "recentWorkspaces"], next);
+  }
+
   /**
    * 获取当前工作区
    */
@@ -201,13 +302,16 @@ export class VibecapeDocsService {
     const root = settings.general?.vibecapeRoot;
     if (!root) return null;
 
-    this.currentWorkspace = getWorkspaceInfo(root);
+    const info = getWorkspaceInfo(root);
+    this.currentWorkspace = info.initialized
+      ? await this.withWorkspaceConfig(info)
+      : info;
     return this.currentWorkspace;
   }
 
   /**
    * 选择并创建工作区
-   * 选择 docs 目录，.vibecape 将在其内部创建
+   * 选择 docs 目录，vibecape 工作区目录将自动创建
    */
   static async createWorkspace(): Promise<VibecapeWorkspace | null> {
     const result = await dialog.showOpenDialog({
@@ -221,12 +325,14 @@ export class VibecapeDocsService {
 
     const docsDir = result.filePaths[0];
     const { workspace } = await initVibecapeWorkspace(docsDir);
+    const workspaceWithConfig = await this.withWorkspaceConfig(workspace);
 
     // 保存到设置
     await SettingsService.update(["general", "vibecapeRoot"], docsDir);
-    this.currentWorkspace = workspace;
+    await this.recordWorkspaceHistory(docsDir);
+    this.currentWorkspace = workspaceWithConfig;
 
-    return workspace;
+    return workspaceWithConfig;
   }
 
   /**
@@ -254,19 +360,26 @@ export class VibecapeDocsService {
     needsImport: boolean;
   }> {
     let workspace = getWorkspaceInfo(docsDir);
+    const wasInitialized = workspace.initialized;
     let needsImport = false;
 
-    // 如果工作区不存在，自动初始化
-    if (!workspace.initialized) {
+    const preferredPath = path.join(docsDir, WORKSPACE_DIR_NAME);
+    const shouldMigrateLegacy =
+      path.basename(workspace.vibecapePath) === LEGACY_WORKSPACE_DIR_NAME &&
+      !fsSync.existsSync(preferredPath);
+
+    if (shouldMigrateLegacy || !workspace.initialized) {
       const { workspace: newWorkspace } = await initVibecapeWorkspace(docsDir);
       workspace = newWorkspace;
-      needsImport = true; // 新工作区需要导入
+      needsImport = !wasInitialized; // 新工作区需要导入，迁移不导入
     }
 
+    const workspaceWithConfig = await this.withWorkspaceConfig(workspace);
     await SettingsService.update(["general", "vibecapeRoot"], docsDir);
-    this.currentWorkspace = workspace;
+    await this.recordWorkspaceHistory(docsDir);
+    this.currentWorkspace = workspaceWithConfig;
 
-    return { workspace, needsImport };
+    return { workspace: workspaceWithConfig, needsImport };
   }
 
   /**
@@ -591,6 +704,7 @@ export class VibecapeDocsService {
 
       for (const entry of entries) {
         if (entry.name.startsWith(".")) continue;
+        if (WORKSPACE_DIR_BLACKLIST.has(entry.name)) continue;
 
         const fullPath = path.join(dirPath, entry.name);
 
@@ -724,7 +838,7 @@ export class VibecapeDocsService {
 
   /**
    * 从数据库导出到 docs 目录 (覆盖)
-   * 注意：只覆盖文档文件，不删除 .vibecape 目录
+   * 注意：只覆盖文档文件，不删除 vibecape 工作区目录
    */
   static async exportToDocs(): Promise<{ exported: number }> {
     const workspace = await this.getCurrentWorkspace();
@@ -734,10 +848,11 @@ export class VibecapeDocsService {
 
     const docsPath = workspace.docsPath;
 
-    // 清理现有文档文件（保留 .vibecape 等隐藏目录）
+    // 清理现有文档文件（保留工作区目录及隐藏目录）
     const entries = await fs.readdir(docsPath, { withFileTypes: true });
     for (const entry of entries) {
       if (entry.name.startsWith(".")) continue; // 跳过隐藏文件/目录
+      if (WORKSPACE_DIR_BLACKLIST.has(entry.name)) continue; // 跳过工作区目录
       const fullPath = path.join(docsPath, entry.name);
       await fs.rm(fullPath, { recursive: true, force: true });
     }

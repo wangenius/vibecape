@@ -31,6 +31,14 @@ export const models = sqliteTable("models", {
 export type Model = typeof models.$inferSelect;
 export type ModelInsert = typeof models.$inferInsert;
 
+// ==================== Workspace History ====================
+
+export type WorkspaceHistoryEntry = {
+  path: string;
+  name: string;
+  lastOpenedAt: number;
+};
+
 // writing styles
 export const settings = sqliteTable("settings", {
   key: text("key").primaryKey(),
@@ -68,6 +76,7 @@ export const settings = sqliteTable("settings", {
         },
         docsRoot: "",
         vibecapeRoot: "",
+        recentWorkspaces: [],
       },
     }),
 });
@@ -104,6 +113,7 @@ export type SettingsData = {
     };
     docsRoot: string;
     vibecapeRoot: string;
+    recentWorkspaces: WorkspaceHistoryEntry[];
   };
 };
 

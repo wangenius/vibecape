@@ -93,6 +93,10 @@ const api = {
     createWorkspace: () => ipcRenderer.invoke("vibecape:createWorkspace"),
     openWorkspace: () => ipcRenderer.invoke("vibecape:openWorkspace"),
     pickDocsFolder: () => ipcRenderer.invoke("vibecape:pickDocsFolder"),
+    getWorkspaceHistory: () =>
+      ipcRenderer.invoke("vibecape:getWorkspaceHistory"),
+    removeWorkspaceFromHistory: (path: string) =>
+      ipcRenderer.invoke("vibecape:removeWorkspaceFromHistory", path),
     initWorkspace: (docsDir: string) =>
       ipcRenderer.invoke("vibecape:initWorkspace", docsDir),
     // 文档树

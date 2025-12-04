@@ -7,7 +7,14 @@ import { createClient, Client } from "@libsql/client";
 import { drizzle, LibSQLDatabase } from "drizzle-orm/libsql";
 import fs from "fs";
 import path from "path";
-import { docs, workspace_settings, type VibecapeWorkspace } from "@common/schema/docs";
+import {
+  docs,
+  workspace_settings,
+  type VibecapeWorkspace,
+  WORKSPACE_DIR_NAME,
+  LEGACY_WORKSPACE_DIR_NAME,
+  DEFAULT_WORKSPACE_CONFIG,
+} from "@common/schema/docs";
 
 // 文档数据库 schema
 const docsSchema = {
@@ -101,19 +108,35 @@ export function closeAllDocsDb(): void {
   }
 }
 
-/**
- * 获取 vibecape 工作区路径信息
- * @param docsDir 文档目录 (.vibecape 将在此目录内创建)
- */
-export function getVibecapePaths(docsDir: string): Omit<VibecapeWorkspace, "initialized"> {
-  const vibecapePath = path.join(docsDir, ".vibecape");
+function buildWorkspacePaths(
+  docsDir: string,
+  vibecapePath: string
+): Omit<VibecapeWorkspace, "initialized" | "config"> {
   return {
     root: docsDir,
     vibecapePath,
     dbPath: path.join(vibecapePath, "docs.db"),
-    // docsPath 就是 root 本身，因为 .vibecape 在 docs 目录内部
+    configPath: path.join(vibecapePath, "configs.json"),
     docsPath: docsDir,
   };
+}
+
+function resolveWorkspaceDir(docsDir: string): string {
+  const preferred = path.join(docsDir, WORKSPACE_DIR_NAME);
+  const legacy = path.join(docsDir, LEGACY_WORKSPACE_DIR_NAME);
+
+  if (fs.existsSync(preferred)) return preferred;
+  if (fs.existsSync(legacy)) return legacy;
+  return preferred;
+}
+
+/**
+ * 获取 vibecape 工作区路径信息
+ * @param docsDir 文档目录 (vibecape 将在此目录内创建)
+ */
+export function getVibecapePaths(docsDir: string): Omit<VibecapeWorkspace, "initialized"> {
+  const vibecapePath = resolveWorkspaceDir(docsDir);
+  return buildWorkspacePaths(docsDir, vibecapePath);
 }
 
 /**
@@ -139,23 +162,47 @@ export function isVibecapeWorkspace(targetDir: string): boolean {
 
 /**
  * 初始化 vibecape 工作区
- * @param docsDir docs 目录 (.vibecape 将在其内部创建)
+ * @param docsDir docs 目录 (vibecape 将在其内部创建)
  */
 export async function initVibecapeWorkspace(docsDir: string): Promise<{
   db: LibSQLDatabase<typeof docsSchema>;
   workspace: VibecapeWorkspace;
 }> {
-  const paths = getVibecapePaths(docsDir);
-  
-  // 创建 .vibecape 目录
-  if (!fs.existsSync(paths.vibecapePath)) {
-    fs.mkdirSync(paths.vibecapePath, { recursive: true });
+  const preferred = path.join(docsDir, WORKSPACE_DIR_NAME);
+  const legacy = path.join(docsDir, LEGACY_WORKSPACE_DIR_NAME);
+  let vibecapePath = preferred;
+
+  // 迁移旧的 .vibecape 目录
+  if (!fs.existsSync(preferred) && fs.existsSync(legacy)) {
+    try {
+      fs.renameSync(legacy, preferred);
+      vibecapePath = preferred;
+    } catch (error) {
+      console.warn("[initVibecapeWorkspace] Failed to migrate legacy .vibecape, fallback to legacy path:", error);
+      vibecapePath = legacy;
+    }
+  }
+
+  const paths = buildWorkspacePaths(docsDir, vibecapePath);
+
+  // 创建 vibecape 目录
+  if (!fs.existsSync(vibecapePath)) {
+    fs.mkdirSync(vibecapePath, { recursive: true });
   }
 
   // 创建 .gitignore 文件
-  const gitignorePath = path.join(paths.vibecapePath, ".gitignore");
+  const gitignorePath = path.join(vibecapePath, ".gitignore");
   if (!fs.existsSync(gitignorePath)) {
     fs.writeFileSync(gitignorePath, "*.db\n*.db-journal\n*.db-wal\n*.db-shm\n");
+  }
+
+  // 创建默认配置文件
+  if (!fs.existsSync(paths.configPath)) {
+    fs.writeFileSync(
+      paths.configPath,
+      JSON.stringify(DEFAULT_WORKSPACE_CONFIG, null, 2),
+      "utf-8"
+    );
   }
 
   // 初始化数据库

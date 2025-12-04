@@ -3,14 +3,12 @@
  */
 
 import { Hero } from "../../Hero";
+import info from "./info.json";
 import en from "./en.txt";
 import zh from "./zh.txt";
 
 export const muse = new Hero({
-  id: "muse",
-  name: "Muse",
-  description: "Inspire creativity and provide innovative solutions",
-  avatar: "https://avatar.iran.liara.run/public?username=creative",
+  ...info,
   prompt: { en, zh },
   maxSteps: 10,
 });

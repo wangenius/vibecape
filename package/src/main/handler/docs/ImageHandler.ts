@@ -7,7 +7,7 @@ import { ipcMain } from "electron";
 import fs from "fs/promises";
 import path from "path";
 import crypto from "crypto";
-import { VibecapeDocsService } from "@main/services/VibecapeDocs";
+import { WorkspaceService } from "@main/services/Workspace";
 import { SettingsService } from "@main/services/Settings";
 
 // ==================== 图片路径解析 ====================
@@ -19,19 +19,15 @@ ipcMain.handle(
   "vibecape:resolveAssetPath",
   async (_event, assetPath: string) => {
     try {
-      const workspace = await VibecapeDocsService.getCurrentWorkspace();
-      if (!workspace?.docsPath) {
+      const workspace = WorkspaceService.getCurrentWorkspace();
+      if (!workspace?.path) {
         return null;
       }
 
-      // /img/xxx -> vibecape/asset/img/xxx
+      // /img/xxx -> {workspace}/asset/img/xxx
       if (assetPath.startsWith("/img/")) {
         const relativePath = assetPath.slice(1); // 移除开头的 /
-        const fullPath = path.join(
-          workspace.vibecapePath,
-          "asset",
-          relativePath
-        );
+        const fullPath = path.join(workspace.path, "asset", relativePath);
 
         // 检查文件是否存在
         try {
@@ -114,13 +110,13 @@ async function saveToLocal(
   buffer: Buffer,
   filename: string
 ): Promise<UploadResult> {
-  const workspace = await VibecapeDocsService.getCurrentWorkspace();
-  if (!workspace?.docsPath) {
+  const workspace = WorkspaceService.getCurrentWorkspace();
+  if (!workspace?.path) {
     return { success: false, error: "未初始化工作区" };
   }
 
   // 确保目录存在
-  const imgDir = path.join(workspace.vibecapePath, "asset", "img");
+  const imgDir = path.join(workspace.path, "asset", "img");
   await fs.mkdir(imgDir, { recursive: true });
 
   // 保存文件
@@ -141,8 +137,8 @@ async function uploadToOss(
   buffer: Buffer,
   filename: string
 ): Promise<UploadResult> {
-  const settings = await SettingsService.get();
-  const ossConfig = settings.general?.oss;
+  const settings = SettingsService.get();
+  const ossConfig = settings.oss;
 
   if (!ossConfig?.enabled) {
     return { success: false, error: "OSS 未启用" };
@@ -152,10 +148,10 @@ async function uploadToOss(
     provider,
     region,
     bucket,
-    accessKeyId,
-    accessKeySecret,
+    access_key_id: accessKeyId,
+    access_key_secret: accessKeySecret,
     endpoint,
-    customDomain,
+    custom_domain: customDomain,
   } = ossConfig;
 
   if (!bucket || !accessKeyId || !accessKeySecret) {

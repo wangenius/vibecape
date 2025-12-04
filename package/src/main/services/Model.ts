@@ -1,16 +1,12 @@
 import type { LanguageModel } from "ai";
 import { eq } from "drizzle-orm";
-import {
-  models,
-  type Model as ModelRecord,
-  type ModelInsert,
-  type SettingsData,
-} from "@common/schema/app";
+import { models, type Model as ModelRecord, type ModelInsert } from "@common/schema/app";
+import type { ModelConfig } from "@common/schema/config";
 import { appDb } from "../db/app";
 import { getModelInstance } from "../utils/providers";
 import { SettingsService } from "./Settings";
 
-type ModelCategoryKey = keyof SettingsData["model"];
+type ModelCategoryKey = keyof ModelConfig;
 
 /**
  * Model Service
@@ -168,7 +164,7 @@ export class Model {
   ): Promise<LanguageModel> {
     await this.ensureInit();
 
-    const settings = await SettingsService.get();
+    const settings = SettingsService.get();
     const modelId = settings.model[category];
     if (!modelId) {
       throw new Error(`未找到类别 ${category} 的默认模型，请先在设置中配置`);

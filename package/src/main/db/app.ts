@@ -1,62 +1,49 @@
+/**
+ * AI 配置数据库
+ * 存储 providers 和 models
+ * 位置: ~/vibecape/app.db
+ */
+
 import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
-import fs from "fs";
-import path from "path";
-import os from "os";
-import { models, settings, providers } from "@common/schema/app";
-import { SETTINGS_DEFAULTS } from "@common/config/settings";
+import { models, providers } from "@common/schema/app";
 import { ensureSchema } from "./ensure-schema";
+import { getUserDataPaths, initUserDataDir } from "../services/UserData";
+import path from "path";
 
-// 全局设置数据库路径 - 存储到用户目录 ~/.vibecape/
-const vibecapeDir = path.join(os.homedir(), ".vibecape");
-const settingsPath = path.join(vibecapeDir, "app.db");
-fs.mkdirSync(vibecapeDir, { recursive: true });
+// 初始化用户数据目录
+initUserDataDir();
+
+// AI 配置数据库路径
+const { vibecapeDir } = getUserDataPaths();
+const appDbPath = path.join(vibecapeDir, "app.db");
 
 const client = createClient({
-  url: `file:${settingsPath}`,
+  url: `file:${appDbPath}`,
 });
 
-// 设置数据库的 schema
+// AI 配置数据库 schema (仅 providers 和 models)
 const appSchema = {
   models,
-  settings,
   providers,
 };
 
 export const appDb = drizzle(client, { schema: appSchema });
-export const settingsClient = client;
+export const appClient = client;
 
-// 默认设置
-export const DEFAULT_SETTINGS = SETTINGS_DEFAULTS;
-
-// 初始化设置数据库
-// 1. 运行时从 schema 生成并执行 SQL（使用 drizzle-kit/api）
-// 2. 初始化默认数据
-export async function initSettingsDatabase(): Promise<void> {
+/**
+ * 初始化 AI 配置数据库
+ * 仅创建 providers 和 models 表
+ */
+export async function initAppDatabase(): Promise<void> {
   try {
-    // 运行时从 schema 生成并执行建表 SQL
-    await ensureSchema(settingsClient, appDb, {
+    await ensureSchema(appClient, appDb, {
       models,
-      settings,
       providers,
     });
-
-    // 初始化默认设置
-    const existingSettings = await appDb.select().from(settings).execute();
-
-    if (existingSettings.length === 0) {
-      await appDb
-        .insert(settings)
-        .values({
-          key: "app_settings",
-          value: DEFAULT_SETTINGS,
-        })
-        .execute();
-    }
-
-    console.log("设置数据库初始化完成");
+    console.log("[AppDB] AI 配置数据库初始化完成");
   } catch (error) {
-    console.error("设置数据库初始化失败:", error);
+    console.error("[AppDB] AI 配置数据库初始化失败:", error);
     throw error;
   }
 }

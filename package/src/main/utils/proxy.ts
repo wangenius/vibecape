@@ -1,25 +1,22 @@
 import { SettingsService } from "../services/Settings";
+import type { ProxyConfig } from "@common/schema/config";
 
 /**
- * 代理配置
+ * 代理配置缓存
  */
-let currentProxyConfig: { enabled: boolean; url: string } | null = null;
+let currentProxyConfig: ProxyConfig | null = null;
 
 /**
  * 获取当前代理配置
  */
-export async function getProxyConfig(): Promise<{
-  enabled: boolean;
-  url: string;
-}> {
+export function getProxyConfig(): ProxyConfig {
   if (currentProxyConfig) {
     return currentProxyConfig;
   }
 
   try {
-    const settings = await SettingsService.get();
-    currentProxyConfig =
-      settings.general?.proxy || { enabled: false, url: "" };
+    const settings = SettingsService.get();
+    currentProxyConfig = settings.proxy;
     return currentProxyConfig;
   } catch (error) {
     console.error("获取代理配置失败:", error);
@@ -31,10 +28,7 @@ export async function getProxyConfig(): Promise<{
 /**
  * 更新代理配置缓存
  */
-export function updateProxyConfigCache(config: {
-  enabled: boolean;
-  url: string;
-}) {
+export function updateProxyConfigCache(config: ProxyConfig) {
   currentProxyConfig = config;
   updateEnvironmentProxy(config);
 }
@@ -42,10 +36,7 @@ export function updateProxyConfigCache(config: {
 /**
  * 更新环境变量中的代理配置
  */
-export function updateEnvironmentProxy(config: {
-  enabled: boolean;
-  url: string;
-}) {
+export function updateEnvironmentProxy(config: ProxyConfig) {
   if (config.enabled && config.url) {
     process.env.HTTP_PROXY = config.url;
     process.env.HTTPS_PROXY = config.url;
@@ -64,10 +55,8 @@ export function updateEnvironmentProxy(config: {
 /**
  * 创建支持代理的 fetch 配置
  */
-export async function createProxyFetchConfig(): Promise<{
-  fetch?: typeof fetch;
-}> {
-  const proxyConfig = await getProxyConfig();
+export function createProxyFetchConfig(): { fetch?: typeof fetch } {
+  const proxyConfig = getProxyConfig();
 
   if (!proxyConfig.enabled || !proxyConfig.url) {
     return {};
@@ -83,7 +72,7 @@ export async function createProxyFetchConfig(): Promise<{
 /**
  * 初始化代理配置
  */
-export async function initProxyConfig() {
-  const config = await getProxyConfig();
+export function initProxyConfig() {
+  const config = getProxyConfig();
   updateEnvironmentProxy(config);
 }

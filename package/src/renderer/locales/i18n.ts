@@ -1,7 +1,10 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 import { getCurrentSettings, updateSettings } from "@/hook/app/useSettings";
-import { settingsShape } from "@common/config/settings";
+import { createShape } from "@common/lib/shape";
+import { DEFAULT_APP_CONFIG } from "@common/schema/config";
+
+const appConfigShape = createShape(DEFAULT_APP_CONFIG);
 
 // English translations
 import enCommon from "./en/common.json";
@@ -64,7 +67,7 @@ export const lang = (key: string, options?: any): string => {
 
 // 语言切换函数
 export const setLang = (language: keyof typeof resources) => {
-  void updateSettings(settingsShape.ui.language, language);
+  void updateSettings(appConfigShape.ui.language, language);
   i18n.changeLanguage(language);
 };
 

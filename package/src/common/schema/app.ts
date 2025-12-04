@@ -1,5 +1,11 @@
+/**
+ * AI 配置数据库表定义
+ * 位置: ~/vibecape/app.db
+ * 仅包含 providers 和 models
+ */
+
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
-import { id, jsonb } from "./custom.type";
+import { id } from "./custom.type";
 
 // ==================== Providers ====================
 
@@ -30,92 +36,3 @@ export const models = sqliteTable("models", {
 
 export type Model = typeof models.$inferSelect;
 export type ModelInsert = typeof models.$inferInsert;
-
-// ==================== Workspace History ====================
-
-export type WorkspaceHistoryEntry = {
-  path: string;
-  name: string;
-  lastOpenedAt: number;
-};
-
-// writing styles
-export const settings = sqliteTable("settings", {
-  key: text("key").primaryKey(),
-  value: jsonb<SettingsData>()("value")
-    .notNull()
-    .default({
-      model: {
-        primary: "",
-        fast: "",
-        image: "",
-        video: "",
-        voice: "",
-      },
-      ui: {
-        theme: "default",
-        mode: "light",
-        language: "zh-CN",
-        promptLanguage: "zh-CN",
-        showChapterList: true,
-      },
-      general: {
-        proxy: {
-          enabled: false,
-          url: "",
-        },
-        oss: {
-          enabled: false,
-          provider: "aliyun",
-          region: "",
-          bucket: "",
-          accessKeyId: "",
-          accessKeySecret: "",
-          endpoint: "",
-          customDomain: "",
-        },
-        docsRoot: "",
-        vibecapeRoot: "",
-        recentWorkspaces: [],
-      },
-    }),
-});
-
-export type SettingsData = {
-  ui: {
-    theme: string;
-    mode: string;
-    language: string;
-    promptLanguage: string;
-    showChapterList: boolean;
-  };
-  model: {
-    primary: string;
-    fast: string;
-    image: string;
-    video: string;
-    voice: string;
-  };
-  general: {
-    proxy: {
-      enabled: boolean;
-      url: string;
-    };
-    oss: {
-      enabled: boolean;
-      provider: "aliyun" | "qiniu" | "tencent" | "s3";
-      region: string;
-      bucket: string;
-      accessKeyId: string;
-      accessKeySecret: string;
-      endpoint: string;
-      customDomain: string;
-    };
-    docsRoot: string;
-    vibecapeRoot: string;
-    recentWorkspaces: WorkspaceHistoryEntry[];
-  };
-};
-
-export type Setting = typeof settings.$inferSelect;
-export type SettingInsert = typeof settings.$inferInsert;

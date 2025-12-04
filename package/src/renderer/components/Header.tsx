@@ -26,7 +26,7 @@ export function Header() {
   const workspace = useVibecapeStore((state) => state.workspace);
 
   const isSettingsMode = activeSidebarPanel === "settings";
-  const workspaceName = workspace?.root?.split("/").pop() || "";
+  const workspaceName = workspace?.config?.name || "";
 
   const toggleSidebar = () => {
     setViewManager({ isSidebarCollapsed: !isSidebarCollapsed });

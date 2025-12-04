@@ -1,17 +1,17 @@
 import { create } from "zustand";
-import type { SettingsData } from "@common/schema/app";
+import type { AppConfig } from "@common/schema/config";
+import { DEFAULT_APP_CONFIG } from "@common/schema/config";
 import { getShape, type ShapeRef } from "@common/lib/shape";
-import { SETTINGS_DEFAULTS } from "@common/config/settings";
 
-export interface SettingsStoreState extends SettingsData {
-  setSettings: (next: SettingsData) => void;
+export interface SettingsStoreState extends AppConfig {
+  setSettings: (next: AppConfig) => void;
   reset: () => void;
 }
 
 export const useSettingsStore = create<SettingsStoreState>((set) => ({
-  ...SETTINGS_DEFAULTS,
+  ...DEFAULT_APP_CONFIG,
   setSettings: (next) => set(() => next),
-  reset: () => set(() => SETTINGS_DEFAULTS),
+  reset: () => set(() => DEFAULT_APP_CONFIG),
 }));
 
 export function useSettings<T = SettingsStoreState>(
@@ -29,6 +29,21 @@ export async function initSettings() {
     const settings = await window.api.app.settings.get();
     if (settings) {
       useSettingsStore.getState().setSettings(settings);
+
+      // 同步更新 i18n 语言
+      const { default: i18n } = await import("@/locales/i18n");
+      if (settings.ui.language && settings.ui.language !== i18n.language) {
+        await i18n.changeLanguage(settings.ui.language);
+      }
+
+      // 同步应用主题
+      const root = document.documentElement;
+      if (settings.ui.mode === "dark") {
+        root.classList.add("dark");
+      } else {
+        root.classList.remove("dark");
+      }
+      root.setAttribute("data-theme", settings.ui.theme);
     }
   } catch (error) {
     console.error("初始化设置失败:", error);
@@ -38,7 +53,7 @@ export async function initSettings() {
 export async function updateSettings<V>(
   field: ShapeRef<V>,
   value: V
-): Promise<SettingsData | undefined> {
+): Promise<AppConfig | undefined> {
   try {
     const next = await window.api.app.settings.update(getShape(field), value);
     if (next) {

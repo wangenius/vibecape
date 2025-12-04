@@ -1,15 +1,19 @@
+/**
+ * 全局聊天数据库
+ * 存储与项目无关的 AI 对话历史
+ * 位置: ~/vibecape/chat.db
+ */
+
 import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
-import fs from "fs";
 import path from "path";
-import os from "os";
 import * as chatSchema from "../../common/schema/chat";
 import { ensureSchema } from "./ensure-schema";
+import { getUserDataPaths } from "../services/UserData";
 
-// 全局聊天数据库路径 - 存储到用户目录 ~/.vibecape/
-const vibecapeDir = path.join(os.homedir(), ".vibecape");
+// 全局聊天数据库路径
+const { vibecapeDir } = getUserDataPaths();
 const chatPath = path.join(vibecapeDir, "chat.db");
-fs.mkdirSync(vibecapeDir, { recursive: true });
 
 const client = createClient({
   url: `file:${chatPath}`,

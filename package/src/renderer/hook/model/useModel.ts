@@ -1,15 +1,15 @@
 import { create } from "zustand";
-import type {
-  Model as ModelRecord,
-  ModelInsert,
-  SettingsData,
-} from "@common/schema/app";
-import { getShape } from "@common/lib/shape";
-import { settingsShape } from "@common/config/settings";
+import type { Model as ModelRecord, ModelInsert } from "@common/schema/app";
+import type { ModelConfig } from "@common/schema/config";
+import { getShape, createShape } from "@common/lib/shape";
+import { DEFAULT_APP_CONFIG } from "@common/schema/config";
 import { API } from "@/lib/client";
 
 type ModelMap = Record<string, ModelRecord>;
-export type ModelCategoryKey = keyof SettingsData["model"];
+export type ModelCategoryKey = keyof ModelConfig;
+
+// 创建配置的 shape 用于路径更新
+const appConfigShape = createShape(DEFAULT_APP_CONFIG);
 
 interface ModelCategoryConfig {
   category: ModelCategoryKey;
@@ -58,7 +58,7 @@ const MODEL_CATEGORY_TEMPLATES: Record<
   },
 };
 
-const DEFAULT_MODEL_IDS: SettingsData["model"] = {
+const DEFAULT_MODEL_IDS: ModelConfig = {
   primary: "",
   fast: "",
   image: "",
@@ -67,9 +67,9 @@ const DEFAULT_MODEL_IDS: SettingsData["model"] = {
 };
 
 function buildDefaultModelRecords(
-  modelSettings?: Partial<SettingsData["model"]>
+  modelSettings?: Partial<ModelConfig>
 ): Record<string, ModelCategoryConfig> {
-  const merged: SettingsData["model"] = {
+  const merged: ModelConfig = {
     ...DEFAULT_MODEL_IDS,
     ...(modelSettings ?? {}),
   };
@@ -275,7 +275,7 @@ export async function updateDefaultModel(
   modelId: string
 ) {
   const result = await API.app.settings.update(
-    getShape(settingsShape.model[category]),
+    getShape(appConfigShape.model[category]),
     modelId
   );
 

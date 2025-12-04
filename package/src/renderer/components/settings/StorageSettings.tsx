@@ -8,9 +8,12 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { updateSettings, useSettings } from "@/hook/app/useSettings";
-import { settingsShape } from "@common/config/settings";
+import { createShape } from "@common/lib/shape";
+import { DEFAULT_APP_CONFIG } from "@common/schema/config";
 import { useTranslation } from "react-i18next";
 import { SettingSection, SettingItem, SettingCard } from "./SettingComponents";
+
+const appConfigShape = createShape(DEFAULT_APP_CONFIG);
 
 export const StorageSettings = () => {
   const { t } = useTranslation();
@@ -28,24 +31,24 @@ export const StorageSettings = () => {
             description={t("common.settings.enableCloudStorageDesc")}
           >
             <Switch
-              checked={settings.general.oss?.enabled ?? false}
+              checked={settings.oss?.enabled ?? false}
               onCheckedChange={(checked) =>
-                updateSettings(settingsShape.general.oss.enabled, checked)
+                updateSettings(appConfigShape.oss.enabled, checked)
               }
             />
           </SettingItem>
 
-          {settings.general.oss?.enabled && (
+          {settings.oss?.enabled && (
             <SettingCard>
               <div className="space-y-2">
                 <label className="text-sm font-medium">
                   {t("common.settings.provider")}
                 </label>
                 <Select
-                  value={settings.general.oss?.provider ?? "aliyun"}
+                  value={settings.oss?.provider ?? "aliyun"}
                   onValueChange={(value) =>
                     updateSettings(
-                      settingsShape.general.oss.provider,
+                      appConfigShape.oss.provider,
                       value as "aliyun" | "qiniu" | "tencent" | "s3"
                     )
                   }
@@ -77,12 +80,9 @@ export const StorageSettings = () => {
                   </label>
                   <Input
                     placeholder={t("common.settings.regionPlaceholder")}
-                    value={settings.general.oss?.region ?? ""}
+                    value={settings.oss?.region ?? ""}
                     onChange={(e) =>
-                      updateSettings(
-                        settingsShape.general.oss.region,
-                        e.target.value
-                      )
+                      updateSettings(appConfigShape.oss.region, e.target.value)
                     }
                   />
                 </div>
@@ -92,12 +92,9 @@ export const StorageSettings = () => {
                   </label>
                   <Input
                     placeholder={t("common.settings.bucketPlaceholder")}
-                    value={settings.general.oss?.bucket ?? ""}
+                    value={settings.oss?.bucket ?? ""}
                     onChange={(e) =>
-                      updateSettings(
-                        settingsShape.general.oss.bucket,
-                        e.target.value
-                      )
+                      updateSettings(appConfigShape.oss.bucket, e.target.value)
                     }
                   />
                 </div>
@@ -109,10 +106,10 @@ export const StorageSettings = () => {
                 </label>
                 <Input
                   placeholder={t("common.settings.accessKeyIdPlaceholder")}
-                  value={settings.general.oss?.accessKeyId ?? ""}
+                  value={settings.oss?.access_key_id ?? ""}
                   onChange={(e) =>
                     updateSettings(
-                      settingsShape.general.oss.accessKeyId,
+                      appConfigShape.oss.access_key_id,
                       e.target.value
                     )
                   }
@@ -126,10 +123,10 @@ export const StorageSettings = () => {
                 <Input
                   type="password"
                   placeholder={t("common.settings.accessKeySecretPlaceholder")}
-                  value={settings.general.oss?.accessKeySecret ?? ""}
+                  value={settings.oss?.access_key_secret ?? ""}
                   onChange={(e) =>
                     updateSettings(
-                      settingsShape.general.oss.accessKeySecret,
+                      appConfigShape.oss.access_key_secret,
                       e.target.value
                     )
                   }
@@ -142,12 +139,9 @@ export const StorageSettings = () => {
                 </label>
                 <Input
                   placeholder={t("common.settings.endpointPlaceholder")}
-                  value={settings.general.oss?.endpoint ?? ""}
+                  value={settings.oss?.endpoint ?? ""}
                   onChange={(e) =>
-                    updateSettings(
-                      settingsShape.general.oss.endpoint,
-                      e.target.value
-                    )
+                    updateSettings(appConfigShape.oss.endpoint, e.target.value)
                   }
                 />
               </div>
@@ -158,10 +152,10 @@ export const StorageSettings = () => {
                 </label>
                 <Input
                   placeholder={t("common.settings.customDomainPlaceholder")}
-                  value={settings.general.oss?.customDomain ?? ""}
+                  value={settings.oss?.custom_domain ?? ""}
                   onChange={(e) =>
                     updateSettings(
-                      settingsShape.general.oss.customDomain,
+                      appConfigShape.oss.custom_domain,
                       e.target.value
                     )
                   }

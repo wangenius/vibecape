@@ -11,6 +11,7 @@ import { InitProgressDialog } from "./InitProgressDialog";
 import { WelcomePage } from "./WelcomePage";
 import { EmptyDocState } from "./EmptyDocState";
 import { DocWorkspace } from "./DocWorkspace";
+import { WorkspaceSettingsPanel } from "./WorkspaceSettingsPanel";
 
 export const Workspace = () => {
   const workspace = useVibecapeStore((state) => state.workspace);
@@ -21,6 +22,7 @@ export const Workspace = () => {
   const activeSidebarPanel = useViewManager(
     (state) => state.activeSidebarPanel
   );
+  const sidebarViewMode = useViewManager((state) => state.sidebarViewMode);
   const settingsSection = useViewManager((state) => state.previewCosmosId);
 
   useEffect(() => {
@@ -64,14 +66,19 @@ export const Workspace = () => {
     );
   }
 
-  // 未初始化工作区 - 显示欢迎页面
-  if (!workspace?.initialized) {
+  // 未打开工作区 - 显示欢迎页面
+  if (!workspace) {
     return (
       <>
         <InitProgressDialog />
         <WelcomePage />
       </>
     );
+  }
+
+  // 工作区设置模式
+  if (sidebarViewMode === "workspace") {
+    return <WorkspaceSettingsPanel />;
   }
 
   // 未选择文档

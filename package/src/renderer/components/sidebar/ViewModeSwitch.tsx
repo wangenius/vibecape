@@ -1,20 +1,24 @@
 import { motion } from "framer-motion";
-import { List, FolderTree } from "lucide-react";
+import { List, FolderTree, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { SidebarViewMode } from "@/hook/app/useViewManager";
+import { useTranslation } from "react-i18next";
 
 interface ViewModeSwitchProps {
   mode: SidebarViewMode;
   onModeChange: (mode: SidebarViewMode) => void;
 }
 
-const tabs: { id: SidebarViewMode; icon: typeof FolderTree; label: string }[] =
+const tabs: { id: SidebarViewMode; icon: typeof FolderTree; labelKey: string }[] =
   [
-    { id: "tree", icon: FolderTree, label: "文档" },
-    { id: "toc", icon: List, label: "目录" },
+    { id: "tree", icon: FolderTree, labelKey: "common.sidebar.docs" },
+    { id: "toc", icon: List, labelKey: "common.sidebar.toc" },
+    { id: "workspace", icon: Settings, labelKey: "common.sidebar.workspace" },
   ];
 
 export const ViewModeSwitch = ({ mode, onModeChange }: ViewModeSwitchProps) => {
+  const { t } = useTranslation();
+
   return (
     <div className="flex items-center">
       <div className="relative flex items-center gap-1 p-1 rounded-lg">
@@ -45,7 +49,7 @@ export const ViewModeSwitch = ({ mode, onModeChange }: ViewModeSwitchProps) => {
                 />
               )}
               <Icon className="relative z-10 size-3.5" />
-              <span className="relative z-10">{tab.label}</span>
+              <span className="relative z-10">{t(tab.labelKey)}</span>
             </button>
           );
         })}

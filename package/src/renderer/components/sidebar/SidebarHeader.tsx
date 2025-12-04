@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { useVibecapeStore } from "@/hook/useVibecapeStore";
 import { useViewManager, setSidebarViewMode } from "@/hook/app/useViewManager";
-import { Loader2, X, Download, Upload, Plus, FolderOpen } from "lucide-react";
+import { Loader2, X, Plus, FolderOpen, FileText, FolderInput, Database } from "lucide-react";
 import { TbDots } from "react-icons/tb";
 import { ViewModeSwitch } from "./ViewModeSwitch";
 import {
@@ -9,11 +9,13 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { dialog } from "@/components/custom/DialogModal";
-import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 
 interface SidebarHeaderProps {
   onCreateDoc: (parentId: string | null) => void;
@@ -24,67 +26,36 @@ export const SidebarHeader = ({ onCreateDoc }: SidebarHeaderProps) => {
   const workspace = useVibecapeStore((state) => state.workspace);
   const loading = useVibecapeStore((state) => state.loading);
   const closeWorkspace = useVibecapeStore((state) => state.closeWorkspace);
-  const importFromDocs = useVibecapeStore((state) => state.importFromDocs);
-  const exportToDocs = useVibecapeStore((state) => state.exportToDocs);
+  const refreshTree = useVibecapeStore((state) => state.refreshTree);
   const sidebarViewMode = useViewManager((state) => state.sidebarViewMode);
 
   // 未打开工作区时不显示头部
-  if (!workspace?.initialized) {
+  if (!workspace) {
     return null;
   }
 
-  const handleImport = () => {
-    dialog.confirm({
-      title: t("common.settings.importFromDocs"),
-      content: (
-        <p className="text-sm text-muted-foreground">
-          {t("common.settings.importFromDocsDesc")}
-          <br />
-          <strong className="text-destructive">
-            {t("common.settings.importWarning")}
-          </strong>
-        </p>
-      ),
-      okText: t("common.settings.confirmImport"),
-      variants: "destructive",
-      onOk: async () => {
-        try {
-          const result = await importFromDocs();
-          toast.success(
-            t("common.settings.importSuccess", { count: result.imported })
-          );
-        } catch (error: any) {
-          toast.error(error?.message ?? t("common.settings.importFailed"));
-        }
-      },
-    });
+  const handleImportMarkdown = async () => {
+    const result = await window.api.vibecape.importMarkdownFile();
+    if (result.count > 0) {
+      toast.success(t("common.workspace.importSuccess", { count: result.count }));
+      await refreshTree();
+    }
   };
 
-  const handleExport = () => {
-    dialog.confirm({
-      title: t("common.settings.exportToDocs"),
-      content: (
-        <p className="text-sm text-muted-foreground">
-          {t("common.settings.exportToDocsDesc")}
-          <br />
-          <strong className="text-destructive">
-            {t("common.settings.exportWarning")}
-          </strong>
-        </p>
-      ),
-      okText: t("common.settings.confirmExport"),
-      variants: "destructive",
-      onOk: async () => {
-        try {
-          const result = await exportToDocs();
-          toast.success(
-            t("common.settings.exportSuccess", { count: result.exported })
-          );
-        } catch (error: any) {
-          toast.error(error?.message ?? t("common.settings.exportFailed"));
-        }
-      },
-    });
+  const handleImportDirectory = async () => {
+    const result = await window.api.vibecape.importDirectory();
+    if (result.count > 0) {
+      toast.success(t("common.workspace.importSuccess", { count: result.count }));
+      await refreshTree();
+    }
+  };
+
+  const handleImportVibecapeDb = async () => {
+    const result = await window.api.vibecape.importVibecapeDb();
+    if (result.count > 0) {
+      toast.success(t("common.workspace.importSuccess", { count: result.count }));
+      await refreshTree();
+    }
   };
 
   return (
@@ -124,14 +95,28 @@ export const SidebarHeader = ({ onCreateDoc }: SidebarHeaderProps) => {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={handleImport}>
-              <Download className="size-3.5" />
-              {t("common.settings.importFromDocs")}
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleExport}>
-              <Upload className="size-3.5" />
-              {t("common.settings.exportToDocs")}
-            </DropdownMenuItem>
+            {/* 导入子菜单 */}
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>
+                <FolderInput className="size-3.5" />
+                {t("common.workspace.import")}
+              </DropdownMenuSubTrigger>
+              <DropdownMenuSubContent>
+                <DropdownMenuItem onClick={handleImportDirectory}>
+                  <FolderOpen className="size-3.5" />
+                  {t("common.workspace.importDirectory")}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleImportMarkdown}>
+                  <FileText className="size-3.5" />
+                  {t("common.workspace.importMarkdown")}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleImportVibecapeDb}>
+                  <Database className="size-3.5" />
+                  {t("common.workspace.importVibecape")}
+                </DropdownMenuItem>
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
+            <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => void window.api.vibecape.openInFinder()}
             >

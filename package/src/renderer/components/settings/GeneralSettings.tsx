@@ -8,11 +8,17 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { updateSettings, useSettings } from "@/hook/app/useSettings";
-import { settingsShape } from "@common/config/settings";
+import { useVibecapeStore } from "@/hook/useVibecapeStore";
+import { createShape } from "@common/lib/shape";
+import { DEFAULT_APP_CONFIG } from "@common/schema/config";
 import { setLang } from "@/locales/i18n";
 import { useTranslation } from "react-i18next";
 import { SettingSection, SettingItem, SettingCard } from "./SettingComponents";
+import { FolderOpen } from "lucide-react";
+
+const appConfigShape = createShape(DEFAULT_APP_CONFIG);
 
 const THEME_OPTIONS = [
   "default",
@@ -34,14 +40,23 @@ const LANGUAGE_OPTIONS = [
 export const GeneralSettings = () => {
   const { t } = useTranslation();
   const settings = useSettings();
+  const docsRoot = useVibecapeStore((state) => state.docsRoot);
+  const setDocsRoot = useVibecapeStore((state) => state.setDocsRoot);
 
   const handleThemeChange = useCallback((value: string) => {
-    void updateSettings(settingsShape.ui.theme, value);
+    void updateSettings(appConfigShape.ui.theme, value);
   }, []);
 
   const handleModeChange = useCallback((checked: boolean) => {
-    void updateSettings(settingsShape.ui.mode, checked ? "dark" : "light");
+    void updateSettings(appConfigShape.ui.mode, checked ? "dark" : "light");
   }, []);
+
+  const handleSelectDocsRoot = async () => {
+    const result = await window.electron.ipcRenderer.invoke("dialog:openDirectory");
+    if (result) {
+      await setDocsRoot(result);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -115,9 +130,9 @@ export const GeneralSettings = () => {
             description={t("common.settings.aiPromptLanguageDesc")}
           >
             <Select
-              value={settings.ui.promptLanguage}
+              value={settings.ui.prompt_language}
               onValueChange={(value) =>
-                updateSettings(settingsShape.ui.promptLanguage, value)
+                updateSettings(appConfigShape.ui.prompt_language, value)
               }
             >
               <SelectTrigger className="w-40">
@@ -145,14 +160,14 @@ export const GeneralSettings = () => {
             description={t("common.settings.enableProxyDesc")}
           >
             <Switch
-              checked={settings.general.proxy.enabled}
+              checked={settings.proxy.enabled}
               onCheckedChange={(checked) =>
-                updateSettings(settingsShape.general.proxy.enabled, checked)
+                updateSettings(appConfigShape.proxy.enabled, checked)
               }
             />
           </SettingItem>
 
-          {settings.general.proxy.enabled && (
+          {settings.proxy.enabled && (
             <SettingCard>
               <div className="space-y-2">
                 <label className="text-sm font-medium">
@@ -160,10 +175,10 @@ export const GeneralSettings = () => {
                 </label>
                 <Input
                   placeholder={t("common.settings.proxyPlaceholder")}
-                  value={settings.general.proxy.url}
+                  value={settings.proxy.url}
                   onChange={(event) =>
                     updateSettings(
-                      settingsShape.general.proxy.url,
+                      appConfigShape.proxy.url,
                       event.target.value
                     )
                   }
@@ -174,6 +189,33 @@ export const GeneralSettings = () => {
               </div>
             </SettingCard>
           )}
+        </div>
+      </SettingSection>
+
+      <SettingSection
+        title={t("common.settings.workspaceStorage")}
+        description={t("common.settings.workspaceStorageDesc")}
+      >
+        <div className="space-y-2">
+          <SettingItem
+            label={t("common.settings.docsRoot")}
+            description={t("common.settings.docsRootDesc")}
+          >
+            <div className="flex items-center gap-2">
+              <Input
+                value={docsRoot}
+                readOnly
+                className="w-60 text-sm"
+              />
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handleSelectDocsRoot}
+              >
+                <FolderOpen className="h-4 w-4" />
+              </Button>
+            </div>
+          </SettingItem>
         </div>
       </SettingSection>
     </div>

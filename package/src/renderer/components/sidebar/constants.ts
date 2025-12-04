@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { TbSettings, TbBox, TbInfoCircle, TbCloud } from "react-icons/tb";
+import { TbSettings, TbBox, TbInfoCircle, TbCloud, TbFileText, TbUpload, TbLink } from "react-icons/tb";
 
 export const DRAG_HOVER_DELAY = 800;
 export const INDENT_WIDTH = 24;
@@ -23,4 +23,12 @@ export const SETTINGS_NAV_ITEMS = [
   { key: "models", label: "模型", icon: TbBox },
   { key: "storage", label: "云存储", icon: TbCloud },
   { key: "about", label: "关于", icon: TbInfoCircle },
+];
+
+// 工作区设置导航项
+export const WORKSPACE_NAV_ITEMS = [
+  { key: "basic", labelKey: "common.workspace.basicInfo", icon: TbSettings },
+  { key: "asset", labelKey: "common.workspace.assetSettings", icon: TbUpload },
+  { key: "link", labelKey: "common.workspace.linkSettings", icon: TbLink },
+  { key: "llmtxt", labelKey: "common.workspace.aiContext", icon: TbFileText },
 ];

@@ -1,126 +1,85 @@
-import { eq } from "drizzle-orm";
-import { appDb } from "../db/app";
-import { settings, type SettingsData } from "@common/schema/app";
-import { SETTINGS_DEFAULTS } from "@common/config/settings";
+/**
+ * 应用配置服务
+ * 读写 ~/vibecape/config.json
+ */
+
+import { type AppConfig, DEFAULT_APP_CONFIG } from "@common/schema/config";
+import { getAppConfig, setAppConfig, updateAppConfig } from "./UserData";
 import { setShape, type Shape } from "@common/lib/shape";
 
-const SETTINGS_KEY = "app_settings";
-
-function mergeSettings(
-  stored: Partial<SettingsData> | undefined
-): SettingsData {
-  return {
-    ui: {
-      ...SETTINGS_DEFAULTS.ui,
-      ...(stored?.ui ?? {}),
-    },
-    model: {
-      ...SETTINGS_DEFAULTS.model,
-      ...(stored?.model ?? {}),
-    },
-    general: {
-      ...SETTINGS_DEFAULTS.general,
-      ...(stored?.general ?? {}),
-      proxy: {
-        ...SETTINGS_DEFAULTS.general.proxy,
-        ...(stored?.general?.proxy ?? {}),
-      },
-      oss: {
-        ...SETTINGS_DEFAULTS.general.oss,
-        ...(stored?.general?.oss ?? {}),
-      },
-      recentWorkspaces:
-        stored?.general?.recentWorkspaces ??
-        SETTINGS_DEFAULTS.general.recentWorkspaces,
-    },
-  };
-}
-
 export class SettingsService {
-  private static cache: SettingsData = SETTINGS_DEFAULTS;
+  private static cache: AppConfig = DEFAULT_APP_CONFIG;
   private static initialized = false;
-  private static initPromise: Promise<void> | null = null;
 
-  static async init(): Promise<void> {
-    if (!this.initPromise) {
-      this.initPromise = this.load()
-        .catch((error) => {
-          console.error("[SettingsService] 初始化失败:", error);
-        })
-        .finally(() => {
-          this.initPromise = null;
-        });
-    }
-    await this.initPromise;
-  }
-
-  private static async load(): Promise<void> {
-    console.log("[SettingsService] Loading settings from DB...");
-    const rows = await appDb
-      .select()
-      .from(settings)
-      .where(eq(settings.key, SETTINGS_KEY))
-      .limit(1)
-      .execute();
-
-    const stored = rows[0]?.value as Partial<SettingsData> | undefined;
-    console.log("[SettingsService] Stored settings from DB:", JSON.stringify(stored, null, 2));
-    this.cache = mergeSettings(stored);
-    console.log("[SettingsService] Merged cache:", JSON.stringify(this.cache, null, 2));
+  /**
+   * 初始化配置服务
+   */
+  static init(): void {
+    if (this.initialized) return;
+    this.cache = getAppConfig();
     this.initialized = true;
+    console.log("[SettingsService] Loaded config from JSON");
   }
 
-  private static async ensureInit(): Promise<void> {
+  /**
+   * 获取缓存的配置
+   */
+  static getCache(): AppConfig {
     if (!this.initialized) {
-      await this.init();
+      this.init();
     }
-  }
-
-  static getCache(): SettingsData {
     return this.cache;
   }
 
-  static async get(): Promise<SettingsData> {
-    await this.ensureInit();
+  /**
+   * 获取配置 (同步)
+   */
+  static get(): AppConfig {
+    if (!this.initialized) {
+      this.init();
+    }
     return this.cache;
   }
 
-  static async update(path: Shape, value: unknown): Promise<SettingsData> {
-    await this.ensureInit();
-    
+  /**
+   * 更新配置 (支持路径更新)
+   */
+  static update(path: Shape, value: unknown): AppConfig {
+    if (!this.initialized) {
+      this.init();
+    }
+
     console.log("[SettingsService] Updating path:", path, "value:", value);
 
     this.cache = setShape(this.cache, path, value);
-    
-    console.log("[SettingsService] New cache to save:", JSON.stringify(this.cache, null, 2));
+    setAppConfig(this.cache);
 
-    try {
-      // 尝试更新
-      const result = await appDb
-        .update(settings)
-        .set({ value: this.cache })
-        .where(eq(settings.key, SETTINGS_KEY))
-        .run();
+    console.log("[SettingsService] Config saved to JSON");
+    return this.cache;
+  }
 
-      if (result.rowsAffected === 0) {
-        console.log("[SettingsService] No existing settings found, inserting new row");
-        // 如果没有更新任何行，说明不存在，进行插入
-        await appDb
-          .insert(settings)
-          .values({
-            key: SETTINGS_KEY,
-            value: this.cache,
-          })
-          .run();
-      }
-      console.log("[SettingsService] Settings persisted successfully");
-    } catch (error) {
-      console.error("[SettingsService] Failed to save settings:", error);
-      throw error;
+  /**
+   * 更新整个配置分类
+   */
+  static updateSection<K extends keyof AppConfig>(
+    key: K,
+    value: Partial<AppConfig[K]>
+  ): AppConfig {
+    if (!this.initialized) {
+      this.init();
     }
 
+    this.cache = updateAppConfig(key, value);
+    return this.cache;
+  }
+
+  /**
+   * 重置为默认配置
+   */
+  static reset(): AppConfig {
+    this.cache = DEFAULT_APP_CONFIG;
+    setAppConfig(this.cache);
+    console.log("[SettingsService] Config reset to defaults");
     return this.cache;
   }
 }
-
-// 延迟初始化 - 等待数据库就绪后由 main/index.ts 触发

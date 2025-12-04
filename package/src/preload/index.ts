@@ -90,15 +90,20 @@ const api = {
   vibecape: {
     // 工作区管理
     getWorkspace: () => ipcRenderer.invoke("vibecape:getWorkspace"),
-    createWorkspace: () => ipcRenderer.invoke("vibecape:createWorkspace"),
-    openWorkspace: () => ipcRenderer.invoke("vibecape:openWorkspace"),
-    pickDocsFolder: () => ipcRenderer.invoke("vibecape:pickDocsFolder"),
-    getWorkspaceHistory: () =>
-      ipcRenderer.invoke("vibecape:getWorkspaceHistory"),
-    removeWorkspaceFromHistory: (path: string) =>
-      ipcRenderer.invoke("vibecape:removeWorkspaceFromHistory", path),
-    initWorkspace: (docsDir: string) =>
-      ipcRenderer.invoke("vibecape:initWorkspace", docsDir),
+    getDocsRoot: () => ipcRenderer.invoke("vibecape:getDocsRoot"),
+    setDocsRoot: (path: string) => ipcRenderer.invoke("vibecape:setDocsRoot", path),
+    createWorkspace: (name: string) => ipcRenderer.invoke("vibecape:createWorkspace", name),
+    openWorkspace: (id: string) => ipcRenderer.invoke("vibecape:openWorkspace", id),
+    closeWorkspace: () => ipcRenderer.invoke("vibecape:closeWorkspace"),
+    deleteWorkspace: (id: string) => ipcRenderer.invoke("vibecape:deleteWorkspace", id),
+    listWorkspaces: () => ipcRenderer.invoke("vibecape:listWorkspaces"),
+    restoreLastWorkspace: () => ipcRenderer.invoke("vibecape:restoreLastWorkspace"),
+    getLlmTxt: (id?: string) => ipcRenderer.invoke("vibecape:getLlmTxt", id),
+    setLlmTxt: (content: string, id?: string) => ipcRenderer.invoke("vibecape:setLlmTxt", content, id),
+    updateWorkspaceConfig: (config: any) => ipcRenderer.invoke("vibecape:updateWorkspaceConfig", config),
+    // 兼容旧 API
+    /** @deprecated 使用 listWorkspaces */
+    getWorkspaceHistory: () => ipcRenderer.invoke("vibecape:listWorkspaces"),
     // 文档树
     getTree: () => ipcRenderer.invoke("vibecape:getTree"),
     // 文档 CRUD
@@ -111,14 +116,15 @@ const api = {
       ipcRenderer.invoke("vibecape:reorderDoc", activeId, overId),
     moveDoc: (docId: string, newParentId: string | null) =>
       ipcRenderer.invoke("vibecape:moveDoc", docId, newParentId),
-    // 同步
-    importFromDocs: () => ipcRenderer.invoke("vibecape:importFromDocs"),
-    exportToDocs: () => ipcRenderer.invoke("vibecape:exportToDocs"),
-    // 导出单个文档
+    // 导出
     exportDocAsMarkdown: (id: string) =>
       ipcRenderer.invoke("vibecape:exportDocAsMarkdown", id),
     exportDocAsPdf: (id: string) =>
       ipcRenderer.invoke("vibecape:exportDocAsPdf", id),
+    // 导入
+    importMarkdownFile: () => ipcRenderer.invoke("vibecape:importMarkdownFile"),
+    importDirectory: () => ipcRenderer.invoke("vibecape:importDirectory"),
+    importVibecapeDb: () => ipcRenderer.invoke("vibecape:importVibecapeDb"),
     // 在 Finder 中打开工作区
     openInFinder: () => ipcRenderer.invoke("vibecape:openInFinder"),
     // 图片

@@ -1,31 +1,11 @@
+/**
+ * 文档数据库表定义
+ * 位置: {docs_root}/{workspace_id}/docs.db
+ */
+
 import { sqliteTable, text, integer, index } from "drizzle-orm/sqlite-core";
 import { id, jsonb, timestamp } from "./custom.type";
 import type { JSONContent } from "@tiptap/core";
-
-// ==================== Workspace Config ====================
-
-export const WORKSPACE_DIR_NAME = "vibecape";
-export const LEGACY_WORKSPACE_DIR_NAME = ".vibecape";
-
-export type WorkspaceConfig = {
-  fumadocs: {
-    docsDir: string;
-    assetsDir: string;
-  };
-  publishing: {
-    assetUploadPriority: "oss-first" | "local-first";
-  };
-};
-
-export const DEFAULT_WORKSPACE_CONFIG: WorkspaceConfig = {
-  fumadocs: {
-    docsDir: "",
-    assetsDir: "",
-  },
-  publishing: {
-    assetUploadPriority: "local-first",
-  },
-};
 
 // ==================== Docs Schema ====================
 
@@ -65,19 +45,6 @@ export type DocInsert = typeof docs.$inferInsert;
 /** 文档数据 (不含时间戳) */
 export type DocData = Omit<Doc, "created_at" | "updated_at">;
 
-/**
- * 工作区设置表 - 存储 vibecape 工作区配置
- */
-export const workspace_settings = sqliteTable("workspace_settings", {
-  /** 设置键 */
-  key: text("key").primaryKey(),
-  /** 设置值 (JSON) */
-  value: jsonb<any>()("value").notNull(),
-});
-
-export type WorkspaceSetting = typeof workspace_settings.$inferSelect;
-export type WorkspaceSettingInsert = typeof workspace_settings.$inferInsert;
-
 // ==================== 派生类型 ====================
 
 /**
@@ -85,33 +52,4 @@ export type WorkspaceSettingInsert = typeof workspace_settings.$inferInsert;
  */
 export type DocTreeNode = Pick<Doc, "id" | "title" | "order" | "metadata"> & {
   children?: DocTreeNode[];
-};
-
-/**
- * Vibecape 工作区信息
- * 
- * 目录结构:
- * /path/to/docs/           <- root (用户选择的 docs 目录)
- *   vibecape/              <- vibecapePath
- *     docs.db              <- dbPath
- *     configs.json         <- configPath
- *   getting-started.mdx
- *   guides/
- *     ...
- */
-export type VibecapeWorkspace = {
-  /** docs 目录路径 (用户选择的目录，包含 vibecape 工作区目录) */
-  root: string;
-  /** vibecape 目录路径 (包含数据库、配置和资源) */
-  vibecapePath: string;
-  /** 数据库路径 */
-  dbPath: string;
-  /** 配置文件路径 */
-  configPath: string;
-  /** docs 目录路径 (与 root 相同，用于同步) */
-  docsPath: string;
-  /** 工作区是否已初始化 */
-  initialized: boolean;
-  /** 工作区配置（从 configs.json 读取，可能为空未加载） */
-  config?: WorkspaceConfig;
 };

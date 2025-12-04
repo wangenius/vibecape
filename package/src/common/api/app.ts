@@ -1,11 +1,12 @@
-import { Model, ModelInsert, Provider, ProviderInsert, SettingsData } from "@common/schema";
+import { Model, ModelInsert, Provider, ProviderInsert } from "@common/schema";
+import type { AppConfig } from "@common/schema/config";
 import type { Shape } from "@common/lib/shape";
 
 export interface SettingsAPI {
   /** 获取设置 */
-  get: () => Promise<SettingsData>;
+  get: () => Promise<AppConfig>;
   /** 更新设置 */
-  update: (path: Shape, value: unknown) => Promise<SettingsData>;
+  update: (path: Shape, value: unknown) => Promise<AppConfig>;
 }
 
 /** Provider 远程模型 */

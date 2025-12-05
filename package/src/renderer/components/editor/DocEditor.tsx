@@ -9,22 +9,22 @@ import TaskList from "@tiptap/extension-task-list";
 import TaskItem from "@tiptap/extension-task-item";
 import type { JSONContent } from "@tiptap/core";
 import type { DocData } from "@common/schema/docs";
-import { SlashCommand } from "@/features/editor/extensions/SlashCommand";
-import { createSlashMenuPlugin } from "@/features/editor/menus/SlashMenu";
-import { EditorBubbleMenu } from "@/features/editor/menus/EditorBubbleMenu";
+import { SlashCommand } from "@/components/editor/extensions/SlashCommand";
+import { createSlashMenuPlugin } from "@/components/editor/menus/SlashMenu";
+import { EditorBubbleMenu } from "@/components/editor/menus/EditorBubbleMenu";
 import {
   AIRewriteNode,
   AIPolishMark,
-} from "@/features/editor/extensions/AIRewriteNode";
-import { CodeBlockNode } from "@/features/editor/extensions/CodeBlockNode";
-import { InlineCode } from "@/features/editor/extensions/InlineCode";
-import { Blockquote } from "@/features/editor/extensions/Blockquote";
-import { Admonition } from "@/features/editor/extensions/Admonition";
-import { Mention } from "@/features/editor/extensions/Mention";
-import { ImageNode } from "@/features/editor/extensions/ImageNode";
-import { LinkNode } from "@/features/editor/extensions/LinkNode";
-import { PolishManager } from "@/features/editor/PolishManager";
-import { CustomKeyboardExtension } from "@/features/editor/extensions/CustomKeyboardExtension";
+} from "@/components/editor/extensions/AIRewriteNode";
+import { CodeBlockNode } from "@/components/editor/extensions/CodeBlockNode";
+import { InlineCode } from "@/components/editor/extensions/InlineCode";
+import { Blockquote } from "@/components/editor/extensions/Blockquote";
+import { Admonition } from "@/components/editor/extensions/Admonition";
+import { Mention } from "@/components/editor/extensions/Mention";
+import { ImageNode } from "@/components/editor/extensions/ImageNode";
+import { LinkNode } from "@/components/editor/extensions/LinkNode";
+import { PolishManager } from "@/components/editor/PolishManager";
+import { CustomKeyboardExtension } from "@/components/editor/extensions/CustomKeyboardExtension";
 import { useTranslation } from "react-i18next";
 
 type Props = {

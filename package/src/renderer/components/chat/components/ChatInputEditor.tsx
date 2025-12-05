@@ -6,7 +6,7 @@ import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
 import { StopIcon } from "@radix-ui/react-icons";
 import { ArrowUp } from "lucide-react";
-import { Mention } from "@/features/editor/extensions/Mention";
+import { Mention } from "@/components/editor/extensions/Mention";
 import { useTranslation } from "react-i18next";
 import "@/@styles/chatinput.css";
 

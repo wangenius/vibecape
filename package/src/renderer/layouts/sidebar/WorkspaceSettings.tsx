@@ -1,6 +1,6 @@
 import { useViewManager, setViewManager } from "@/hooks/app/useViewManager";
 import { cn } from "@/lib/utils";
-import { WORKSPACE_NAV_ITEMS } from "@/features/docs/constants";
+import { WORKSPACE_NAV_ITEMS } from "@/components/docs/constants";
 import { useTranslation } from "react-i18next";
 
 export const WorkspaceSettingsSidebar = () => {

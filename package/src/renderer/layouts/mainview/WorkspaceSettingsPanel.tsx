@@ -12,7 +12,7 @@ import {
 import { useWorkspaceStore } from "@/hooks/stores";
 import { useViewManager } from "@/hooks/app/useViewManager";
 import { useTranslation } from "react-i18next";
-import { SettingSection, SettingItem, SettingCard } from "@/features/settings";
+import { SettingSection, SettingItem, SettingCard } from "@/components/settings";
 import { FolderOpen } from "lucide-react";
 import type { WorkspaceConfig } from "@common/schema/workspace";
 

@@ -6,7 +6,7 @@ import {
   DocTreeWithDnd,
   DocTocView,
   useCreateDocDialog,
-} from "@/features/docs";
+} from "@/components/docs";
 import { WorkspaceSettingsSidebar } from "./WorkspaceSettings";
 import { SettingsSidebar } from "./SettingsSidebar";
 import { SidebarEmptyState } from "./SidebarEmptyState";

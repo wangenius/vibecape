@@ -7,7 +7,7 @@ import {
   StorageSettings,
   AboutSettings,
   MCPSettings,
-} from "@/features/settings";
+} from "@/components/settings";
 import { EmptyDocState } from "./EmptyDocState";
 import { DocWorkspace } from "./DocWorkspace";
 import { WorkspaceSettingsPanel } from "./WorkspaceSettingsPanel";

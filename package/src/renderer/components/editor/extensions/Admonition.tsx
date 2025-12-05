@@ -25,7 +25,7 @@ import { PluginKey } from "@tiptap/pm/state";
 import tippy, { Instance as TippyInstance } from "tippy.js";
 import { forwardRef, useCallback, useImperativeHandle, useState } from "react";
 import PinyinMatch from "pinyin-match";
-import { lang } from "@/locales/i18n";
+import { lang } from "@/lib/locales/i18n";
 import { useTranslation } from "react-i18next";
 
 declare module "@tiptap/core" {

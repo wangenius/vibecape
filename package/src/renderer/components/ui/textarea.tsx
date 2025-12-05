@@ -1,11 +1,11 @@
 import {
-  forwardRef,
-  TextareaHTMLAttributes,
   useEffect,
-  useImperativeHandle,
   useRef,
   useState,
   ReactNode,
+  forwardRef,
+  useImperativeHandle,
+  KeyboardEventHandler,
 } from "react";
 import { cn } from "@/lib/utils";
 
@@ -15,36 +15,53 @@ export interface CustomTextAreaRef {
   dom: HTMLTextAreaElement | null;
 }
 
-export type TextAreaProps = Omit<
-  TextareaHTMLAttributes<HTMLTextAreaElement>,
-  "onChange" | "onValueChange"
-> & {
-  onChange?: (value: string) => void;
-  variant?: "secondary" | "ghost";
+export interface TextareaProps {
+  defaultValue?: string;
+  value?: string;
+  onValueChange?: (value: string) => void;
+  onKeyDown?: KeyboardEventHandler<HTMLTextAreaElement>;
+  variant?: "ghost" | "secondary";
+  className?: string;
+  autoFocus?: boolean;
+  minRow?: number;
   footer?: ReactNode;
-};
+  header?: ReactNode;
+  placeholder?: string;
+}
 
-export const Textarea = forwardRef<CustomTextAreaRef, TextAreaProps>(
-  (props, ref) => {
+export const Textarea = forwardRef<CustomTextAreaRef, TextareaProps>(
+  (
+    {
+      defaultValue,
+      value: controlledValue,
+      onValueChange: onChange,
+      variant,
+      className,
+      onKeyDown,
+      autoFocus,
+      minRow = 1,
+      footer,
+      header,
+      placeholder,
+    },
+    ref
+  ) => {
     const internalRef = useRef<HTMLTextAreaElement | null>(null);
     const footerRef = useRef<HTMLDivElement>(null);
     const [footerHeight, setFooterHeight] = useState(0);
-
-    const {
-      className,
-      onChange,
-      defaultValue,
-      value: controlledValue,
-      footer,
-      style,
-      ...rest
-    } = props;
-
+    const [minHeight, setMinHeight] = useState(0);
     const [internalValue, setInternalValue] = useState(defaultValue || "");
 
     const isControlled = controlledValue !== undefined;
     const value = isControlled ? controlledValue : internalValue;
 
+    useImperativeHandle(ref, () => ({
+      focus: () => internalRef.current?.focus(),
+      blur: () => internalRef.current?.blur(),
+      dom: internalRef.current,
+    }));
+
+    // Footer height observer
     useEffect(() => {
       const updateFooterHeight = () => {
         if (footerRef.current) {
@@ -69,51 +86,80 @@ export const Textarea = forwardRef<CustomTextAreaRef, TextAreaProps>(
       return undefined;
     }, [footer, footerHeight]);
 
+    // Calculate min height based on minRow
+    useEffect(() => {
+      if (internalRef.current) {
+        const style = window.getComputedStyle(internalRef.current);
+        const lineHeight = parseInt(style.lineHeight, 10);
+        const paddingTop = parseInt(style.paddingTop, 10);
+        const paddingBottom = parseInt(style.paddingBottom, 10);
+        setMinHeight(lineHeight * minRow + paddingTop + paddingBottom);
+      }
+    }, [minRow]);
+
+    // Auto resize height
+    const adjustHeight = () => {
+      const textarea = internalRef.current;
+      if (textarea) {
+        const scrollPos = window.scrollY;
+        textarea.style.height = "auto";
+        const newHeight = Math.max(textarea.scrollHeight, minHeight);
+        textarea.style.height = `${newHeight}px`;
+        window.scrollTo(0, scrollPos);
+      }
+    };
+
+    useEffect(() => {
+      adjustHeight();
+      const handleResize = () => adjustHeight();
+      window.addEventListener("resize", handleResize);
+      return () => window.removeEventListener("resize", handleResize);
+    }, [value, minHeight]);
+
     useEffect(() => {
       if (defaultValue !== undefined) {
         setInternalValue(defaultValue);
       }
     }, [defaultValue]);
 
-    useImperativeHandle(
-      ref,
-      () => ({
-        focus: () => internalRef.current?.focus(),
-        blur: () => internalRef.current?.blur(),
-        dom: internalRef.current,
-      }),
-      []
-    );
+    const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      e.stopPropagation();
+      const newValue = e.target.value;
+      if (!isControlled) {
+        setInternalValue(newValue);
+      }
+      adjustHeight();
+      onChange?.(newValue);
+    };
 
     return (
-      <div className="relative h-full w-full">
+      <div className="relative">
+        {header && <div>{header}</div>}
         <textarea
           ref={internalRef}
           value={value}
+          autoFocus={autoFocus}
+          placeholder={placeholder}
           onKeyDown={(e) => {
             e.stopPropagation();
+            onKeyDown?.(e);
           }}
-          onChange={(e) => {
-            e.stopPropagation();
-            if (!isControlled) {
-              setInternalValue(e.target.value);
-            }
-            onChange?.(e.target.value);
-          }}
+          onChange={handleChange}
+          onInput={!onChange ? adjustHeight : undefined}
           className={cn(
-            "flex w-full rounded-md px-2 py-2 text-sm text-muted-foreground ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none hover:bg-muted focus:bg-muted transition disabled:cursor-not-allowed disabled:opacity-50",
-            rest.variant === "secondary" &&
+            "flex w-full rounded-md px-2 py-2 text-sm text-muted-foreground ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none hover:bg-muted focus:bg-muted transition disabled:cursor-not-allowed disabled:opacity-50 bg-muted",
+            variant === "secondary" &&
               "bg-muted outline-none focus-visible:outline-none border-none focus-visible:ring-0",
-            rest.variant === "ghost" &&
+            variant === "ghost" &&
               "p-1 m-0 text-base border-none outline-none focus:outline-none h-auto block focus:border-none bg-transparent hover:bg-transparent active:bg-transparent focus-visible:ring-offset-0 focus:bg-transparent focus-visible:outline-none focus-visible:ring-0",
-            "bg-muted",
             className
           )}
           style={{
-            ...style,
+            resize: "none",
+            overflow: "hidden",
+            minHeight: `${minHeight}px`,
             paddingBottom: footer ? `${footerHeight + 16}px` : undefined,
           }}
-          {...rest}
         />
         {footer && (
           <div
@@ -128,4 +174,4 @@ export const Textarea = forwardRef<CustomTextAreaRef, TextAreaProps>(
   }
 );
 
-Textarea.displayName = "TextArea";
+export default Textarea;

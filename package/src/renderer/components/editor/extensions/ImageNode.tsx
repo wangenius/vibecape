@@ -12,7 +12,7 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { Loader2, ImageIcon, X } from "lucide-react";
 import { toast } from "sonner";
-import { lang } from "@/locales/i18n";
+import { lang } from "@/lib/locales/i18n";
 import { useTranslation } from "react-i18next";
 
 declare module "@tiptap/core" {

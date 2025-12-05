@@ -1,0 +1,22 @@
+/* @styles/tokens/colors.css - 语义色彩变量 */
+:root {
+  /* 表面色彩 */
+  --color-surface-primary: var(--background);
+  --color-surface-secondary: var(--muted);
+  --color-surface-elevated: var(--card);
+
+  /* 文字色彩 */
+  --color-text-primary: var(--foreground);
+  --color-text-secondary: var(--muted-foreground);
+  --color-text-inverse: var(--primary-foreground);
+
+  /* 边框色彩 */
+  --color-border-default: var(--border);
+  --color-border-subtle: color-mix(in srgb, var(--border) 50%, transparent);
+
+  /* 功能色 */
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-error: var(--destructive);
+  --color-info: #3b82f6;
+}

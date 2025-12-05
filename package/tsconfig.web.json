@@ -3,16 +3,12 @@
   "include": [
     "src/renderer/env.d.ts",
     "src/renderer/main.tsx",
-    "src/renderer/app/**/*",
-    "src/renderer/components/**/*",
-    "src/renderer/hook/**/*",
-    "src/renderer/lib/**/*",
-    "src/renderer/locales/**/*",
-    "src/renderer/@styles/**/*",
+    "src/renderer/**/*.ts",
+    "src/renderer/**/*.tsx",
     "src/preload/*.d.ts",
     "src/common/**/*",
-    "src/plugins/**/*"
-, "src/renderer/App.tsx"  ],
+    "src/renderer/App.tsx"
+  ],
   "compilerOptions": {
     "composite": true,
     "resolveJsonModule": true,
@@ -36,7 +32,7 @@
       ],
       "@styles/*": [
         "src/renderer/@styles/*"
-      ],
+      ]
     }
   },
   "exclude": [

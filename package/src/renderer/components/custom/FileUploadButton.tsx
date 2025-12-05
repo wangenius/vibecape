@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { Loader2Icon, PaperclipIcon } from "lucide-react";
 import { toast } from "sonner";
-import { PromptInputButton } from "@/components/ai-elements/prompt-input";
+import { PromptInputButton } from "@/features/ai/components/prompt-input";
 
 export interface UploadedFile {
   name: string;

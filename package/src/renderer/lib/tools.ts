@@ -1,4 +1,4 @@
-import { lang } from "@/locales/i18n";
+import { lang } from "@/lib/locales/i18n";
 /** 工具箱*/
 export abstract class Tools {
   /** 将时间转换为人性化的格式，如"刚刚"、"5分钟前"、"昨天 14:30"等 */

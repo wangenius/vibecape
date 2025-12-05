@@ -6,7 +6,7 @@ import {
 } from "@/hooks/app/useViewManager";
 
 /**
- * 处理 Command+I 聚焦到 ChatInput 的逻辑
+ * 处理 Command+L 聚焦到 ChatInput 的逻辑
  *
  * @param enabled - 是否启用该快捷键（默认 true）
  * @param autoToggleBaybar - 是否自动切换 Baybar（打开/关闭，默认 false）
@@ -21,20 +21,20 @@ export const useChatInputFocus = (
     const handleFocusShortcut = (event: KeyboardEvent) => {
       const key = event.key?.toLowerCase();
 
-      // 检查是否是 Command+I (Mac) 或 Ctrl+I (Windows/Linux)
-      const isCommandI = event.metaKey && key === "i";
-      const isCtrlI = event.ctrlKey && key === "i";
+      // 检查是否是 Command+L (Mac) 或 Ctrl+L (Windows/Linux)
+      const isCommandL = event.metaKey && key === "l";
+      const isCtrlL = event.ctrlKey && key === "l";
 
-      if (!(isCommandI || isCtrlI)) return;
+      if (!(isCommandL || isCtrlL)) return;
 
       // 检查是否有其他修饰键
       if (event.altKey || event.shiftKey) return;
 
-      // 如果是 Command+I，还要确保 Ctrl 没有按下
-      if (isCommandI && event.ctrlKey) return;
+      // 如果是 Command+L，还要确保 Ctrl 没有按下
+      if (isCommandL && event.ctrlKey) return;
 
-      // 如果是 Ctrl+I，还要确保 Meta 没有按下
-      if (isCtrlI && event.metaKey) return;
+      // 如果是 Ctrl+L，还要确保 Meta 没有按下
+      if (isCtrlL && event.metaKey) return;
 
       event.preventDefault();
 

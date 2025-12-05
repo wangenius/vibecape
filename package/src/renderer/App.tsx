@@ -8,11 +8,19 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useTheme } from "@/hooks/app/useTheme";
 import { useChatInputFocus } from "@/hooks/shortcuts/useChatInputFocus";
 import { useSidebarToggle } from "@/hooks/shortcuts/useSidebarToggle";
+import { usePalette } from "@/hooks/shortcuts/usePalette";
+import { useDocEditorFocus } from "@/hooks/shortcuts/useDocEditorFocus";
+import { useSettingsToggle } from "@/hooks/shortcuts/useSettingsToggle";
+import { CommandPalette } from "@/components/custom/CommandPalette";
+import { DocSearchPalette } from "@/components/custom/DocSearchPalette";
 
 const App = () => {
   useTheme();
   useSidebarToggle();
   useChatInputFocus(true, true);
+  useDocEditorFocus();
+  useSettingsToggle();
+  const { isCommandPaletteOpen, isDocSearchOpen, closePalette } = usePalette();
 
   useEffect(() => {
     void bootstrap();
@@ -32,6 +40,18 @@ const App = () => {
           <MainView />
           <Baybar />
         </div>
+
+        {/* Command Palette */}
+        <CommandPalette
+          open={isCommandPaletteOpen}
+          onOpenChange={closePalette}
+        />
+
+        {/* Doc Search Palette */}
+        <DocSearchPalette
+          open={isDocSearchOpen}
+          onOpenChange={closePalette}
+        />
       </div>
     </TooltipProvider>
   );

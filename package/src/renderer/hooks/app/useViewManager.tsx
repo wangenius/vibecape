@@ -427,16 +427,26 @@ export function openNovelTab(novelId: string, title: string) {
 
 /**
  * 打开设置页面
- * 所有设置类型共用一个"设置"标签，通过 meta.settingsType 区分不同的设置页面
+ * 切换侧边栏到设置面板，并设置预览的设置类型
  */
 export function openSettingsTab(settingsType?: string) {
-  return useViewManagerStore.getState().openTab({
-    type: "settings",
-    // 不使用 contentId，让所有设置共用一个标签ID
-    title: "设置",
-    closable: true,
-    meta: { settingsType: settingsType || "general" },
-  });
+  updateViewManagerKey("activeSidebarPanel", "settings");
+  updateViewManagerKey("previewCosmosId", settingsType || "general");
+}
+
+/**
+ * 切换设置面板显示/隐藏
+ * 如果当前在设置面板，则切换回 story 面板
+ * 如果当前不在设置面板，则切换到设置面板
+ */
+export function toggleSettingsPanel() {
+  const current = useViewManagerStore.getState().activeSidebarPanel;
+  if (current === "settings") {
+    updateViewManagerKey("activeSidebarPanel", "story");
+  } else {
+    updateViewManagerKey("activeSidebarPanel", "settings");
+    updateViewManagerKey("previewCosmosId", "general");
+  }
 }
 
 /**

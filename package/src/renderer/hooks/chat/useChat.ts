@@ -328,7 +328,9 @@ export const useChatStore = create<ChatStore>((set, get) => ({
           toolCallId?: string;
           toolName?: string;
           args?: unknown;
+          input?: unknown;
           result?: unknown;
+          output?: unknown;
           message?: string;
         }
       ) => {
@@ -349,7 +351,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
             type: `tool-${toolName}`,
             toolCallId: chunk.toolCallId || gen.id(),
             state: "input-available",
-            input: chunk.args || {},
+            input: chunk.input ?? chunk.args ?? {},
           };
           parts.push(toolPart);
           updateMessage();
@@ -361,7 +363,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
           );
           if (tc) {
             tc.state = "output-available";
-            tc.output = chunk.result;
+            tc.output = chunk.output ?? chunk.result;
           }
           updateMessage();
         } else if (chunk.type === "end") {

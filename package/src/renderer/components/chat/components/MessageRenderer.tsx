@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { type UIMessage } from "ai";
-import { Check, Sparkles, FileText, Quote } from "lucide-react";
+import { Check, FileText, Quote, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Response } from "@/components/ai/response";
 import type {
@@ -83,6 +83,25 @@ interface RefData {
   context?: { before: string; after: string };
   paragraph?: string;
 }
+
+/** 工具调用项 - 极简: loading环 / check */
+const ToolCallItem = ({
+  toolName,
+  isComplete,
+}: {
+  toolName: string;
+  isComplete: boolean;
+  isError: boolean;
+}) => (
+  <span className="inline-flex items-center gap-1.5 text-[11px] font-mono text-muted-foreground/50">
+    {isComplete ? (
+      <Check className="size-3 text-muted-foreground/40" />
+    ) : (
+      <Loader2 className="size-3 animate-spin text-muted-foreground/40" />
+    )}
+    {toolName}
+  </span>
+);
 
 const RefTag = ({ data }: { data: RefData }) => {
   const isDoc = data.type === "doc";
@@ -169,7 +188,7 @@ const UserMessageContent = ({ text }: { text: string }) => {
   );
 };
 
-/** 思考过程折叠区（包含 reasoning + tool calls） */
+/** 思考过程区域 */
 function ThinkingSection({
   parts,
   isThinking,
@@ -181,19 +200,50 @@ function ThinkingSection({
 }) {
   const [open, setOpen] = useState(false);
 
-  // 检测思考是否完成
+  if (parts.length === 0) return null;
+
   const toolParts = parts.filter((p): p is ToolPart =>
     p.type.startsWith("tool-")
   );
+  const reasoningParts = parts.filter(
+    (p): p is ReasoningPart => p.type === "reasoning"
+  );
+  const hasReasoning = reasoningParts.some((p) => p.text?.trim());
 
-  const hasIncompleteTools = toolParts.some(
+  // 当前正在执行的tool（最后一个未完成的）
+  const currentTool = toolParts.findLast(
     (p) => p.state !== "output-available"
   );
+  const allToolsComplete = toolParts.every(
+    (p) => p.state === "output-available"
+  );
 
-  // 如果正在流式传输，且（有未完成的工具调用 或 还没有生成文本），则认为还在思考
-  const isStillThinking = isThinking && (hasIncompleteTools || !hasText);
+  const isStillThinking = isThinking && (!allToolsComplete || !hasText);
 
-  if (parts.length === 0) return null;
+  // 情况1: 只有1个tool，无reasoning → 不折叠
+  if (toolParts.length === 1 && !hasReasoning) {
+    const tool = toolParts[0];
+    const toolName = tool.type.slice(5);
+    const isComplete = tool.state === "output-available";
+    return (
+      <div className="py-0.5">
+        <ToolCallItem toolName={toolName} isComplete={isComplete} isError={false} />
+      </div>
+    );
+  }
+
+  // 情况2: 多个tools或有reasoning → 折叠
+  // 折叠标题：有reasoning显示Thinking，否则显示当前tool名
+  const getTitle = () => {
+    if (hasReasoning) {
+      return isStillThinking ? "Thinking..." : "Thought Process";
+    }
+    // 纯tools模式
+    if (currentTool) {
+      return currentTool.type.slice(5);
+    }
+    return allToolsComplete ? `${toolParts.length} tools` : "Running...";
+  };
 
   return (
     <div className="w-full">
@@ -202,17 +252,11 @@ function ThinkingSection({
         className="group flex items-center gap-1.5 text-xs text-muted-foreground/50 hover:text-muted-foreground/70 transition-colors py-0.5 select-none w-full text-left"
       >
         {isStillThinking ? (
-          <Sparkles className="size-3 animate-pulse" />
+          <Loader2 className="size-3 animate-spin" />
         ) : (
           <Check className="size-3 text-muted-foreground/40" />
         )}
-        <span
-          className={
-            isStillThinking ? "font-medium animate-pulse" : "font-medium"
-          }
-        >
-          {isStillThinking ? "Thinking..." : "Thought Process"}
-        </span>
+        <span className="font-mono text-[11px]">{getTitle()}</span>
       </button>
       <AnimatePresence initial={false}>
         {open && (
@@ -224,7 +268,6 @@ function ThinkingSection({
             className="overflow-hidden"
           >
             <div className="mt-1.5 max-h-[600px] overflow-y-auto text-[11px] text-muted-foreground/50 leading-5 p-2 bg-muted/30 rounded space-y-2">
-              {/* 按顺序渲染 */}
               {parts.map((part, idx) => {
                 if (part.type === "reasoning") {
                   const text = (part as ReasoningPart).text?.trim();
@@ -238,25 +281,14 @@ function ThinkingSection({
                   const toolPart = part as ToolPart;
                   const toolName = toolPart.type.slice(5);
                   const isComplete = toolPart.state === "output-available";
+                  const isError = toolPart.state === "output-error";
                   return (
-                    <div
+                    <ToolCallItem
                       key={idx}
-                      className="flex items-start gap-1.5 font-mono"
-                    >
-                      {isComplete ? (
-                        <Check className="size-3 text-green-500/70 mt-0.5 shrink-0" />
-                      ) : (
-                        <div className="size-3 rounded-full border border-muted-foreground/30 animate-pulse mt-0.5 shrink-0" />
-                      )}
-                      <div>
-                        <code>{toolName}</code>
-                        {toolPart.output !== undefined && (
-                          <span className="text-muted-foreground/30 ml-1 break-all">
-                            → {JSON.stringify(toolPart.output)}
-                          </span>
-                        )}
-                      </div>
-                    </div>
+                      toolName={toolName}
+                      isComplete={isComplete}
+                      isError={isError}
+                    />
                   );
                 }
                 return null;

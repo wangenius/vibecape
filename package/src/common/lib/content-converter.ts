@@ -198,8 +198,8 @@ function parseInlineContent(
 ): JSONContent[] {
   if (!text) return [];
 
-  // 简单模式：直接返回纯文本
-  if (!options?.parseInlineStyles) {
+  // 简单模式：直接返回纯文本（默认启用内联样式解析）
+  if (options?.parseInlineStyles === false) {
     return [{ type: "text", text }];
   }
 

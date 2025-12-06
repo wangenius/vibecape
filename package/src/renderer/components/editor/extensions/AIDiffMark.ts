@@ -23,6 +23,10 @@ declare module "@tiptap/core" {
       setAIDiff: (attrs: { diffId: string; originalText: string }) => ReturnType;
       /** 移除 AI Diff 标记 */
       unsetAIDiff: () => ReturnType;
+      /** 接受 AI Diff：移除 mark，保留新内容 */
+      acceptAIDiff: (diffId: string) => ReturnType;
+      /** 拒绝 AI Diff：用原文替换新内容 */
+      rejectAIDiff: (diffId: string) => ReturnType;
     };
   }
 }
@@ -97,6 +101,65 @@ export const AIDiffMark = Mark.create<AIDiffMarkOptions>({
         ({ commands }) => {
           return commands.unsetMark(this.name);
         },
+      /** 接受 AI Diff：移除 mark，保留新内容 */
+      acceptAIDiff:
+        (diffId: string) =>
+        ({ state, tr, dispatch }) => {
+          const markType = state.schema.marks.aiDiff;
+          if (!markType) return false;
+
+          let found = false;
+
+          // 找到所有带有该 diffId 的 mark 并移除
+          state.doc.descendants((node, pos) => {
+            if (!node.isText) return;
+            const mark = node.marks.find(
+              (m) => m.type === markType && m.attrs.diffId === diffId
+            );
+            if (mark) {
+              tr.removeMark(pos, pos + node.nodeSize, mark);
+              found = true;
+            }
+          });
+
+          if (found && dispatch) dispatch(tr);
+          return found;
+        },
+      /** 拒绝 AI Diff：用原文替换新内容 */
+      rejectAIDiff:
+        (diffId: string) =>
+        ({ state, tr, dispatch }) => {
+          const markType = state.schema.marks.aiDiff;
+          if (!markType) return false;
+
+          // 找到带有该 diffId 的 mark 范围和原文
+          let markFrom: number | null = null;
+          let markTo: number | null = null;
+          let originalText = "";
+
+          state.doc.descendants((node, pos) => {
+            if (!node.isText) return;
+            const mark = node.marks.find(
+              (m) => m.type === markType && m.attrs.diffId === diffId
+            );
+            if (mark) {
+              if (markFrom === null) {
+                markFrom = pos;
+                originalText = mark.attrs.originalText || "";
+              }
+              markTo = pos + node.nodeSize;
+            }
+          });
+
+          if (markFrom === null || markTo === null) return false;
+
+          // 用原文替换当前内容
+          const textNode = state.schema.text(originalText);
+          tr.replaceWith(markFrom, markTo, textNode);
+
+          if (dispatch) dispatch(tr);
+          return true;
+        },
     };
   },
 
@@ -111,7 +174,13 @@ export const AIDiffMark = Mark.create<AIDiffMarkOptions>({
             const decorations: Decoration[] = [];
             const processedDiffIds = new Set<string>();
 
-            // 遍历文档找到所有 aiDiff mark 的结束位置
+            // 收集每个 diffId 的信息
+            const diffInfoMap = new Map<
+              string,
+              { startPos: number; endPos: number; originalText: string }
+            >();
+
+            // 遍历文档找到所有 aiDiff mark
             state.doc.descendants((node, pos) => {
               if (!node.isText) return;
 
@@ -123,58 +192,80 @@ export const AIDiffMark = Mark.create<AIDiffMarkOptions>({
                 const diffId = diffMark.attrs.diffId;
                 const endPos = pos + node.nodeSize;
 
-                // 检查下一个节点是否还有相同的 mark
-                const nextNode = state.doc.nodeAt(endPos);
-                const nextHasSameMark = nextNode?.marks.some(
-                  (m) => m.type.name === "aiDiff" && m.attrs.diffId === diffId
-                );
-
-                // 只在 mark 的最后一个位置添加 widget
-                if (!nextHasSameMark && !processedDiffIds.has(diffId)) {
-                  processedDiffIds.add(diffId);
-
-                  // 创建 Accept/Reject 按钮 widget
-                  const widget = Decoration.widget(
+                if (!diffInfoMap.has(diffId)) {
+                  diffInfoMap.set(diffId, {
+                    startPos: pos,
                     endPos,
-                    () => {
-                      const container = document.createElement("span");
-                      container.className = "ai-diff-actions";
-                      container.contentEditable = "false";
-
-                      // Accept 按钮
-                      const acceptBtn = document.createElement("button");
-                      acceptBtn.className = "ai-diff-btn ai-diff-btn-accept";
-                      acceptBtn.innerHTML = "✓";
-                      acceptBtn.title = "Accept";
-                      acceptBtn.onclick = (e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        editor.commands.acceptAIDiff(diffId);
-                      };
-
-                      // Reject 按钮
-                      const rejectBtn = document.createElement("button");
-                      rejectBtn.className = "ai-diff-btn ai-diff-btn-reject";
-                      rejectBtn.innerHTML = "✕";
-                      rejectBtn.title = "Reject";
-                      rejectBtn.onclick = (e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        editor.commands.rejectAIDiff(diffId);
-                      };
-
-                      container.appendChild(acceptBtn);
-                      container.appendChild(rejectBtn);
-
-                      return container;
-                    },
-                    { side: 1 }
-                  );
-
-                  decorations.push(widget);
+                    originalText: diffMark.attrs.originalText || "",
+                  });
+                } else {
+                  const info = diffInfoMap.get(diffId)!;
+                  info.endPos = endPos;
                 }
               }
             });
+
+            // 为每个 diff 创建 decorations
+            for (const [diffId, info] of diffInfoMap) {
+              if (processedDiffIds.has(diffId)) continue;
+              processedDiffIds.add(diffId);
+
+              // 1. 在开始位置添加被删除的原文（红色划掉）
+              if (info.originalText) {
+                const deletedWidget = Decoration.widget(
+                  info.startPos,
+                  () => {
+                    const span = document.createElement("span");
+                    span.className = "ai-diff-deleted";
+                    span.textContent = info.originalText;
+                    span.contentEditable = "false";
+                    return span;
+                  },
+                  { side: -1 }
+                );
+                decorations.push(deletedWidget);
+              }
+
+              // 2. 在结束位置添加 Accept/Reject 按钮
+              const actionsWidget = Decoration.widget(
+                info.endPos,
+                () => {
+                  const container = document.createElement("span");
+                  container.className = "ai-diff-actions";
+                  container.contentEditable = "false";
+
+                  // Accept 按钮
+                  const acceptBtn = document.createElement("button");
+                  acceptBtn.className = "ai-diff-btn ai-diff-btn-accept";
+                  acceptBtn.innerHTML = "✓";
+                  acceptBtn.title = "Accept";
+                  acceptBtn.onclick = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    editor.commands.acceptAIDiff(diffId);
+                  };
+
+                  // Reject 按钮
+                  const rejectBtn = document.createElement("button");
+                  rejectBtn.className = "ai-diff-btn ai-diff-btn-reject";
+                  rejectBtn.innerHTML = "✕";
+                  rejectBtn.title = "Reject";
+                  rejectBtn.onclick = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    editor.commands.rejectAIDiff(diffId);
+                  };
+
+                  container.appendChild(acceptBtn);
+                  container.appendChild(rejectBtn);
+
+                  return container;
+                },
+                { side: 1 }
+              );
+
+              decorations.push(actionsWidget);
+            }
 
             return DecorationSet.create(state.doc, decorations);
           },

@@ -16,7 +16,6 @@ import {
   AIRewriteNode,
   AIPolishMark,
 } from "@/components/editor/extensions/AIRewriteNode";
-import { AIInlineEdit } from "@/components/editor/extensions/AIInlineEdit";
 import { AIDiffMark } from "@/components/editor/extensions/AIDiffMark";
 import { CodeBlockNode } from "@/components/editor/extensions/CodeBlockNode";
 import { InlineCode } from "@/components/editor/extensions/InlineCode";
@@ -26,8 +25,6 @@ import { Mention } from "@/components/editor/extensions/Mention";
 import { ImageNode } from "@/components/editor/extensions/ImageNode";
 import { LinkNode } from "@/components/editor/extensions/LinkNode";
 import { PolishManager } from "@/components/editor/PolishManager";
-import { AIEditPopover } from "@/components/editor/menus/AIEditPopover";
-import { AIDiffToolbar } from "@/components/editor/menus/AIDiffToolbar";
 import { CustomKeyboardExtension } from "@/components/editor/extensions/CustomKeyboardExtension";
 import { useTranslation } from "react-i18next";
 import { useRemoteTools } from "@/hooks/editor/useRemoteTools";
@@ -86,56 +83,6 @@ export const DocEditor = ({ doc, onChange, onSave }: Props) => {
       AIRewriteNode,
       AIPolishMark,
       AIDiffMark,
-      AIInlineEdit.configure({
-        onEdit: async (params) => {
-          const requestId = `inline-edit-${Date.now()}-${Math.random()
-            .toString(36)
-            .slice(2)}`;
-          const channel = `llm:stream:${requestId}`;
-
-          try {
-            // 1. 发起请求
-            await (window as any).api.chat.streamInlineEdit({
-              id: requestId,
-              instruction: params.instruction,
-              selection: params.selection,
-              context: params.context,
-            });
-
-            // 2. 创建 ReadableStream
-            return new ReadableStream({
-              start(controller) {
-                const ipc = (window as any).electron.ipcRenderer;
-
-                const handler = (_event: any, chunk: any) => {
-                  if (chunk.type === "text-delta") {
-                    controller.enqueue(chunk.text);
-                  } else if (chunk.type === "end") {
-                    controller.close();
-                    ipc.removeListener(channel, handler);
-                  } else if (chunk.type === "error") {
-                    controller.error(new Error(chunk.message));
-                    ipc.removeListener(channel, handler);
-                  }
-                };
-
-                ipc.on(channel, handler);
-
-                // 监听取消事件（如果需要）
-              },
-              cancel() {
-                const ipc = (window as any).electron.ipcRenderer;
-                ipc.removeAllListeners(channel);
-                // 可选：通知后端取消
-                (window as any).api.chat.cancel(requestId);
-              },
-            });
-          } catch (error) {
-            console.error("[AIInlineEdit] Request failed:", error);
-            throw error;
-          }
-        },
-      }),
       SlashCommand.configure({
         suggestion: slashMenuConfig,
       }),
@@ -294,7 +241,6 @@ export const DocEditor = ({ doc, onChange, onSave }: Props) => {
       className="flex-1 min-h-0 pb-[80vh] cursor-text flex flex-col w-full"
       onClick={handleContainerClick}
     >
-      <AIDiffToolbar editor={editor} />
       <div className="flex-1">
         <EditorContent
           editor={editor}
@@ -302,7 +248,6 @@ export const DocEditor = ({ doc, onChange, onSave }: Props) => {
         />
       </div>
       <EditorBubbleMenu editor={editor} />
-      <AIEditPopover editor={editor} />
       <PolishManager editor={editor} />
     </div>
   );

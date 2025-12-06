@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Editor } from "@tiptap/react";
 import { JSONContent } from "@tiptap/core";
 import { markdownToJSON } from "@common/lib/content-converter";
+import { useDocumentStore } from "@/hooks/stores/useDocumentStore";
 
 /**
  * Tiptap Agent Operation Protocol (TAOP) - Renderer Implementation
@@ -187,9 +188,16 @@ export const useRemoteTools = (editor: Editor | null) => {
         switch (name) {
           // ============ 读取层 ============
 
-          case "getDocumentText":
-            result = { content: editor.getText() };
+          case "getDocumentText": {
+            const activeDoc = useDocumentStore.getState().activeDoc;
+            result = {
+              content: editor.getText(),
+              docId: activeDoc?.id,
+              title: activeDoc?.title,
+              metadata: activeDoc?.metadata,
+            };
             break;
+          }
 
           case "getDocumentStructure":
             result = { outline: extractOutline() };
@@ -280,7 +288,9 @@ export const useRemoteTools = (editor: Editor | null) => {
             const parseReplaceContent = (text: string): JSONContent[] => {
               // 检查是否包含换行或 markdown 格式
               if (text.includes("\n") || /[#*`\-\[\]]/.test(text)) {
-                const parsed = markdownToJSON(text, { parseInlineStyles: true });
+                const parsed = markdownToJSON(text, {
+                  parseInlineStyles: true,
+                });
                 return parsed.content || [];
               }
               // 简单文本直接返回
@@ -301,7 +311,7 @@ export const useRemoteTools = (editor: Editor | null) => {
 
               // 解析替换内容
               const replaceContent = parseReplaceContent(replace);
-              
+
               // 从后往前逐个替换
               for (const match of matches) {
                 editor

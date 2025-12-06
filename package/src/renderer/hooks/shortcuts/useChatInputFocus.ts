@@ -4,9 +4,11 @@ import {
   openBayBar,
   closeBayBar,
 } from "@/hooks/app/useViewManager";
+import { useThreadStore } from "@/hooks/chat/useThread";
 
 /**
  * 处理 Command+L 聚焦到 ChatInput 的逻辑
+ * 处理 Command+Shift+L 创建新对话并聚焦
  *
  * @param enabled - 是否启用该快捷键（默认 true）
  * @param autoToggleBaybar - 是否自动切换 Baybar（打开/关闭，默认 false）
@@ -18,7 +20,7 @@ export const useChatInputFocus = (
   useEffect(() => {
     if (!enabled) return;
 
-    const handleFocusShortcut = (event: KeyboardEvent) => {
+    const handleFocusShortcut = async (event: KeyboardEvent) => {
       const key = event.key?.toLowerCase();
 
       // 检查是否是 Command+L (Mac) 或 Ctrl+L (Windows/Linux)
@@ -27,8 +29,31 @@ export const useChatInputFocus = (
 
       if (!(isCommandL || isCtrlL)) return;
 
-      // 检查是否有其他修饰键
-      if (event.altKey || event.shiftKey) return;
+      // 检查是否有 Alt 修饰键
+      if (event.altKey) return;
+
+      // Command+Shift+L / Ctrl+Shift+L: 创建新对话并聚焦
+      if (event.shiftKey) {
+        event.preventDefault();
+
+        const isBayBarOpen = getCurrentViewManager().isBayBarOpen;
+
+        // 创建新对话
+        await useThreadStore.getState().createNewThread();
+
+        // 如果 Baybar 未打开，先打开
+        if (!isBayBarOpen) {
+          openBayBar();
+          setTimeout(() => {
+            focusChatInput();
+          }, 350);
+        } else {
+          focusChatInput();
+        }
+        return;
+      }
+
+      // Command+L / Ctrl+L: 原有逻辑
 
       // 如果是 Command+L，还要确保 Ctrl 没有按下
       if (isCommandL && event.ctrlKey) return;

@@ -243,6 +243,22 @@
 }
 
 /* ========== AI Diff 样式 ========== */
+/* 被删除的原文 - 红色划掉 */
+.ai-diff-deleted {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: rgb(185, 28, 28);
+  text-decoration: line-through;
+  text-decoration-color: rgb(185, 28, 28);
+  margin-right: 2px;
+}
+
+/* 暗色模式 */
+.dark .ai-diff-deleted {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: rgb(252, 165, 165);
+  text-decoration-color: rgb(252, 165, 165);
+}
+
 /* 待确认的 AI 生成内容 - 绿色背景 */
 .ai-diff-pending,
 .tiptap .ai-diff-pending,

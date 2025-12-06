@@ -74,7 +74,8 @@ export const createDocumentTools = (webContents: WebContents) => {
     // ============ 读取层（安全） ============
 
     getDocumentText: tool({
-      description: "获取当前打开文档的纯文本内容。适合快速了解文档全貌。",
+      description:
+        "获取当前打开文档的纯文本内容和元数据。返回 content(文本内容)、docId、title、metadata(文档元数据对象)。适合快速了解文档全貌。",
       inputSchema: z.object({}),
       execute: async () => executeRendererTool("getDocumentText", {}),
     }),

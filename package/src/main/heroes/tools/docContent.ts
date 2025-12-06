@@ -10,17 +10,15 @@
  * 修改后自动通知前端刷新
  */
 
-import { tool } from "ai";
+import { tool, generateText } from "ai";
 import { z } from "zod";
 import { DocsService } from "@main/services/Docs";
+import { Model } from "@main/services/Model";
 import {
   jsonToText,
   jsonToMarkdown,
   markdownToJSON,
   searchAndReplace,
-  appendParagraphs,
-  prependParagraphs,
-  replaceDocContent,
   insertAfterText,
   insertBeforeText,
 } from "@common/lib/content-converter";
@@ -131,25 +129,76 @@ export const createDocContentTools = (webContents: WebContents) => {
     // ============ 追加/插入内容 ============
 
     appendToDocument: tool({
-      description: "在文档末尾追加内容。每个数组元素会成为独立的段落。",
+      description:
+        "在文档末尾追加内容。提供一个 prompt 描述要追加的内容，AI 会根据文档上下文生成合适的内容。",
       inputSchema: z.object({
         docId: z.string().describe("文档 ID"),
-        paragraphs: z.array(z.string()).describe("要追加的段落内容数组"),
+        prompt: z
+          .string()
+          .describe(
+            "描述要追加的内容的 prompt，包含背景、要求、注意事项等。AI 会根据此 prompt 和文档上下文生成内容。"
+          ),
       }),
-      execute: async ({ docId, paragraphs }) => {
+      execute: async ({ docId, prompt }) => {
         try {
           const doc = await DocsService.getDoc(docId);
           if (!doc) {
             return { success: false, error: "文档不存在" };
           }
 
-          const newContent = appendParagraphs(doc.content, paragraphs);
+          // 获取当前文档内容作为上下文
+          const currentContent = jsonToMarkdown(doc.content);
+
+          // 调用 AI 生成内容
+          let model;
+          try {
+            model = await Model.get("fast");
+          } catch {
+            model = await Model.get("primary");
+          }
+
+          const result = await generateText({
+            model,
+            messages: [
+              {
+                role: "system",
+                content: `你是一个文档编辑助手。用户会提供一个文档的当前内容和一个追加内容的请求。
+请根据请求生成要追加到文档末尾的内容。
+
+要求：
+1. 直接输出要追加的 Markdown 格式内容，不要包含任何解释或前缀
+2. 保持与现有文档风格一致
+3. 内容应该是完整的、可以直接追加的段落`,
+              },
+              {
+                role: "user",
+                content: `当前文档内容：
+${currentContent || "（空文档）"}
+
+追加请求：${prompt}`,
+              },
+            ],
+          });
+
+          const generatedMarkdown = result.text.trim();
+          const generatedContent = markdownToJSON(generatedMarkdown);
+
+          // 合并内容
+          const newContent = {
+            ...doc.content,
+            content: [
+              ...(doc.content.content || []),
+              ...(generatedContent.content || []),
+            ],
+          };
+
           await DocsService.updateDoc(docId, { content: newContent });
           notifyContentChange(docId);
 
           return {
             success: true,
-            message: `已追加 ${paragraphs.length} 个段落`,
+            message: "已追加 AI 生成的内容",
+            generatedContent: generatedMarkdown,
           };
         } catch (error: any) {
           return { success: false, error: error.message };
@@ -158,25 +207,76 @@ export const createDocContentTools = (webContents: WebContents) => {
     }),
 
     prependToDocument: tool({
-      description: "在文档开头插入内容。每个数组元素会成为独立的段落。",
+      description:
+        "在文档开头插入内容。提供一个 prompt 描述要插入的内容，AI 会根据文档上下文生成合适的内容。",
       inputSchema: z.object({
         docId: z.string().describe("文档 ID"),
-        paragraphs: z.array(z.string()).describe("要插入的段落内容数组"),
+        prompt: z
+          .string()
+          .describe(
+            "描述要插入的内容的 prompt，包含背景、要求、注意事项等。AI 会根据此 prompt 和文档上下文生成内容。"
+          ),
       }),
-      execute: async ({ docId, paragraphs }) => {
+      execute: async ({ docId, prompt }) => {
         try {
           const doc = await DocsService.getDoc(docId);
           if (!doc) {
             return { success: false, error: "文档不存在" };
           }
 
-          const newContent = prependParagraphs(doc.content, paragraphs);
+          // 获取当前文档内容作为上下文
+          const currentContent = jsonToMarkdown(doc.content);
+
+          // 调用 AI 生成内容
+          let model;
+          try {
+            model = await Model.get("fast");
+          } catch {
+            model = await Model.get("primary");
+          }
+
+          const result = await generateText({
+            model,
+            messages: [
+              {
+                role: "system",
+                content: `你是一个文档编辑助手。用户会提供一个文档的当前内容和一个在开头插入内容的请求。
+请根据请求生成要插入到文档开头的内容。
+
+要求：
+1. 直接输出要插入的 Markdown 格式内容，不要包含任何解释或前缀
+2. 保持与现有文档风格一致
+3. 内容应该是完整的、可以直接插入的段落`,
+              },
+              {
+                role: "user",
+                content: `当前文档内容：
+${currentContent || "（空文档）"}
+
+插入请求：${prompt}`,
+              },
+            ],
+          });
+
+          const generatedMarkdown = result.text.trim();
+          const generatedContent = markdownToJSON(generatedMarkdown);
+
+          // 合并内容（插入到开头）
+          const newContent = {
+            ...doc.content,
+            content: [
+              ...(generatedContent.content || []),
+              ...(doc.content.content || []),
+            ],
+          };
+
           await DocsService.updateDoc(docId, { content: newContent });
           notifyContentChange(docId);
 
           return {
             success: true,
-            message: `已在开头插入 ${paragraphs.length} 个段落`,
+            message: "已在开头插入 AI 生成的内容",
+            generatedContent: generatedMarkdown,
           };
         } catch (error: any) {
           return { success: false, error: error.message };
@@ -187,25 +287,63 @@ export const createDocContentTools = (webContents: WebContents) => {
     // ============ 替换整文档 ============
 
     setDocumentContent: tool({
-      description: "替换整个文档的内容。用于全文重写。注意：这会清除原有内容！",
+      description:
+        "替换整个文档的内容。提供一个 prompt 描述新文档的内容，AI 会生成完整的文档。注意：这会清除原有内容！",
       inputSchema: z.object({
         docId: z.string().describe("文档 ID"),
-        paragraphs: z.array(z.string()).describe("新文档的段落数组"),
+        prompt: z
+          .string()
+          .describe(
+            "描述新文档内容的 prompt，包含背景、要求、结构、注意事项等。AI 会根据此 prompt 生成完整的文档内容。"
+          ),
       }),
-      execute: async ({ docId, paragraphs }) => {
+      execute: async ({ docId, prompt }) => {
         try {
           const doc = await DocsService.getDoc(docId);
           if (!doc) {
             return { success: false, error: "文档不存在" };
           }
 
-          const newContent = replaceDocContent(paragraphs);
+          // 调用 AI 生成内容
+          let model;
+          try {
+            model = await Model.get("fast");
+          } catch {
+            model = await Model.get("primary");
+          }
+
+          const result = await generateText({
+            model,
+            messages: [
+              {
+                role: "system",
+                content: `你是一个文档编辑助手。用户会提供一个文档内容的请求。
+请根据请求生成完整的文档内容。
+
+要求：
+1. 直接输出 Markdown 格式的文档内容，不要包含任何解释或前缀
+2. 根据请求的内容类型选择合适的文档结构（标题、段落、列表等）
+3. 内容应该是完整的、结构清晰的文档`,
+              },
+              {
+                role: "user",
+                content: `文档标题：${doc.title}
+
+内容请求：${prompt}`,
+              },
+            ],
+          });
+
+          const generatedMarkdown = result.text.trim();
+          const newContent = markdownToJSON(generatedMarkdown);
+
           await DocsService.updateDoc(docId, { content: newContent });
           notifyContentChange(docId);
 
           return {
             success: true,
-            message: `已替换文档内容，共 ${paragraphs.length} 个段落`,
+            message: "已使用 AI 生成的内容替换文档",
+            generatedContent: generatedMarkdown,
           };
         } catch (error: any) {
           return { success: false, error: error.message };
@@ -214,25 +352,62 @@ export const createDocContentTools = (webContents: WebContents) => {
     }),
 
     setDocumentFromMarkdown: tool({
-      description: "使用 Markdown 格式设置文档内容。支持标题、列表、代码块等。",
+      description:
+        "使用 Markdown 格式设置文档内容。提供一个 prompt 描述文档内容，AI 会生成 Markdown 格式的完整文档。",
       inputSchema: z.object({
         docId: z.string().describe("文档 ID"),
-        markdown: z.string().describe("Markdown 格式的文档内容"),
+        prompt: z
+          .string()
+          .describe(
+            "描述文档内容的 prompt，包含背景、要求、结构、格式要求等。AI 会生成 Markdown 格式的文档内容。"
+          ),
       }),
-      execute: async ({ docId, markdown }) => {
+      execute: async ({ docId, prompt }) => {
         try {
           const doc = await DocsService.getDoc(docId);
           if (!doc) {
             return { success: false, error: "文档不存在" };
           }
 
-          const newContent = markdownToJSON(markdown);
+          // 调用 AI 生成 Markdown 内容
+          let model;
+          try {
+            model = await Model.get("fast");
+          } catch {
+            model = await Model.get("primary");
+          }
+
+          const result = await generateText({
+            model,
+            messages: [
+              {
+                role: "system",
+                content: `你是一个文档编辑助手。用户会提供一个文档内容的请求。
+请根据请求生成 Markdown 格式的文档内容。
+
+要求：
+1. 直接输出 Markdown 格式的文档内容，不要包含任何解释或前缀
+2. 充分利用 Markdown 语法（标题、列表、代码块、引用、表格等）
+3. 内容应该是完整的、结构清晰的文档`,
+              },
+              {
+                role: "user",
+                content: `文档标题：${doc.title}
+
+内容请求：${prompt}`,
+              },
+            ],
+          });
+
+          const generatedMarkdown = result.text.trim();
+          const newContent = markdownToJSON(generatedMarkdown);
           await DocsService.updateDoc(docId, { content: newContent });
           notifyContentChange(docId);
 
           return {
             success: true,
-            message: "已使用 Markdown 更新文档内容",
+            message: "已使用 AI 生成的 Markdown 更新文档内容",
+            generatedContent: generatedMarkdown,
           };
         } catch (error: any) {
           return { success: false, error: error.message };

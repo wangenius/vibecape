@@ -5,12 +5,12 @@
 
 import { Node, Mark, mergeAttributes, Editor } from "@tiptap/core";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
-import { Fragment } from "@tiptap/pm/model";
 import { ReactNodeViewRenderer, NodeViewWrapper } from "@tiptap/react";
 import { useState, useCallback, useRef, useEffect, KeyboardEvent } from "react";
-import { Loader2, Sparkles, X, Check, BrainIcon } from "lucide-react";
+import { Loader2, Sparkles, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
+import { gen } from "@common/lib/generator";
 
 export interface AIRewriteOptions {
   HTMLAttributes: Record<string, any>;
@@ -22,7 +22,10 @@ declare module "@tiptap/core" {
       insertAIRewrite: () => ReturnType;
       insertAIPolish: () => ReturnType;
       removeAIRewrite: (id: string) => ReturnType;
-      applyAIRewrite: (id: string, content: string) => ReturnType;
+      /** 开始流式编辑：删除原文，创建 AIDiffMark，更新节点属性 */
+      startAIPolishStream: (nodeId: string) => ReturnType;
+      /** 流式更新 diff 内容 */
+      updateAIPolishDiff: (diffId: string, content: string, originalText: string) => ReturnType;
     };
     aiPolishMark: {
       setPolishMark: (id: string) => ReturnType;
@@ -64,7 +67,16 @@ export const AIRewriteNode = Node.create<AIRewriteOptions>({
         default: "generate", // "generate" | "polish"
       },
       markId: {
-        default: null, // 关联的 mark id（润色模式）
+        default: null, // 关联的 AIPolishMark id
+      },
+      diffId: {
+        default: null, // 关联的 AIDiffMark id
+      },
+      originalText: {
+        default: "", // 原文（用于 reject）
+      },
+      insertPos: {
+        default: -1, // 原文插入位置（用于首次插入 diff）
       },
     };
   },
@@ -115,14 +127,23 @@ export const AIRewriteNode = Node.create<AIRewriteOptions>({
             tr.addMark(from, to, markType.create({ id: markId }));
           }
 
-          // 2. 在选中文字后面插入润色节点
+          // 2. 找到选区所在块节点的结束位置，在其后插入润色节点
+          const $to = state.doc.resolve(to);
+          // 获取包含选区的最近的顶层 block 节点的结束位置
+          let insertPos = $to.after($to.depth);
+          
+          // 确保不超出文档范围
+          if (insertPos > state.doc.content.size) {
+            insertPos = state.doc.content.size;
+          }
+
           const nodeType = state.schema.nodes.aiRewrite;
           const newNode = nodeType.create({
             id: nodeId,
             mode: "polish",
             markId,
           });
-          tr.insert(to, newNode);
+          tr.insert(insertPos, newNode);
 
           if (dispatch) dispatch(tr);
           return true;
@@ -166,14 +187,15 @@ export const AIRewriteNode = Node.create<AIRewriteOptions>({
           return found;
         },
 
-      applyAIRewrite:
-        (id: string, content: string) =>
-        ({ state, tr }) => {
+      /** 开始流式编辑：删除原文，创建初始 AIDiffMark，更新节点属性 */
+      startAIPolishStream:
+        (nodeId: string) =>
+        ({ state, tr, dispatch }) => {
           let targetPos: number | null = null;
           let nodeAttrs: any = null;
 
           state.doc.descendants((node, pos) => {
-            if (node.type.name === "aiRewrite" && node.attrs.id === id) {
+            if (node.type.name === "aiRewrite" && node.attrs.id === nodeId) {
               targetPos = pos;
               nodeAttrs = node.attrs;
               return false;
@@ -181,59 +203,124 @@ export const AIRewriteNode = Node.create<AIRewriteOptions>({
             return true;
           });
 
-          if (targetPos !== null && nodeAttrs) {
-            const node = state.doc.nodeAt(targetPos);
-            if (node) {
-              // 将内容按换行分割成多个段落，过滤空行
-              const paragraphs = content.split(/\n+/).filter((p) => p.trim());
-              const paragraphNodes = paragraphs.map((text) =>
-                state.schema.nodes.paragraph.create(
-                  null,
-                  state.schema.text(text.trim())
-                )
-              );
-
-              // 使用 Fragment 一次性插入
-              const fragment = Fragment.from(paragraphNodes);
-
-              // 删除 AI 节点
-              tr.delete(targetPos, targetPos + node.nodeSize);
-
-              // 润色模式：替换带 mark 的原文
-              if (nodeAttrs.mode === "polish" && nodeAttrs.markId) {
-                const markId = nodeAttrs.markId;
-                const markType = state.schema.marks.aiPolishMark;
-
-                // 找到带有该 mark 的文本范围
-                let markFrom: number | null = null;
-                let markTo: number | null = null;
-
-                tr.doc.descendants((n, pos) => {
-                  if (n.isText) {
-                    const mark = n.marks.find(
-                      (m) => m.type === markType && m.attrs.id === markId
-                    );
-                    if (mark) {
-                      if (markFrom === null) markFrom = pos;
-                      markTo = pos + n.nodeSize;
-                    }
-                  }
-                  return true;
-                });
-
-                if (markFrom !== null && markTo !== null) {
-                  tr.replaceWith(markFrom, markTo, fragment);
-                }
-              } else {
-                // 生成模式：在当前位置插入
-                tr.insert(targetPos, fragment);
-              }
-              return true;
-            }
+          if (targetPos === null || !nodeAttrs?.markId) {
+            return false;
           }
 
-          return false;
+          const markId = nodeAttrs.markId;
+          const polishMarkType = state.schema.marks.aiPolishMark;
+          const diffMarkType = state.schema.marks.aiDiff;
+
+          if (!polishMarkType || !diffMarkType) return false;
+
+          // 找到带有该 mark 的文本范围和原文
+          let markFrom: number | null = null;
+          let markTo: number | null = null;
+          let originalText = "";
+
+          state.doc.descendants((n, pos) => {
+            if (n.isText) {
+              const mark = n.marks.find(
+                (m) => m.type === polishMarkType && m.attrs.id === markId
+              );
+              if (mark) {
+                if (markFrom === null) markFrom = pos;
+                markTo = pos + n.nodeSize;
+                originalText += n.text || "";
+              }
+            }
+            return true;
+          });
+
+          if (markFrom === null || markTo === null) return false;
+
+          // 生成 diffId
+          const diffId = gen.id({ prefix: "diff-", length: 12 });
+
+          // 保存原文插入位置（删除前的位置）
+          const insertPos = markFrom;
+
+          // 1. 删除原文（带 polishMark 的内容）
+          tr.delete(markFrom, markTo);
+
+          // 2. 更新节点属性，保存 diffId、originalText 和 insertPos
+          const nodeType = state.schema.nodes.aiRewrite;
+          if (targetPos !== null) {
+            // 注意：删除原文后，节点位置会前移
+            const deletedLength = markTo - markFrom;
+            const newNodePos = targetPos - deletedLength;
+            tr.setNodeMarkup(newNodePos, nodeType, {
+              ...nodeAttrs,
+              diffId,
+              originalText,
+              insertPos, // 保存原文的插入位置
+            });
+          }
+
+          if (dispatch) dispatch(tr);
+          return true;
         },
+
+      /** 流式更新 diff 内容 */
+      updateAIPolishDiff:
+        (diffId: string, content: string, originalText: string) =>
+        ({ state, tr, dispatch }) => {
+          const diffMarkType = state.schema.marks.aiDiff;
+          if (!diffMarkType || !content) return false;
+
+          // 查找现有的 diff mark
+          let diffFrom = -1;
+          let diffTo = -1;
+
+          state.doc.descendants((node, pos) => {
+            if (!node.isText) return;
+            const mark = node.marks.find(
+              (m) => m.type.name === "aiDiff" && m.attrs.diffId === diffId
+            );
+            if (mark) {
+              if (diffFrom === -1) diffFrom = pos;
+              diffTo = pos + node.nodeSize;
+            }
+          });
+
+          const diffMark = diffMarkType.create({ diffId, originalText });
+          const textNode = state.schema.text(content, [diffMark]);
+
+          if (diffFrom === -1) {
+            // 首次插入：从节点属性获取插入位置
+            let insertPos = -1;
+            state.doc.descendants((node) => {
+              if (
+                node.type.name === "aiRewrite" &&
+                node.attrs.diffId === diffId
+              ) {
+                insertPos = node.attrs.insertPos;
+                return false;
+              }
+              return true;
+            });
+
+            if (insertPos === -1) return false;
+
+            // 在原文位置插入 diff 内容
+            tr.insert(insertPos, textNode);
+          } else {
+            // 更新现有内容
+            tr.replaceWith(diffFrom, diffTo, textNode);
+          }
+
+          if (dispatch) dispatch(tr);
+          return true;
+        },
+    };
+  },
+
+  addKeyboardShortcuts() {
+    return {
+      "Mod-k": () => {
+        // Cmd+K 触发润色模式（选中文本后插入输入节点）
+        return this.editor.commands.insertAIPolish();
+      },
     };
   },
 
@@ -445,50 +532,47 @@ function AIRewriteComponent(props: any) {
   const nodeId = node.attrs.id as string;
   const mode = node.attrs.mode as "generate" | "polish";
   const markId = node.attrs.markId as string | null;
+  const diffId = node.attrs.diffId as string | null;
 
   const [prompt, setPrompt] = useState("");
-  const [response, setResponse] = useState("");
-  const [reasoning, setReasoning] = useState("");
   const [status, setStatus] = useState<
     "idle" | "loading" | "success" | "error"
   >("idle");
   const [error, setError] = useState("");
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const reasoningStartTime = useRef<number | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const isPolishMode = mode === "polish";
 
-  // 自动聚焦 - 延迟确保 DOM 已渲染
+  // 自动聚焦
   useEffect(() => {
-    // 使用 setTimeout 确保在渲染后聚焦
     const timer = setTimeout(() => {
       inputRef.current?.focus();
     }, 0);
     return () => clearTimeout(timer);
   }, []);
 
-  // 当节点被选中时（通过上下键导航进入），自动聚焦到输入框
+  // 当节点被选中时，自动聚焦到输入框
   useEffect(() => {
-    if (selected) {
+    if (selected && status === "idle") {
       inputRef.current?.focus();
     }
-  }, [selected]);
+  }, [selected, status]);
 
-  // 发送请求
+  // 发送请求：立即开始流式更新原文位置的 diff
   const handleSubmit = useCallback(async () => {
     if (!prompt.trim() || status === "loading") return;
 
     setStatus("loading");
-    setResponse("");
-    setReasoning("");
     setError("");
-    reasoningStartTime.current = Date.now();
 
     const requestId = `rewrite-${Date.now()}`;
     const channel = `docs:ai:stream:${requestId}`;
+    const abortController = new AbortController();
+    abortControllerRef.current = abortController;
 
     try {
-      // 获取当前光标位置之前的上下文
+      // 获取上下文
       const pos = editor.state.selection.from;
       const textBefore = editor.state.doc.textBetween(
         Math.max(0, pos - 500),
@@ -496,18 +580,32 @@ function AIRewriteComponent(props: any) {
         "\n"
       );
 
-      // 润色模式：实时从 mark 中获取原文
+      // 润色模式：获取原文
       const currentOriginalText =
         isPolishMode && markId ? getMarkedText(editor, markId) : "";
 
-      // 根据模式构建系统消息
+      // 1. 开始流式编辑：删除原文，创建 diff 状态
+      if (isPolishMode && markId) {
+        editor.commands.startAIPolishStream(nodeId);
+      }
+
+      // 获取更新后的 diffId
+      const updatedDiffId = editor.state.doc
+        .nodeAt(props.getPos())?.attrs.diffId;
+      const savedOriginalText = editor.state.doc
+        .nodeAt(props.getPos())?.attrs.originalText || currentOriginalText;
+
+      if (!updatedDiffId) {
+        throw new Error("Failed to start stream edit");
+      }
+
+      // 构建系统消息
       const systemMessage = {
         role: "system",
-        content: isPolishMode
-          ? `你是一个专业的小说写作助手。请根据用户的润色需求，改写以下文字。
+        content: `你是一个专业的小说写作助手。请根据用户的润色需求，改写以下文字。
 
 原文：
-${currentOriginalText}
+${savedOriginalText}
 
 上下文：
 ${textBefore}
@@ -516,29 +614,23 @@ ${textBefore}
 1. 直接输出润色后的内容，不要有任何前缀或解释
 2. 保持原文的核心意思
 3. 保持与上下文一致的风格和语气
-4. 纯文本输出，不使用 Markdown 格式`
-          : `你是一个专业的小说写作助手。请根据用户的改写指令和上下文，生成合适的内容。
-        
-上下文：
-${textBefore}
-
-要求：
-1. 直接输出内容，不要有任何前缀或解释
-2. 保持与上下文一致的风格和语气
-3. 纯文本输出，不使用 Markdown 格式`,
+4. 纯文本输出，不使用 Markdown 格式`,
       };
 
       let fullResponse = "";
-      let fullReasoning = "";
 
       // 监听流式响应
       const handler = (_e: unknown, payload: any) => {
-        if (payload?.type === "reasoning-delta") {
-          fullReasoning += payload.text || "";
-          setReasoning(fullReasoning);
-        } else if (payload?.type === "text-delta") {
+        if (abortController.signal.aborted) return;
+
+        if (payload?.type === "text-delta") {
           fullResponse += payload.text || "";
-          setResponse(fullResponse);
+          // 流式更新 diff 内容
+          editor.commands.updateAIPolishDiff(
+            updatedDiffId,
+            fullResponse,
+            savedOriginalText
+          );
         } else if (payload?.type === "end") {
           (window as any).electron?.ipcRenderer.removeAllListeners(channel);
           setStatus("success");
@@ -568,95 +660,75 @@ ${textBefore}
         err instanceof Error ? err.message : t("common.aiRewrite.unknownError")
       );
       setStatus("error");
-      // 清理监听器
       (window as any).electron?.ipcRenderer.removeAllListeners(channel);
     }
-  }, [prompt, status, editor, isPolishMode, markId]);
+  }, [prompt, status, editor, isPolishMode, markId, nodeId, props, t]);
 
-  // 键盘事件 - 回车发送，上下键导航，Backspace 删除
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent<HTMLTextAreaElement>) => {
-      const textarea = e.currentTarget;
+  // 停止生成
+  const handleStop = useCallback(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+    setStatus("success");
+  }, []);
 
-      if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        e.stopPropagation();
-        handleSubmit();
-        return;
-      }
-
-      if (e.key === "Escape") {
-        e.preventDefault();
-        const pos = props.getPos();
-        deleteNode();
-        // focus 到上一个节点的末尾
-        editor.chain().focus().setTextSelection(pos).run();
-        return;
-      }
-
-      // Backspace：输入框为空时删除块并 focus 到上一个节点末尾
-      if (e.key === "Backspace" && textarea.value === "") {
-        e.preventDefault();
-        const pos = props.getPos();
-        deleteNode();
-        // focus 到上一个节点的末尾
-        editor.chain().focus().setTextSelection(pos).run();
-        return;
-      }
-
-      // 上键：光标在第一行时，移动到上一个节点
-      if (e.key === "ArrowUp") {
-        const cursorPos = textarea.selectionStart;
-        const textBeforeCursor = textarea.value.substring(0, cursorPos);
-        const isFirstLine = !textBeforeCursor.includes("\n");
-
-        if (isFirstLine) {
-          e.preventDefault();
-          // 获取当前节点位置并移动到上方
-          const pos = props.getPos();
-          editor.chain().focus().setTextSelection(pos).run();
-        }
-        return;
-      }
-
-      // 下键：光标在最后一行时，移动到下一个节点
-      if (e.key === "ArrowDown") {
-        const cursorPos = textarea.selectionStart;
-        const textAfterCursor = textarea.value.substring(cursorPos);
-        const isLastLine = !textAfterCursor.includes("\n");
-
-        if (isLastLine) {
-          e.preventDefault();
-          // 获取当前节点位置并移动到下方
-          const pos = props.getPos();
-          const nodeSize = node.nodeSize;
-          editor
-            .chain()
-            .focus()
-            .setTextSelection(pos + nodeSize)
-            .run();
-        }
-        return;
-      }
-    },
-    [handleSubmit, deleteNode, editor, node, props]
-  );
-
-  // 应用结果
-  const handleApply = useCallback(() => {
-    if (!response.trim()) return;
-    editor.commands.applyAIRewrite(nodeId, response.trim());
-  }, [editor, nodeId, response]);
+  // 重新生成
+  const handleRegenerate = useCallback(() => {
+    // 先拒绝当前 diff，恢复原文
+    if (diffId) {
+      editor.commands.rejectAIDiff(diffId);
+    }
+    // 重新插入 polish mark
+    // TODO: 需要重新添加 polishMark
+    setStatus("idle");
+  }, [editor, diffId]);
 
   // 取消/关闭
   const handleCancel = useCallback(() => {
-    // 如果是润色模式，需要移除关联的 mark
+    // 停止进行中的请求
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+    // 如果有 diff，拒绝它
+    if (diffId) {
+      editor.commands.rejectAIDiff(diffId);
+    }
+    // 移除节点
     if (isPolishMode && markId) {
       editor.commands.removeAIRewrite(nodeId);
     } else {
       deleteNode();
     }
-  }, [deleteNode, editor, isPolishMode, markId, nodeId]);
+  }, [deleteNode, editor, isPolishMode, markId, nodeId, diffId]);
+
+  // 完成：删除节点，保留 diff（用户通过 diff 的 Accept/Reject 按钮操作）
+  const handleDone = useCallback(() => {
+    deleteNode();
+  }, [deleteNode]);
+
+  // 键盘事件
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent<HTMLTextAreaElement>) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (status === "idle") {
+          handleSubmit();
+        }
+        return;
+      }
+
+      if (e.key === "Escape") {
+        e.preventDefault();
+        e.stopPropagation();
+        handleCancel();
+        return;
+      }
+    },
+    [handleSubmit, handleCancel, status]
+  );
 
   return (
     <NodeViewWrapper
@@ -675,8 +747,8 @@ ${textBefore}
             onKeyDown={handleKeyDown}
             placeholder={
               isPolishMode
-                ? t("common.aiRewrite.polishPlaceholder")
-                : t("common.aiRewrite.generatePlaceholder")
+                ? t("common.aiRewrite.polishPlaceholder", "输入润色指令...")
+                : t("common.aiRewrite.generatePlaceholder", "输入生成指令...")
             }
             disabled={status === "loading"}
             className={cn(
@@ -691,45 +763,47 @@ ${textBefore}
             <Loader2 className="size-4 text-muted-foreground animate-spin shrink-0" />
           )}
           {/* 操作按钮 */}
-          {(status === "success" || status === "error") && (
-            <div className="flex items-center justify-end gap-1.5">
+          <div className="flex items-center gap-1.5">
+            {status === "loading" && (
               <button
-                onClick={handleCancel}
-                className="p-1 text-muted-foreground hover:text-foreground hover:bg-background/80 rounded-full transition-colors"
+                onClick={handleStop}
+                className="px-2 py-0.5 text-xs bg-destructive/10 text-destructive hover:bg-destructive/20 rounded transition-colors"
               >
-                <X className="size-4" />
+                {t("common.stop", "停止")}
               </button>
-              {status === "success" && response && (
+            )}
+            {status === "success" && (
+              <>
                 <button
-                  onClick={handleApply}
-                  className="p-1 bg-foreground text-background hover:bg-foreground/90 rounded-full transition-colors"
+                  onClick={handleRegenerate}
+                  className="px-2 py-0.5 text-xs bg-muted hover:bg-muted/80 rounded transition-colors"
                 >
-                  <Check className="size-4" />
+                  {t("common.regenerate", "重新生成")}
                 </button>
-              )}
-            </div>
-          )}
+                <button
+                  onClick={handleDone}
+                  className="px-2 py-0.5 text-xs bg-primary/10 text-primary hover:bg-primary/20 rounded transition-colors"
+                >
+                  {t("common.done", "完成")}
+                </button>
+              </>
+            )}
+            {status === "error" && (
+              <button
+                onClick={handleRegenerate}
+                className="px-2 py-0.5 text-xs bg-muted hover:bg-muted/80 rounded transition-colors"
+              >
+                {t("common.retry", "重试")}
+              </button>
+            )}
+            <button
+              onClick={handleCancel}
+              className="p-1 text-muted-foreground hover:text-foreground hover:bg-background/80 rounded-full transition-colors"
+            >
+              <X className="size-4" />
+            </button>
+          </div>
         </div>
-
-        {/* Reasoning 思考过程 - 只在思考中显示 */}
-        {reasoning && status === "loading" && !response && (
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground pl-2">
-            <BrainIcon className="size-3" />
-            <span>{t("common.aiRewrite.thinking")}</span>
-          </div>
-        )}
-
-        {/* 响应区域 */}
-        {response && (
-          <div className="p-1">
-            <div className="text-sm whitespace-pre-wrap select-text text-foreground">
-              {response}
-              {status === "loading" && (
-                <span className="inline-block w-0.5 h-3.5 bg-foreground/40 animate-pulse ml-0.5 align-middle" />
-              )}
-            </div>
-          </div>
-        )}
 
         {/* 错误提示 */}
         {status === "error" && (

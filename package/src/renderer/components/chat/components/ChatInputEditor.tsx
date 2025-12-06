@@ -103,8 +103,16 @@ export const ChatInputEditor = ({
     if (!enableQuote || !editor) return;
 
     const removeListener = addQuoteListener((detail: QuoteEventDetail) => {
-      // 使用 textRef 节点插入引用
-      insertTextRef(editor, detail.text, detail.docId, detail.docTitle);
+      // 使用 textRef 节点插入引用，传递完整信息
+      insertTextRef(editor, {
+        text: detail.text,
+        docId: detail.docId,
+        docTitle: detail.docTitle,
+        position: detail.position,
+        context: detail.context,
+        paragraph: detail.paragraph,
+        paragraphOffset: detail.paragraphOffset,
+      });
       editor.commands.focus("end");
     });
 

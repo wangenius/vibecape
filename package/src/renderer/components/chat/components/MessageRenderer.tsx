@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { type UIMessage } from "ai";
-import { Check, Sparkles } from "lucide-react";
+import { Check, Sparkles, FileText, Quote } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Response } from "@/components/ai/response";
 import type {
@@ -69,6 +69,105 @@ export const MessageContent = ({
     {children}
   </div>
 );
+
+// ============================================================================
+// 引用可视化组件
+// ============================================================================
+
+interface RefData {
+  type: "doc" | "text";
+  docId?: string;
+  docTitle?: string;
+  text?: string;
+  position?: { from: number; to: number };
+  context?: { before: string; after: string };
+  paragraph?: string;
+}
+
+const RefTag = ({ data }: { data: RefData }) => {
+  const isDoc = data.type === "doc";
+
+  return (
+    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-background border border-border/50 text-xs align-middle mx-0.5 select-none cursor-default">
+      {isDoc ? (
+        <FileText className="size-3 text-blue-500 shrink-0" />
+      ) : (
+        <Quote className="size-3 text-orange-500 shrink-0" />
+      )}
+      <span className="max-w-[120px] truncate text-muted-foreground font-medium">
+        {data.docTitle || "未知文档"}
+      </span>
+    </span>
+  );
+};
+
+const UserMessageContent = ({ text }: { text: string }) => {
+  const parts = useMemo(() => {
+    // 匹配 [REF]{...}[/REF]
+    const regex = /\[REF\](.*?)\[\/REF\]/g;
+    const result: Array<
+      { type: "text"; content: string } | { type: "ref"; data: RefData }
+    > = [];
+    let lastIndex = 0;
+    let match;
+
+    while ((match = regex.exec(text)) !== null) {
+      // 添加普通文本
+      if (match.index > lastIndex) {
+        const content = text.slice(lastIndex, match.index);
+        if (content) {
+          result.push({
+            type: "text",
+            content,
+          });
+        }
+      }
+
+      // 解析引用
+      try {
+        const refData = JSON.parse(match[1]) as RefData;
+        result.push({
+          type: "ref",
+          data: refData,
+        });
+      } catch (e) {
+        // 解析失败，作为普通文本显示
+        result.push({
+          type: "text",
+          content: match[0],
+        });
+      }
+
+      lastIndex = regex.lastIndex;
+    }
+
+    // 添加剩余文本
+    if (lastIndex < text.length) {
+      result.push({
+        type: "text",
+        content: text.slice(lastIndex),
+      });
+    }
+
+    return result;
+  }, [text]);
+
+  return (
+    <MessageContent
+      className="w-fit max-w-2xl px-3 py-2 rounded-2xl rounded-tr-none bg-muted-foreground/10 text-foreground ml-auto"
+      variant="flat"
+    >
+      <div className="whitespace-pre-wrap text-[13px] leading-relaxed">
+        {parts.map((part, index) => {
+          if (part.type === "ref") {
+            return <RefTag key={index} data={part.data} />;
+          }
+          return <span key={index}>{part.content}</span>;
+        })}
+      </div>
+    </MessageContent>
+  );
+};
 
 /** 思考过程折叠区（包含 reasoning + tool calls） */
 function ThinkingSection({
@@ -214,34 +313,53 @@ export function MessageRenderer({
   if (message.role === "user") {
     return (
       <Message from="user" className="w-full p-0">
-        <MessageContent
-          className="whitespace-pre-wrap text-[13px] leading-relaxed w-fit max-w-2xl px-3 py-2 rounded-2xl rounded-tr-none bg-muted-foreground/10 text-foreground ml-auto"
-          variant="flat"
-        >
-          {textContent}
-        </MessageContent>
+        <UserMessageContent text={textContent} />
       </Message>
     );
   }
 
-  // 分离：所有思考内容 + 所有文本内容
-  const thinkingParts = parts.filter(
-    (p) => p.type === "reasoning" || p.type.startsWith("tool-")
-  ) as ThinkingPart[];
-  const textParts = parts.filter((p) => p.type === "text") as TextPart[];
+  // 将 parts 分组：连续的 thinking parts 合并，text parts 单独保留
+  // 这样可以保持原始顺序，同时将连续的思考内容折叠在一起
+  const groupedParts = useMemo(() => {
+    const groups: Array<
+      | { type: "thinking"; parts: ThinkingPart[] }
+      | { type: "text"; part: TextPart }
+    > = [];
+
+    for (const part of parts) {
+      if (part.type === "reasoning" || part.type.startsWith("tool-")) {
+        // 如果上一个 group 也是 thinking，追加到其中
+        const lastGroup = groups[groups.length - 1];
+        if (lastGroup?.type === "thinking") {
+          lastGroup.parts.push(part as ThinkingPart);
+        } else {
+          groups.push({ type: "thinking", parts: [part as ThinkingPart] });
+        }
+      } else if (part.type === "text") {
+        groups.push({ type: "text", part: part as TextPart });
+      }
+    }
+
+    return groups;
+  }, [parts]);
+
+  const hasText = groupedParts.some((g) => g.type === "text");
 
   return (
     <Message from="assistant" className="w-full p-0">
       <MessageContent variant="flat" className="w-full gap-1 space-y-1">
-        {/* 单个思考折叠区 */}
-        <ThinkingSection
-          parts={thinkingParts}
-          isThinking={isStreamingThis}
-          hasText={textParts.length > 0}
-        />
-        {/* 文本内容 */}
-        {textParts.map((part, idx) => {
-          const text = part.text?.trim();
+        {groupedParts.map((group, idx) => {
+          if (group.type === "thinking") {
+            return (
+              <ThinkingSection
+                key={idx}
+                parts={group.parts}
+                isThinking={isStreamingThis}
+                hasText={hasText}
+              />
+            );
+          }
+          const text = group.part.text?.trim();
           return text ? (
             <div
               key={idx}

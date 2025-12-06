@@ -81,7 +81,7 @@ export const EditorBubbleMenu = ({ editor }: EditorBubbleMenuProps) => {
     }
   }, [editor, t]);
 
-  /** 引用选中内容到 Chat */
+  /** 引用选中内容到 Chat - 带完整位置和上下文信息 */
   const handleQuote = useCallback(() => {
     if (!editor) return;
 
@@ -91,11 +91,39 @@ export const EditorBubbleMenu = ({ editor }: EditorBubbleMenuProps) => {
     if (!text.trim()) return;
 
     const activeDoc = useDocumentStore.getState().activeDoc;
+    const doc = editor.state.doc;
+
+    // 获取上下文
+    const contextBefore = doc.textBetween(Math.max(0, from - 200), from, "\n");
+    const contextAfter = doc.textBetween(
+      to,
+      Math.min(doc.content.size, to + 200),
+      "\n"
+    );
+
+    // 找到选区所在的段落
+    let paragraph = "";
+    let paragraphOffset = 0;
+    doc.nodesBetween(from, to, (node, pos) => {
+      if (node.type.name === "paragraph" || node.type.name === "heading") {
+        paragraph = node.textContent;
+        paragraphOffset = from - pos - 1; // -1 for node start
+        return false;
+      }
+      return true;
+    });
 
     dispatchQuoteEvent({
       text: text.trim(),
       docId: activeDoc?.id,
       docTitle: activeDoc?.title,
+      position: { from, to },
+      context: {
+        before: contextBefore,
+        after: contextAfter,
+      },
+      paragraph: paragraph || undefined,
+      paragraphOffset: paragraph ? paragraphOffset : undefined,
     });
   }, [editor]);
 

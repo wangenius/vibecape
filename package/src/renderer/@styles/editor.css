@@ -241,3 +241,81 @@
 .admonition-danger .admonition-header {
   color: rgb(239, 68, 68);
 }
+
+/* ========== AI Diff 样式 ========== */
+/* 待确认的 AI 生成内容 - 绿色背景 */
+.ai-diff-pending,
+.tiptap .ai-diff-pending,
+[data-ai-diff="pending"] {
+  background-color: rgba(34, 197, 94, 0.2);
+  color: rgb(21, 128, 61);
+}
+
+/* 暗色模式 */
+.dark .ai-diff-pending,
+.dark .tiptap .ai-diff-pending,
+.dark [data-ai-diff="pending"] {
+  background-color: rgba(34, 197, 94, 0.15);
+  color: rgb(134, 239, 172);
+}
+
+/* AI Diff 内联按钮 */
+.ai-diff-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+.ai-diff-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  line-height: 1;
+}
+
+.ai-diff-btn-accept {
+  background-color: rgba(34, 197, 94, 0.2);
+  color: rgb(21, 128, 61);
+}
+
+.ai-diff-btn-accept:hover {
+  background-color: rgba(34, 197, 94, 0.4);
+}
+
+.ai-diff-btn-reject {
+  background-color: rgba(239, 68, 68, 0.2);
+  color: rgb(185, 28, 28);
+}
+
+.ai-diff-btn-reject:hover {
+  background-color: rgba(239, 68, 68, 0.4);
+}
+
+/* 暗色模式 */
+.dark .ai-diff-btn-accept {
+  background-color: rgba(34, 197, 94, 0.2);
+  color: rgb(134, 239, 172);
+}
+
+.dark .ai-diff-btn-accept:hover {
+  background-color: rgba(34, 197, 94, 0.35);
+}
+
+.dark .ai-diff-btn-reject {
+  background-color: rgba(239, 68, 68, 0.2);
+  color: rgb(252, 165, 165);
+}
+
+.dark .ai-diff-btn-reject:hover {
+  background-color: rgba(239, 68, 68, 0.35);
+}

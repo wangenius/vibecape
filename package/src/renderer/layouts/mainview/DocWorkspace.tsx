@@ -127,68 +127,66 @@ export const DocWorkspace = ({ doc, onSave }: Props) => {
   }, [title, description, contentVersion, handleSave]);
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden bg-background">
-      <div className="flex-1 overflow-auto">
-        <div className="max-w-3xl mx-auto px-6 pt-8">
-          <div className="mb-6">
-            {/* 标题行 */}
-            <div className="flex items-center gap-2">
-              <div className="flex-1">
-                <TitleInput
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                />
-              </div>
-              <button
-                type="button"
-                onClick={() => setDescExpanded(!descExpanded)}
-                className="shrink-0 p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                title={
-                  descExpanded
-                    ? t("common.settings.collapseDesc")
-                    : t("common.settings.expandDesc")
-                }
-              >
-                {descExpanded ? (
-                  <ChevronUp className="h-4 w-4" />
-                ) : (
-                  <Text className="h-4 w-4" />
-                )}
-              </button>
+    <div className="flex-1 flex flex-col bg-background">
+      <div className="max-w-3xl mx-auto w-full">
+        <div className="mb-6">
+          {/* 标题行 */}
+          <div className="flex items-center gap-2">
+            <div className="flex-1">
+              <TitleInput
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
             </div>
-
-            {/* 描述 */}
-            <AnimatePresence>
-              {descExpanded && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.2, ease: "easeInOut" }}
-                  className="overflow-hidden"
-                >
-                  <div className="bg-muted rounded-lg">
-                    <Textarea
-                      value={description}
-                      onValueChange={(value) => {
-                        setDescription(value);
-                      }}
-                      placeholder={t("common.settings.enterDesc")}
-                      autoFocus
-                    />
-                  </div>
-                </motion.div>
+            <button
+              type="button"
+              onClick={() => setDescExpanded(!descExpanded)}
+              className="shrink-0 p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              title={
+                descExpanded
+                  ? t("common.settings.collapseDesc")
+                  : t("common.settings.expandDesc")
+              }
+            >
+              {descExpanded ? (
+                <ChevronUp className="h-4 w-4" />
+              ) : (
+                <Text className="h-4 w-4" />
               )}
-            </AnimatePresence>
+            </button>
           </div>
 
-          {/* 编辑器 */}
-          <DocEditor
-            doc={doc}
-            onChange={handleEditorChange}
-            onSave={handleEditorSave}
-          />
+          {/* 描述 */}
+          <AnimatePresence>
+            {descExpanded && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.2, ease: "easeInOut" }}
+                className="overflow-hidden"
+              >
+                <div className="bg-muted rounded-lg">
+                  <Textarea
+                    value={description}
+                    onValueChange={(value) => {
+                      setDescription(value);
+                    }}
+                    placeholder={t("common.settings.enterDesc")}
+                    autoFocus
+                  />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
+
+        {/* 编辑器 */}
+        <DocEditor
+          doc={doc}
+          onChange={handleEditorChange}
+          onSave={handleEditorSave}
+        />
       </div>
     </div>
   );

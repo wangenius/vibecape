@@ -180,5 +180,12 @@
   "mcpConnectSuccess": "Connected to {{name}}",
   "mcpConnectFailed": "Connection failed",
   "mcpTools": "Available Tools",
-  "mcpToolsDesc": "Tools provided by connected MCP servers"
+  "mcpToolsDesc": "Tools provided by connected MCP servers",
+  "ai": "AI",
+  "aiFeatures": "AI Editing Features",
+  "aiFeaturesDesc": "AI-powered editing features available in the editor",
+  "aiShortcuts": "Shortcuts",
+  "aiShortcutsDesc": "Keyboard shortcuts for AI editing",
+  "aiTools": "Backend AI Tools",
+  "aiToolsDesc": "Document editing tools available for AI Agents"
 }

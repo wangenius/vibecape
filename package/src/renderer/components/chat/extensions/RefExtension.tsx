@@ -120,48 +120,33 @@ export const DocRefNode = Node.create({
 // =============================================================================
 
 const TextRefComponent = ({ node, deleteNode }: NodeViewProps) => {
-  const { docTitle, text } = node.attrs;
-  const [expanded, setExpanded] = useState(false);
-
-  // 截断显示
-  const displayText = text?.length > 50 ? text.slice(0, 50) + "..." : text;
+  const { docTitle } = node.attrs;
 
   return (
-    <NodeViewWrapper as="div" className="my-1">
-      <div
-        className="flex flex-col gap-1 px-2 py-1.5 rounded-lg bg-muted/50 border border-border/50 text-sm"
+    <NodeViewWrapper as="span" className="inline mx-0.5">
+      <span
+        className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-orange-500/15 text-orange-600 text-sm cursor-default align-middle border border-orange-500/20"
         contentEditable={false}
       >
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-1.5 text-muted-foreground text-xs">
-            <Quote className="size-3" />
-            {docTitle && <span>来自「{docTitle}」</span>}
-          </div>
-          <button
-            onClick={deleteNode}
-            className="p-0.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
-          >
-            <X className="size-3" />
-          </button>
-        </div>
-        <div
-          className={cn(
-            "text-foreground/80 whitespace-pre-wrap",
-            !expanded && "line-clamp-2"
-          )}
-          onClick={() => setExpanded(!expanded)}
+        <Quote className="size-3" />
+        <span className="max-w-[120px] truncate">
+          {docTitle || "未知文档"}
+        </span>
+        <button
+          onClick={deleteNode}
+          className="ml-0.5 p-0.5 rounded hover:bg-orange-500/20 text-orange-600/70 hover:text-orange-600 transition-colors"
         >
-          {expanded ? text : displayText}
-        </div>
-      </div>
+          <X className="size-3" />
+        </button>
+      </span>
     </NodeViewWrapper>
   );
 };
 
 export const TextRefNode = Node.create({
   name: "textRef",
-  group: "block",
-  content: "",
+  group: "inline",
+  inline: true,
   selectable: true,
   atom: true,
 
@@ -170,16 +155,21 @@ export const TextRefNode = Node.create({
       docId: { default: null },
       docTitle: { default: null },
       text: { default: "" },
+      // 增强的位置和上下文信息
+      position: { default: null }, // { from: number, to: number }
+      context: { default: null }, // { before: string, after: string }
+      paragraph: { default: null }, // 所在段落文本
+      paragraphOffset: { default: null }, // 在段落中的偏移
     };
   },
 
   parseHTML() {
-    return [{ tag: 'div[data-type="text-ref"]' }];
+    return [{ tag: 'span[data-type="text-ref"]' }];
   },
 
   renderHTML({ HTMLAttributes }) {
     return [
-      "div",
+      "span",
       mergeAttributes({ "data-type": "text-ref" }, HTMLAttributes),
     ];
   },
@@ -458,9 +448,9 @@ export const RefExtension = [DocRefNode, TextRefNode, RefCommand];
 /**
  * 将包含 Ref 节点的 Tiptap JSONContent 转换为纯文本
  *
- * 格式：
- * - docRef: [REF:DOC:docId:docTitle]
- * - textRef: [REF:TEXT:docId:docTitle]\n内容\n[/REF:TEXT]
+ * 简洁格式：
+ * - docRef: [REF]{"type":"doc","docId":"...","docTitle":"..."}[/REF]
+ * - textRef: [REF]{"type":"text","docId":"...","text":"...","position":{...},...}[/REF]
  */
 export const refContentToText = (json: any): string => {
   const parts: string[] = [];
@@ -470,20 +460,34 @@ export const refContentToText = (json: any): string => {
 
     // DocRef 节点
     if (node.type === "docRef") {
-      const docId = node.attrs?.docId || "";
-      const docTitle = node.attrs?.docTitle || "未知文档";
-      return `[REF:DOC:${docId}:${docTitle}]`;
+      const refData = {
+        type: "doc",
+        docId: node.attrs?.docId,
+        docTitle: node.attrs?.docTitle,
+      };
+      return `[REF]${JSON.stringify(refData)}[/REF]`;
     }
 
     // TextRef 节点
     if (node.type === "textRef") {
-      const docId = node.attrs?.docId || "";
-      const docTitle = node.attrs?.docTitle || "";
-      const text = node.attrs?.text || "";
-      const header = docTitle
-        ? `[REF:TEXT:${docId}:${docTitle}]`
-        : `[REF:TEXT:${docId}]`;
-      return `${header}\n${text}\n[/REF:TEXT]`;
+      const { docId, docTitle, text, position, context, paragraph } =
+        node.attrs || {};
+      const refData = {
+        type: "text",
+        docId,
+        docTitle,
+        text,
+        position,
+        context,
+        paragraph,
+      };
+      // 移除 undefined 字段
+      Object.keys(refData).forEach(
+        (key) =>
+          refData[key as keyof typeof refData] === undefined &&
+          delete refData[key as keyof typeof refData]
+      );
+      return `[REF]${JSON.stringify(refData)}[/REF]`;
     }
 
     // 文本节点
@@ -511,19 +515,44 @@ export const refContentToText = (json: any): string => {
 
 /**
  * 插入选区引用到编辑器
+ * 支持完整的 QuoteEventDetail 或简单参数
  */
+export interface TextRefOptions {
+  text: string;
+  docId?: string;
+  docTitle?: string;
+  position?: { from: number; to: number };
+  context?: { before: string; after: string };
+  paragraph?: string;
+  paragraphOffset?: number;
+}
+
 export const insertTextRef = (
   editor: any,
-  text: string,
+  textOrOptions: string | TextRefOptions,
   docId?: string,
   docTitle?: string
 ) => {
+  // 兼容旧的调用方式
+  const attrs =
+    typeof textOrOptions === "string"
+      ? { text: textOrOptions, docId, docTitle }
+      : {
+          text: textOrOptions.text,
+          docId: textOrOptions.docId,
+          docTitle: textOrOptions.docTitle,
+          position: textOrOptions.position,
+          context: textOrOptions.context,
+          paragraph: textOrOptions.paragraph,
+          paragraphOffset: textOrOptions.paragraphOffset,
+        };
+
   editor
     .chain()
     .focus()
     .insertContent({
       type: "textRef",
-      attrs: { docId, docTitle, text },
+      attrs,
     })
     .run();
 };

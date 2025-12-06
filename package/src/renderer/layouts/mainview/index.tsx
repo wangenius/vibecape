@@ -7,13 +7,18 @@ import {
   StorageSettings,
   AboutSettings,
   MCPSettings,
+  AISettings,
 } from "@/components/settings";
 import { EmptyDocState } from "./EmptyDocState";
 import { DocWorkspace } from "./DocWorkspace";
 import { WorkspaceSettingsPanel } from "./WorkspaceSettingsPanel";
 
 const MainContainer = ({ children }: { children: ReactNode }) => {
-  return <div className="flex-1 h-full overflow-hidden">{children}</div>;
+  return (
+    <div className="flex-1 h-full overflow-hidden overflow-y-auto p-4">
+      {children}
+    </div>
+  );
 };
 
 export const MainView = () => {
@@ -51,6 +56,8 @@ export const MainView = () => {
       switch (settingsSection) {
         case "models":
           return <ModelSettings />;
+        case "ai":
+          return <AISettings />;
         case "mcp":
           return <MCPSettings />;
         case "storage":

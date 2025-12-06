@@ -4,4 +4,5 @@ export * from "./components/ModelSettings";
 export * from "./components/MCPSettings";
 export * from "./components/StorageSettings";
 export * from "./components/AboutSettings";
+export * from "./components/AISettings";
 export * from "./components/SettingComponents";

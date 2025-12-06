@@ -90,6 +90,8 @@ const api = {
     create: () => ipcRenderer.invoke("chat:create"),
     delete: (threadId: string) => ipcRenderer.invoke("chat:delete", threadId),
     stream: (payload: any) => ipcRenderer.invoke("chat:stream", payload),
+    streamInlineEdit: (payload: any) =>
+      ipcRenderer.invoke("chat:inline-edit", payload),
     cancel: (id: string) => ipcRenderer.invoke("chat:cancel", id),
     heroes: () => ipcRenderer.invoke("chat:heroes"),
     /** @deprecated 使用 heroes */

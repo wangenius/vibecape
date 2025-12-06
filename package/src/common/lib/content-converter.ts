@@ -203,9 +203,74 @@ function parseInlineContent(
     return [{ type: "text", text }];
   }
 
-  // TODO: 实现内联样式解析（粗体、斜体、链接、代码）
-  // 目前返回纯文本
-  return [{ type: "text", text }];
+  // 解析内联样式
+  const result: JSONContent[] = [];
+
+  // 正则匹配：粗体、斜体、行内代码、链接
+  // 优先级：粗斜体 > 粗体 > 斜体 > 行内代码 > 链接
+  const inlineRegex =
+    /(\*\*\*(.+?)\*\*\*)|(\*\*(.+?)\*\*)|(\*(.+?)\*)|(`([^`]+)`)|(\[([^\]]+)\]\(([^)]+)\))/g;
+
+  let lastIndex = 0;
+  let match;
+
+  while ((match = inlineRegex.exec(text)) !== null) {
+    // 添加匹配前的普通文本
+    if (match.index > lastIndex) {
+      result.push({ type: "text", text: text.slice(lastIndex, match.index) });
+    }
+
+    if (match[1]) {
+      // 粗斜体 ***text***
+      result.push({
+        type: "text",
+        text: match[2],
+        marks: [{ type: "bold" }, { type: "italic" }],
+      });
+    } else if (match[3]) {
+      // 粗体 **text**
+      result.push({
+        type: "text",
+        text: match[4],
+        marks: [{ type: "bold" }],
+      });
+    } else if (match[5]) {
+      // 斜体 *text*
+      result.push({
+        type: "text",
+        text: match[6],
+        marks: [{ type: "italic" }],
+      });
+    } else if (match[7]) {
+      // 行内代码 `code`
+      result.push({
+        type: "text",
+        text: match[8],
+        marks: [{ type: "code" }],
+      });
+    } else if (match[9]) {
+      // 链接 [text](url)
+      result.push({
+        type: "text",
+        text: match[10],
+        marks: [{ type: "link", attrs: { href: match[11] } }],
+      });
+    }
+
+    lastIndex = match.index + match[0].length;
+  }
+
+  // 添加剩余的普通文本
+  if (lastIndex < text.length) {
+    result.push({ type: "text", text: text.slice(lastIndex) });
+  }
+
+  // 如果没有匹配到任何内联样式，返回纯文本
+  if (result.length === 0) {
+    return [{ type: "text", text }];
+  }
+
+  return result;
 }
 
 // ==================== JSONContent → Markdown ====================
@@ -309,7 +374,10 @@ export function jsonToMarkdown(content: JSONContent): string {
     }
   }
 
-  return lines.join("\n").trim();
+  return lines
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n") // 将连续3个及以上换行符替换为2个
+    .trim();
 }
 
 // ==================== Frontmatter 处理 ====================
@@ -432,4 +500,187 @@ export function jsonToText(content: JSONContent): string {
     .map((node) => extractText(node))
     .filter(Boolean)
     .join("\n\n");
+}
+
+// ==================== 内容修改 ====================
+
+/**
+ * 在 JSONContent 中搜索并替换文本
+ * 返回修改后的内容和替换次数
+ */
+export function searchAndReplace(
+  content: JSONContent,
+  search: string,
+  replace: string,
+  options?: { all?: boolean }
+): { content: JSONContent; count: number } {
+  let count = 0;
+  const replaceAll = options?.all ?? false;
+
+  const processNode = (node: JSONContent): JSONContent => {
+    // 文本节点 - 执行替换
+    if (node.type === "text" && node.text) {
+      if (replaceAll) {
+        const parts = node.text.split(search);
+        if (parts.length > 1) {
+          count += parts.length - 1;
+          return { ...node, text: parts.join(replace) };
+        }
+      } else if (count === 0 && node.text.includes(search)) {
+        count = 1;
+        return { ...node, text: node.text.replace(search, replace) };
+      }
+      return node;
+    }
+
+    // 有子节点的节点 - 递归处理
+    if (node.content && Array.isArray(node.content)) {
+      return {
+        ...node,
+        content: node.content.map(processNode),
+      };
+    }
+
+    return node;
+  };
+
+  const newContent = processNode(content);
+  return { content: newContent, count };
+}
+
+/**
+ * 在文档末尾追加段落
+ */
+export function appendParagraphs(
+  content: JSONContent,
+  paragraphs: string[]
+): JSONContent {
+  const newNodes: JSONContent[] = paragraphs.map((text) => ({
+    type: "paragraph",
+    content: text ? [{ type: "text", text }] : [],
+  }));
+
+  return {
+    ...content,
+    content: [...(content.content || []), ...newNodes],
+  };
+}
+
+/**
+ * 在文档开头插入段落
+ */
+export function prependParagraphs(
+  content: JSONContent,
+  paragraphs: string[]
+): JSONContent {
+  const newNodes: JSONContent[] = paragraphs.map((text) => ({
+    type: "paragraph",
+    content: text ? [{ type: "text", text }] : [],
+  }));
+
+  return {
+    ...content,
+    content: [...newNodes, ...(content.content || [])],
+  };
+}
+
+/**
+ * 替换整个文档内容
+ */
+export function replaceDocContent(paragraphs: string[]): JSONContent {
+  return {
+    type: "doc",
+    content: paragraphs.map((text) => ({
+      type: "paragraph",
+      content: text ? [{ type: "text", text }] : [],
+    })),
+  };
+}
+
+/**
+ * 在找到的文本后面插入内容
+ * 不依赖选区，通过搜索文本定位
+ */
+export function insertAfterText(
+  content: JSONContent,
+  searchText: string,
+  insertText: string
+): { content: JSONContent; found: boolean } {
+  let found = false;
+
+  const processNode = (node: JSONContent): JSONContent => {
+    if (found) return node;
+
+    // 文本节点 - 在找到的文本后插入
+    if (node.type === "text" && node.text) {
+      const index = node.text.indexOf(searchText);
+      if (index !== -1) {
+        found = true;
+        const insertPos = index + searchText.length;
+        return {
+          ...node,
+          text:
+            node.text.slice(0, insertPos) +
+            insertText +
+            node.text.slice(insertPos),
+        };
+      }
+      return node;
+    }
+
+    // 有子节点的节点 - 递归处理
+    if (node.content && Array.isArray(node.content)) {
+      return {
+        ...node,
+        content: node.content.map(processNode),
+      };
+    }
+
+    return node;
+  };
+
+  const newContent = processNode(content);
+  return { content: newContent, found };
+}
+
+/**
+ * 在找到的文本前面插入内容
+ * 不依赖选区，通过搜索文本定位
+ */
+export function insertBeforeText(
+  content: JSONContent,
+  searchText: string,
+  insertText: string
+): { content: JSONContent; found: boolean } {
+  let found = false;
+
+  const processNode = (node: JSONContent): JSONContent => {
+    if (found) return node;
+
+    // 文本节点 - 在找到的文本前插入
+    if (node.type === "text" && node.text) {
+      const index = node.text.indexOf(searchText);
+      if (index !== -1) {
+        found = true;
+        return {
+          ...node,
+          text: node.text.slice(0, index) + insertText + node.text.slice(index),
+        };
+      }
+      return node;
+    }
+
+    // 有子节点的节点 - 递归处理
+    if (node.content && Array.isArray(node.content)) {
+      return {
+        ...node,
+        content: node.content.map(processNode),
+      };
+    }
+
+    return node;
+  };
+
+  const newContent = processNode(content);
+  return { content: newContent, found };
 }

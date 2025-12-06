@@ -180,5 +180,12 @@
   "mcpConnectSuccess": "已连接到 {{name}}",
   "mcpConnectFailed": "连接失败",
   "mcpTools": "可用工具",
-  "mcpToolsDesc": "已连接的 MCP 服务器提供的工具"
+  "mcpToolsDesc": "已连接的 MCP 服务器提供的工具",
+  "ai": "AI",
+  "aiFeatures": "AI 编辑功能",
+  "aiFeaturesDesc": "编辑器支持的 AI 辅助功能列表",
+  "aiShortcuts": "快捷键",
+  "aiShortcutsDesc": "AI 编辑相关的键盘快捷键",
+  "aiTools": "后端 AI 工具",
+  "aiToolsDesc": "AI Agent 可调用的文档编辑工具"
 }

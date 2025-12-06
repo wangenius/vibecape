@@ -1,11 +1,28 @@
 import { useEffect } from "react";
 import { Editor } from "@tiptap/react";
 import { JSONContent } from "@tiptap/core";
+import { markdownToJSON } from "@common/lib/content-converter";
 
 /**
  * Tiptap Agent Operation Protocol (TAOP) - Renderer Implementation
  *
  * 监听来自主进程的工具执行请求，操作 Tiptap 编辑器
+ *
+ * ⚠️ 安全工具（不依赖选区）:
+ * - getDocumentText, getDocumentStructure - 读取
+ * - insertParagraphs (position: "start" | "end") - 固定位置插入
+ * - setDocument - 全文替换
+ * - replaceBySearch - 搜索定位替换
+ * - focusEditor - 辅助
+ *
+ * ⚠️ 已弃用工具（依赖选区，主进程已移除）:
+ * - getSelection - 选区可能变化
+ * - insertParagraphs (position: "cursor") - 依赖光标
+ * - insertNodes (position: "cursor") - 依赖光标
+ * - replaceSelection - 依赖选区
+ * - insertAtPosition - 依赖位置可能变化
+ *
+ * 这些处理逻辑保留以兼容旧代码，但 AI 不会再调用它们。
  */
 export const useRemoteTools = (editor: Editor | null) => {
   useEffect(() => {
@@ -259,6 +276,17 @@ export const useRemoteTools = (editor: Editor | null) => {
           case "replaceBySearch": {
             const { search, replace, all = false } = args;
 
+            // 将 replace 内容解析为结构化内容（支持换行和 markdown）
+            const parseReplaceContent = (text: string): JSONContent[] => {
+              // 检查是否包含换行或 markdown 格式
+              if (text.includes("\n") || /[#*`\-\[\]]/.test(text)) {
+                const parsed = markdownToJSON(text, { parseInlineStyles: true });
+                return parsed.content || [];
+              }
+              // 简单文本直接返回
+              return [{ type: "text", text }];
+            };
+
             if (all) {
               // 替换所有匹配项（从后往前替换，避免位置偏移问题）
               const matches = searchAllText(search).reverse();
@@ -271,11 +299,18 @@ export const useRemoteTools = (editor: Editor | null) => {
                 break;
               }
 
-              const tr = editor.state.tr;
-              matches.forEach(({ from, to }) => {
-                tr.replaceWith(from, to, editor.schema.text(replace));
-              });
-              editor.view.dispatch(tr);
+              // 解析替换内容
+              const replaceContent = parseReplaceContent(replace);
+              
+              // 从后往前逐个替换
+              for (const match of matches) {
+                editor
+                  .chain()
+                  .setTextSelection(match)
+                  .deleteSelection()
+                  .insertContent(replaceContent)
+                  .run();
+              }
               result = { success: true, replaced: matches.length };
             } else {
               // 只替换第一个匹配项
@@ -289,12 +324,15 @@ export const useRemoteTools = (editor: Editor | null) => {
                 break;
               }
 
+              // 解析替换内容
+              const replaceContent = parseReplaceContent(replace);
+
               editor
                 .chain()
                 .focus()
                 .setTextSelection(match)
                 .deleteSelection()
-                .insertContent(replace)
+                .insertContent(replaceContent)
                 .run();
               result = { success: true, replaced: 1 };
             }

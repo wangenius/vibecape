@@ -32,7 +32,11 @@ export interface HeroConfig {
   /** 最大步数 */
   maxSteps?: number;
   /** 工具选择策略 */
-  toolChoice?: "auto" | "required" | "none" | { type: "tool"; toolName: string };
+  toolChoice?:
+    | "auto"
+    | "required"
+    | "none"
+    | { type: "tool"; toolName: string };
   /** 是否为默认 Hero */
   isDefault?: boolean;
 }
@@ -86,7 +90,29 @@ export class Hero {
   /** 根据语言获取系统提示词 */
   getSystemPrompt(language: LocaleLike = "en"): string {
     const lang = normalizeLanguage(language);
-    return this.prompt[lang] || this.prompt.en;
+    const basePrompt = this.prompt[lang] || this.prompt.en;
+
+    // 附加引用格式说明
+    const refInstruction =
+      lang === "zh"
+        ? `
+## 引用格式说明
+用户可能会引用文档内容，格式为 JSON 包裹在 [REF] 标签中：
+- 文档引用: [REF]{"type":"doc","docId":"...","docTitle":"..."}[/REF]
+- 文本引用: [REF]{"type":"text","docId":"...","text":"...","position":{...},...}[/REF]
+
+当看到文本引用时，你可以利用其中的 position 和 context 信息来精确定位和修改文档。
+`
+        : `
+## Reference Format Instructions
+Users may quote document content using JSON wrapped in [REF] tags:
+- Document Ref: [REF]{"type":"doc","docId":"...","docTitle":"..."}[/REF]
+- Text Ref: [REF]{"type":"text","docId":"...","text":"...","position":{...},...}[/REF]
+
+When you see a text ref, you can use the position and context information within it to precisely locate and modify the document.
+`;
+
+    return `${basePrompt}\n${refInstruction}`;
   }
 
   /** 创建 AI SDK Agent 实例 */

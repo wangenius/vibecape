@@ -13,6 +13,7 @@ import {
   type HeroMeta,
 } from "../../heroes";
 import { createDocumentTools } from "../../heroes/tools/document";
+import { createDocContentTools } from "../../heroes/tools/docContent";
 import { createDocManagementTools } from "../../heroes/tools/docs";
 
 // 流式请求状态管理
@@ -193,15 +194,17 @@ async function handleStreamResponse(
   // 合并 Hero 工具和 MCP 工具（AI SDK MCP 已返回可直接使用的工具格式）
   const mcpTools = MCPManager.getAllTools();
   const docEditorTools = createDocumentTools(webContents);
+  const docContentTools = createDocContentTools(webContents);
   const docManagementTools = createDocManagementTools();
   const allTools = {
     ...hero.tools,
     ...docEditorTools,
+    ...docContentTools,
     ...docManagementTools,
     ...mcpTools,
   };
   console.log(
-    `[ChatHandler] Using ${Object.keys(hero.tools).length} hero tools + ${Object.keys(docEditorTools).length} editor tools + ${Object.keys(docManagementTools).length} management tools + ${Object.keys(mcpTools).length} MCP tools`
+    `[ChatHandler] Using ${Object.keys(hero.tools).length} hero tools + ${Object.keys(docEditorTools).length} editor tools + ${Object.keys(docContentTools).length} content tools + ${Object.keys(docManagementTools).length} management tools + ${Object.keys(mcpTools).length} MCP tools`
   );
 
   const result = streamText({
@@ -404,3 +407,101 @@ ipcMain.handle("chat:heroes", async (): Promise<HeroMeta[]> => {
 ipcMain.handle("chat:agents", async (): Promise<HeroMeta[]> => {
   return getAllHeroes().map((h) => h.getMeta());
 });
+
+// ============ Inline Edit ============
+
+interface InlineEditPayload {
+  id: string;
+  instruction: string;
+  selection: string;
+  context?: {
+    before: string;
+    after: string;
+  };
+}
+
+/** 处理内联编辑流式响应 */
+async function handleInlineEdit(
+  payload: InlineEditPayload,
+  channel: string,
+  webContents: WebContents
+): Promise<void> {
+  // 优先使用 fast 模型
+  let model;
+  try {
+    model = await Model.get("fast");
+  } catch {
+    model = await Model.get("primary");
+  }
+
+  const abortController = new AbortController();
+
+  const state: StreamState = {
+    abortController,
+    parts: [],
+    currentText: "",
+    currentReasoning: "",
+  };
+  activeStreams.set(payload.id, state);
+
+  const systemPrompt = `You are an AI writing assistant embedded in a text editor.
+Your task is to rewrite the selected text based on the user's instruction.
+You must output ONLY the rewritten text. Do not include any explanations, prefixes, or suffixes.
+Do not use markdown code blocks unless the user explicitly asks for code.
+Maintain the original formatting style unless asked to change it.`;
+
+  const userPrompt = `
+Context Before: ...${payload.context?.before?.slice(-200) || ""}
+Selected Text: ${payload.selection}
+Context After: ${payload.context?.after?.slice(0, 200) || ""}...
+
+Instruction: ${payload.instruction}
+`;
+
+  const result = streamText({
+    model,
+    messages: [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userPrompt },
+    ],
+    abortSignal: abortController.signal,
+
+    onChunk: ({ chunk }) => {
+      if (chunk.type === "text-delta") {
+        state.currentText += chunk.text;
+        webContents.send(channel, chunk);
+      }
+    },
+
+    onFinish: () => {
+      webContents.send(channel, { type: "end" });
+      activeStreams.delete(payload.id);
+    },
+
+    onError: ({ error }) => {
+      webContents.send(channel, {
+        type: "error",
+        message: (error as Error).message,
+      });
+      activeStreams.delete(payload.id);
+    },
+  });
+
+  setImmediate(() => result.consumeStream());
+}
+
+// 内联编辑请求
+ipcMain.handle(
+  "chat:inline-edit",
+  async (event, payload: InlineEditPayload) => {
+    const requestId = payload.id;
+    const channel = getStreamChannel(requestId);
+
+    try {
+      await handleInlineEdit(payload, channel, event.sender);
+      return { success: true };
+    } catch (error: any) {
+      throw new Error(error?.message || "内联编辑请求失败");
+    }
+  }
+);

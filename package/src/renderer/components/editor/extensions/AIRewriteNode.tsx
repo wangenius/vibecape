@@ -25,7 +25,11 @@ declare module "@tiptap/core" {
       /** 开始流式编辑：删除原文，创建 AIDiffMark，更新节点属性 */
       startAIPolishStream: (nodeId: string) => ReturnType;
       /** 流式更新 diff 内容 */
-      updateAIPolishDiff: (diffId: string, content: string, originalText: string) => ReturnType;
+      updateAIPolishDiff: (
+        diffId: string,
+        content: string,
+        originalText: string
+      ) => ReturnType;
     };
     aiPolishMark: {
       setPolishMark: (id: string) => ReturnType;
@@ -77,6 +81,9 @@ export const AIRewriteNode = Node.create<AIRewriteOptions>({
       },
       insertPos: {
         default: -1, // 原文插入位置（用于首次插入 diff）
+      },
+      isCrossNode: {
+        default: false, // 是否跨节点（决定使用 DiffMark 还是 DiffNode）
       },
     };
   },
@@ -131,7 +138,7 @@ export const AIRewriteNode = Node.create<AIRewriteOptions>({
           const $to = state.doc.resolve(to);
           // 获取包含选区的最近的顶层 block 节点的结束位置
           let insertPos = $to.after($to.depth);
-          
+
           // 确保不超出文档范围
           if (insertPos > state.doc.content.size) {
             insertPos = state.doc.content.size;
@@ -216,6 +223,7 @@ export const AIRewriteNode = Node.create<AIRewriteOptions>({
           let markFrom: number | null = null;
           let markTo: number | null = null;
           const markedRanges: { from: number; to: number }[] = [];
+          const blockNodes = new Set<number>(); // 记录包含 mark 的 block 节点
 
           state.doc.descendants((n, pos) => {
             if (n.isText) {
@@ -226,12 +234,19 @@ export const AIRewriteNode = Node.create<AIRewriteOptions>({
                 if (markFrom === null) markFrom = pos;
                 markTo = pos + n.nodeSize;
                 markedRanges.push({ from: pos, to: pos + n.nodeSize });
+                // 记录所在的 block 节点
+                const $pos = state.doc.resolve(pos);
+                blockNodes.add($pos.before($pos.depth));
               }
             }
             return true;
           });
 
-          if (markFrom === null || markTo === null || markedRanges.length === 0) return false;
+          if (markFrom === null || markTo === null || markedRanges.length === 0)
+            return false;
+
+          // 判断是否跨节点（多个 block 节点）
+          const isCrossNode = blockNodes.size > 1;
 
           // 获取完整的原文（包括跨行的情况）
           const originalText = state.doc.textBetween(markFrom, markTo, "\n");
@@ -244,7 +259,10 @@ export const AIRewriteNode = Node.create<AIRewriteOptions>({
 
           // 1. 更新原文的 AIPolishMark，设置 streaming: true（显示删除线）
           // 对每个带 mark 的范围分别更新（支持跨行）
-          const newPolishMark = polishMarkType.create({ id: markId, streaming: true });
+          const newPolishMark = polishMarkType.create({
+            id: markId,
+            streaming: true,
+          });
           for (const range of markedRanges) {
             tr.removeMark(range.from, range.to, polishMarkType);
             tr.addMark(range.from, range.to, newPolishMark);
@@ -258,6 +276,7 @@ export const AIRewriteNode = Node.create<AIRewriteOptions>({
               diffId,
               originalText,
               insertPos, // 新内容插入位置（原文后面）
+              isCrossNode, // 是否跨节点
             });
           }
 
@@ -265,56 +284,92 @@ export const AIRewriteNode = Node.create<AIRewriteOptions>({
           return true;
         },
 
-      /** 流式更新 diff 内容 */
+      /** 流式更新 diff 内容（根据是否跨节点选择 DiffMark 或 DiffNode） */
       updateAIPolishDiff:
-        (diffId: string, content: string, originalText: string) =>
-        ({ state, tr, dispatch }) => {
-          const diffMarkType = state.schema.marks.aiDiff;
-          if (!diffMarkType || !content) return false;
+        (diffId: string, content: string, _originalText: string) =>
+        ({ state, tr, dispatch, editor }) => {
+          if (!content) return false;
 
-          // 查找现有的 diff mark
-          let diffFrom = -1;
-          let diffTo = -1;
+          // 从 aiRewrite 节点获取信息
+          let originalText = "";
+          let polishMarkId = "";
+          let insertPos = -1;
+          let isCrossNode = false;
 
-          state.doc.descendants((node, pos) => {
-            if (!node.isText) return;
-            const mark = node.marks.find(
-              (m) => m.type.name === "aiDiff" && m.attrs.diffId === diffId
-            );
-            if (mark) {
-              if (diffFrom === -1) diffFrom = pos;
-              diffTo = pos + node.nodeSize;
+          state.doc.descendants((node) => {
+            if (
+              node.type.name === "aiRewrite" &&
+              node.attrs.diffId === diffId
+            ) {
+              originalText = node.attrs.originalText;
+              polishMarkId = node.attrs.markId;
+              insertPos = node.attrs.insertPos;
+              isCrossNode = node.attrs.isCrossNode;
+              return false;
             }
+            return true;
           });
 
-          const diffMark = diffMarkType.create({ diffId, originalText });
-          const textNode = state.schema.text(content, [diffMark]);
+          if (!polishMarkId || insertPos === -1) return false;
 
-          if (diffFrom === -1) {
-            // 首次插入：从节点属性获取插入位置
-            let insertPos = -1;
+          if (isCrossNode) {
+            // 跨节点：使用 AIDiffNode
+            const diffNodeType = state.schema.nodes.aiDiffNode;
+
+            // 查找现有的 diff node
+            let existingNode = false;
             state.doc.descendants((node) => {
-              if (
-                node.type.name === "aiRewrite" &&
-                node.attrs.diffId === diffId
-              ) {
-                insertPos = node.attrs.insertPos;
+              if (node.type === diffNodeType && node.attrs.diffId === diffId) {
+                existingNode = true;
                 return false;
               }
               return true;
             });
 
-            if (insertPos === -1) return false;
-
-            // 在原文位置插入 diff 内容
-            tr.insert(insertPos, textNode);
+            if (existingNode) {
+              return editor.commands.updateAIDiffNode(diffId, content);
+            } else {
+              return editor.commands.insertAIDiffNode({
+                diffId,
+                content,
+                originalText,
+                polishMarkId,
+              });
+            }
           } else {
-            // 更新现有内容
-            tr.replaceWith(diffFrom, diffTo, textNode);
-          }
+            // 单节点：使用 AIDiffMark
+            const diffMarkType = state.schema.marks.aiDiff;
+            if (!diffMarkType) return false;
 
-          if (dispatch) dispatch(tr);
-          return true;
+            // 查找现有的 diff mark
+            let diffFrom = -1;
+            let diffTo = -1;
+
+            state.doc.descendants((node, pos) => {
+              if (!node.isText) return;
+              const mark = node.marks.find(
+                (m) => m.type.name === "aiDiff" && m.attrs.diffId === diffId
+              );
+              if (mark) {
+                if (diffFrom === -1) diffFrom = pos;
+                diffTo = pos + node.nodeSize;
+              }
+            });
+
+            const diffMark = diffMarkType.create({ diffId, originalText });
+            const textNode = state.schema.text(content, [diffMark]);
+
+            if (diffFrom === -1) {
+              // 首次插入
+              tr.insert(insertPos, textNode);
+            } else {
+              // 更新现有内容
+              tr.replaceWith(diffFrom, diffTo, textNode);
+            }
+
+            if (dispatch) dispatch(tr);
+            return true;
+          }
         },
     };
   },
@@ -434,7 +489,8 @@ export const AIPolishMark = Mark.create({
       // streaming 状态：true 表示正在流式生成，原文应显示删除线
       streaming: {
         default: false,
-        parseHTML: (element) => element.getAttribute("data-streaming") === "true",
+        parseHTML: (element) =>
+          element.getAttribute("data-streaming") === "true",
         renderHTML: (attributes) => {
           if (!attributes.streaming) return {};
           return { "data-streaming": "true" };
@@ -550,9 +606,7 @@ function AIRewriteComponent(props: any) {
   const diffId = node.attrs.diffId as string | null;
 
   const [prompt, setPrompt] = useState("");
-  const [status, setStatus] = useState<
-    "idle" | "loading" | "success" | "error"
-  >("idle");
+  const [status, setStatus] = useState<"idle" | "loading" | "completed">("idle");
   const [error, setError] = useState("");
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -578,8 +632,93 @@ function AIRewriteComponent(props: any) {
   const handleSubmit = useCallback(async () => {
     if (!prompt.trim() || status === "loading") return;
 
+    // 获取当前节点的 diffId（可能是从 undo/redo 恢复的）
+    const currentDiffId = node.attrs.diffId;
+    const nodeAttrs = editor.state.doc.nodeAt(props.getPos())?.attrs;
+
+    // 如果已经有 diff，只清除 diff 内容，不删除 AIRewriteNode
+    if (currentDiffId) {
+      if (nodeAttrs?.isCrossNode) {
+        // 跨节点：删除 AIDiffNode，保留原文
+        const diffNodeType = editor.state.schema.nodes.aiDiffNode;
+        const polishMarkType = editor.state.schema.marks.aiPolishMark;
+        const { tr } = editor.state;
+        
+        // 删除 diff node
+        editor.state.doc.descendants((n, pos) => {
+          if (n.type === diffNodeType && n.attrs.diffId === currentDiffId) {
+            tr.delete(pos, pos + n.nodeSize);
+            return false;
+          }
+          return true;
+        });
+        
+        // 移除 polish mark 的 streaming 状态
+        if (polishMarkType) {
+          tr.doc.descendants((n, pos) => {
+            if (n.isText) {
+              const mark = n.marks.find(
+                (m) => m.type === polishMarkType && m.attrs.streaming === true
+              );
+              if (mark) {
+                tr.removeMark(pos, pos + n.nodeSize, polishMarkType);
+                tr.addMark(pos, pos + n.nodeSize, polishMarkType.create({ id: mark.attrs.id, streaming: false }));
+              }
+            }
+            return true;
+          });
+        }
+        
+        editor.view.dispatch(tr);
+      } else {
+        // 单节点：删除 AIDiffMark 内容，保留原文
+        const diffMarkType = editor.state.schema.marks.aiDiff;
+        const polishMarkType = editor.state.schema.marks.aiPolishMark;
+        const { tr } = editor.state;
+        
+        // 删除 diff 内容
+        let diffFrom = -1;
+        let diffTo = -1;
+        editor.state.doc.descendants((n, pos) => {
+          if (!n.isText) return;
+          const mark = n.marks.find(
+            (m) => m.type === diffMarkType && m.attrs.diffId === currentDiffId
+          );
+          if (mark) {
+            if (diffFrom === -1) diffFrom = pos;
+            diffTo = pos + n.nodeSize;
+          }
+        });
+        
+        if (diffFrom !== -1) {
+          tr.delete(diffFrom, diffTo);
+        }
+        
+        // 移除 polish mark 的 streaming 状态
+        if (polishMarkType) {
+          tr.doc.descendants((n, pos) => {
+            if (n.isText) {
+              const mark = n.marks.find(
+                (m) => m.type === polishMarkType && m.attrs.streaming === true
+              );
+              if (mark) {
+                tr.removeMark(pos, pos + n.nodeSize, polishMarkType);
+                tr.addMark(pos, pos + n.nodeSize, polishMarkType.create({ id: mark.attrs.id, streaming: false }));
+              }
+            }
+            return true;
+          });
+        }
+        
+        editor.view.dispatch(tr);
+      }
+    }
+
     setStatus("loading");
     setError("");
+
+    // 保持输入框聚焦
+    setTimeout(() => inputRef.current?.focus(), 0);
 
     const requestId = `rewrite-${Date.now()}`;
     const channel = `docs:ai:stream:${requestId}`;
@@ -587,14 +726,6 @@ function AIRewriteComponent(props: any) {
     abortControllerRef.current = abortController;
 
     try {
-      // 获取上下文
-      const pos = editor.state.selection.from;
-      const textBefore = editor.state.doc.textBetween(
-        Math.max(0, pos - 500),
-        pos,
-        "\n"
-      );
-
       // 润色模式：获取原文
       const currentOriginalText =
         isPolishMode && markId ? getMarkedText(editor, markId) : "";
@@ -605,10 +736,11 @@ function AIRewriteComponent(props: any) {
       }
 
       // 获取更新后的 diffId
-      const updatedDiffId = editor.state.doc
-        .nodeAt(props.getPos())?.attrs.diffId;
-      const savedOriginalText = editor.state.doc
-        .nodeAt(props.getPos())?.attrs.originalText || currentOriginalText;
+      const updatedDiffId = editor.state.doc.nodeAt(props.getPos())?.attrs
+        .diffId;
+      const savedOriginalText =
+        editor.state.doc.nodeAt(props.getPos())?.attrs.originalText ||
+        currentOriginalText;
 
       if (!updatedDiffId) {
         throw new Error("Failed to start stream edit");
@@ -621,9 +753,6 @@ function AIRewriteComponent(props: any) {
 
 原文：
 ${savedOriginalText}
-
-上下文：
-${textBefore}
 
 要求：
 1. 直接输出润色后的内容，不要有任何前缀或解释
@@ -648,11 +777,17 @@ ${textBefore}
           );
         } else if (payload?.type === "end") {
           (window as any).electron?.ipcRenderer.removeAllListeners(channel);
-          setStatus("success");
+          // 完成流式更新，显示 Accept/Reject 按钮
+          const nodeAttrs = editor.state.doc.nodeAt(props.getPos())?.attrs;
+          if (nodeAttrs?.isCrossNode) {
+            editor.commands.finishAIDiffNode(updatedDiffId);
+          }
+          setStatus("completed");
+          setError("");
         } else if (payload?.type === "error") {
           (window as any).electron?.ipcRenderer.removeAllListeners(channel);
           setError(payload.message || t("common.aiRewrite.failed"));
-          setStatus("error");
+          setStatus("completed");
         }
       };
 
@@ -674,10 +809,10 @@ ${textBefore}
       setError(
         err instanceof Error ? err.message : t("common.aiRewrite.unknownError")
       );
-      setStatus("error");
+      setStatus("completed");
       (window as any).electron?.ipcRenderer.removeAllListeners(channel);
     }
-  }, [prompt, status, editor, isPolishMode, markId, nodeId, props, t]);
+  }, [prompt, status, editor, isPolishMode, markId, nodeId, props, t, node]);
 
   // 停止生成
   const handleStop = useCallback(() => {
@@ -685,56 +820,194 @@ ${textBefore}
       abortControllerRef.current.abort();
       abortControllerRef.current = null;
     }
-    setStatus("success");
+    setStatus("completed");
   }, []);
 
-  // 重新生成
-  const handleRegenerate = useCallback(() => {
-    // 先拒绝当前 diff，恢复原文
-    if (diffId) {
-      editor.commands.rejectAIDiff(diffId);
-    }
-    // 重新插入 polish mark
-    // TODO: 需要重新添加 polishMark
-    setStatus("idle");
-  }, [editor, diffId]);
-
-  // 取消/关闭
+  // 取消：拒绝 diff 并关闭输入节点，光标移动到原文末尾
   const handleCancel = useCallback(() => {
     // 停止进行中的请求
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
       abortControllerRef.current = null;
     }
+    
+    // 获取当前节点的 diffId（可能是从 undo/redo 恢复的）
+    const currentDiffId = node.attrs.diffId;
+    const currentMarkId = node.attrs.markId;
+    
+    // 找到原文的位置（用于定位光标）
+    let originalTextEndPos = -1;
+    const polishMarkType = editor.state.schema.marks.aiPolishMark;
+    
+    if (polishMarkType && currentMarkId) {
+      editor.state.doc.descendants((n, pos) => {
+        if (n.isText) {
+          const mark = n.marks.find(
+            (m) => m.type === polishMarkType && m.attrs.id === currentMarkId
+          );
+          if (mark) {
+            originalTextEndPos = pos + n.nodeSize;
+          }
+        }
+        return true;
+      });
+    }
+    
     // 如果有 diff，拒绝它
-    if (diffId) {
-      editor.commands.rejectAIDiff(diffId);
-    }
-    // 移除节点
-    if (isPolishMode && markId) {
-      editor.commands.removeAIRewrite(nodeId);
+    if (currentDiffId) {
+      const nodeAttrs = editor.state.doc.nodeAt(props.getPos())?.attrs;
+      if (nodeAttrs?.isCrossNode) {
+        editor.commands.rejectAIDiffNode(currentDiffId);
+      } else {
+        editor.commands.rejectAIDiff(currentDiffId);
+      }
     } else {
-      deleteNode();
+      // 没有 diff，直接移除节点
+      if (isPolishMode && markId) {
+        editor.commands.removeAIRewrite(nodeId);
+      } else {
+        deleteNode();
+      }
     }
-  }, [deleteNode, editor, isPolishMode, markId, nodeId, diffId]);
+    
+    // 将光标移动到原文末尾
+    setTimeout(() => {
+      const { state } = editor;
+      // 找到最近的有效位置
+      let targetPos = originalTextEndPos;
+      if (targetPos === -1 || targetPos > state.doc.content.size) {
+        // 找不到原文位置，尝试定位到 AIRewriteNode 原来的位置附近
+        targetPos = Math.max(0, Math.min(props.getPos() || 0, state.doc.content.size));
+      }
+      editor.commands.focus();
+      editor.commands.setTextSelection(targetPos);
+    }, 0);
+  }, [deleteNode, editor, isPolishMode, markId, nodeId, props, node]);
 
-  // 完成：删除节点，保留 diff（用户通过 diff 的 Accept/Reject 按钮操作）
-  const handleDone = useCallback(() => {
-    deleteNode();
-  }, [deleteNode]);
+  // 接受 diff 并关闭输入节点，光标移动到新内容的末尾
+  const handleAccept = useCallback(() => {
+    // 获取当前节点的 diffId（可能是从 undo/redo 恢复的）
+    const currentDiffId = node.attrs.diffId;
+    if (!currentDiffId) {
+      deleteNode();
+      return;
+    }
+
+    // 获取节点属性
+    const nodeAttrs = editor.state.doc.nodeAt(props.getPos())?.attrs;
+    const isCrossNode = nodeAttrs?.isCrossNode;
+
+    // 获取 diff 内容的文本长度（用于计算接受后的光标位置）
+    let diffTextLength = 0;
+    let diffStartPos = -1;
+    
+    if (isCrossNode) {
+      // 跨节点：查找 AIDiffNode
+      const diffNodeType = editor.state.schema.nodes.aiDiffNode;
+      editor.state.doc.descendants((n, pos) => {
+        if (n.type === diffNodeType && n.attrs.diffId === currentDiffId) {
+          diffStartPos = pos;
+          // 获取节点内容的文本长度
+          diffTextLength = n.textContent.length;
+          return false;
+        }
+        return true;
+      });
+    } else {
+      // 单节点：查找 AIDiffMark
+      const diffMarkType = editor.state.schema.marks.aiDiff;
+      editor.state.doc.descendants((n, pos) => {
+        if (!n.isText) return;
+        const mark = n.marks.find(
+          (m) => m.type === diffMarkType && m.attrs.diffId === currentDiffId
+        );
+        if (mark) {
+          if (diffStartPos === -1) diffStartPos = pos;
+          diffTextLength += n.nodeSize;
+        }
+      });
+    }
+
+    // 找到原文的起始位置（用于计算接受后光标应该在的位置）
+    let originalTextStartPos = -1;
+    const polishMarkType = editor.state.schema.marks.aiPolishMark;
+    const currentMarkId = node.attrs.markId;
+    
+    if (polishMarkType && currentMarkId) {
+      editor.state.doc.descendants((n, pos) => {
+        if (n.isText) {
+          const mark = n.marks.find(
+            (m) => m.type === polishMarkType && m.attrs.id === currentMarkId
+          );
+          if (mark && originalTextStartPos === -1) {
+            originalTextStartPos = pos;
+            return false;
+          }
+        }
+        return true;
+      });
+    }
+
+    // 接受 diff（命令内部会删除 AIRewriteNode）
+    if (isCrossNode) {
+      editor.commands.acceptAIDiffNode(currentDiffId);
+    } else {
+      editor.commands.acceptAIDiff(currentDiffId);
+    }
+
+    // 将光标移动到新内容的末尾
+    setTimeout(() => {
+      const { state } = editor;
+      // 接受后，新内容会在原文的位置，所以光标应该在 原文起始位置 + diff内容长度
+      let targetPos = originalTextStartPos !== -1 
+        ? originalTextStartPos + diffTextLength 
+        : diffStartPos !== -1 
+          ? diffStartPos + diffTextLength 
+          : state.doc.content.size;
+      
+      // 确保不超出文档范围
+      targetPos = Math.max(0, Math.min(targetPos, state.doc.content.size));
+      
+      editor.commands.focus();
+      editor.commands.setTextSelection(targetPos);
+    }, 0);
+  }, [editor, deleteNode, props, node]);
 
   // 键盘事件
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLTextAreaElement>) => {
-      if (e.key === "Enter" && !e.shiftKey) {
+      // Shift+Enter: 允许换行（不处理，让 textarea 默认行为）
+      if (e.key === "Enter" && e.shiftKey) {
+        // 不阻止默认行为，允许换行
+        return;
+      }
+
+      // Cmd/Ctrl + Enter: 发送/重新生成
+      if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         e.stopPropagation();
-        if (status === "idle") {
+        if (status !== "loading" && prompt.trim()) {
           handleSubmit();
         }
         return;
       }
 
+      // Enter: 确认（有内容则接受，无内容也关闭）
+      if (e.key === "Enter") {
+        e.preventDefault();
+        e.stopPropagation();
+        // 有 diff 内容则接受，否则直接关闭
+        const currentDiffId = node.attrs.diffId;
+        if (currentDiffId && status === "completed" && !error) {
+          handleAccept();
+        } else {
+          // 无内容或未完成，直接关闭节点（不拒绝 diff）
+          deleteNode();
+        }
+        return;
+      }
+
+      // Escape: 取消并关闭
       if (e.key === "Escape") {
         e.preventDefault();
         e.stopPropagation();
@@ -742,7 +1015,7 @@ ${textBefore}
         return;
       }
     },
-    [handleSubmit, handleCancel, status]
+    [handleSubmit, handleAccept, handleCancel, status, prompt, error, node]
   );
 
   return (
@@ -753,76 +1026,66 @@ ${textBefore}
     >
       <div className="rounded-md bg-muted-foreground/10 p-3 space-y-2">
         {/* 输入区域 */}
-        <div className="flex items-center gap-2">
-          <Sparkles className="size-4 text-muted-foreground shrink-0" />
-          <textarea
-            ref={inputRef}
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder={
-              isPolishMode
-                ? t("common.aiRewrite.polishPlaceholder", "输入润色指令...")
-                : t("common.aiRewrite.generatePlaceholder", "输入生成指令...")
-            }
-            disabled={status === "loading"}
-            className={cn(
-              "flex-1 bg-transparent text-sm resize-none outline-none text-foreground",
-              "placeholder:text-muted-foreground/50",
-              "min-h-5 max-h-[100px]",
-              status === "loading" && "opacity-50"
-            )}
-            rows={1}
-          />
-          {status === "loading" && (
-            <Loader2 className="size-4 text-muted-foreground animate-spin shrink-0" />
-          )}
-          {/* 操作按钮 */}
-          <div className="flex items-center gap-1.5">
-            {status === "loading" && (
-              <button
-                onClick={handleStop}
-                className="px-2 py-0.5 text-xs bg-destructive/10 text-destructive hover:bg-destructive/20 rounded transition-colors"
-              >
-                {t("common.stop", "停止")}
-              </button>
-            )}
-            {status === "success" && (
-              <>
-                <button
-                  onClick={handleRegenerate}
-                  className="px-2 py-0.5 text-xs bg-muted hover:bg-muted/80 rounded transition-colors"
-                >
-                  {t("common.regenerate", "重新生成")}
-                </button>
-                <button
-                  onClick={handleDone}
-                  className="px-2 py-0.5 text-xs bg-primary/10 text-primary hover:bg-primary/20 rounded transition-colors"
-                >
-                  {t("common.done", "完成")}
-                </button>
-              </>
-            )}
-            {status === "error" && (
-              <button
-                onClick={handleRegenerate}
-                className="px-2 py-0.5 text-xs bg-muted hover:bg-muted/80 rounded transition-colors"
-              >
-                {t("common.retry", "重试")}
-              </button>
-            )}
-            <button
-              onClick={handleCancel}
-              className="p-1 text-muted-foreground hover:text-foreground hover:bg-background/80 rounded-full transition-colors"
-            >
-              <X className="size-4" />
-            </button>
+        <div className="flex items-start gap-2">
+          <Sparkles className="size-4 text-muted-foreground shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <textarea
+              ref={inputRef}
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder={
+                isPolishMode
+                  ? t("common.aiRewrite.polishPlaceholder", "输入润色指令...")
+                  : t("common.aiRewrite.generatePlaceholder", "输入生成指令...")
+              }
+              className={cn(
+                "w-full bg-transparent text-sm resize-none outline-none text-foreground",
+                "placeholder:text-muted-foreground/50",
+                "min-h-5 max-h-[100px]"
+              )}
+              rows={1}
+            />
+            {/* 提示文字 */}
+            <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground/70">
+              {status === "idle" && (
+                <span>
+                  {t("common.aiRewrite.idleHint", "⌘+Enter 发送 · Enter/Esc 关闭")}
+                </span>
+              )}
+              {status === "loading" && (
+                <span className="flex items-center gap-1.5">
+                  <Loader2 className="size-3 animate-spin" />
+                  {t("common.aiRewrite.loadingHint", "生成中...")}
+                </span>
+              )}
+              {status === "completed" && !error && (
+                <span>
+                  {t(
+                    "common.aiRewrite.completedHint",
+                    "Enter 确认 · ⌘+Enter 重新生成 · Esc 取消"
+                  )}
+                </span>
+              )}
+              {error && (
+                <span className="text-destructive">
+                  {error} · {t("common.aiRewrite.errorHint", "⌘+Enter 重试 · Enter/Esc 关闭")}
+                </span>
+              )}
+            </div>
           </div>
+          <button
+            onClick={handleCancel}
+            className="p-1 text-muted-foreground hover:text-foreground hover:bg-background/80 rounded-full transition-colors shrink-0"
+            title={t("common.cancel", "取消 (Esc)")}
+          >
+            <X className="size-4" />
+          </button>
         </div>
 
         {/* 错误提示 */}
-        {status === "error" && (
-          <div className="text-sm text-destructive">{error}</div>
+        {error && (
+          <div className="text-xs text-destructive pl-6">{error}</div>
         )}
       </div>
     </NodeViewWrapper>

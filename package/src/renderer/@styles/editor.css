@@ -335,3 +335,18 @@
 .dark .ai-diff-btn-reject:hover {
   background-color: rgba(239, 68, 68, 0.35);
 }
+
+/* AI Diff Node - 跨节点时使用的 block 节点 */
+.ai-diff-node-wrapper,
+.ai-diff-node-wrapper *,
+[data-type="ai-diff-node"],
+[data-type="ai-diff-node"] * {
+  color: rgb(21, 128, 61) !important;
+}
+
+.dark .ai-diff-node-wrapper,
+.dark .ai-diff-node-wrapper *,
+.dark [data-type="ai-diff-node"],
+.dark [data-type="ai-diff-node"] * {
+  color: rgb(134, 239, 172) !important;
+}

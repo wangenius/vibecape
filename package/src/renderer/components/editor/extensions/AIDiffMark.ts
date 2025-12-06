@@ -11,6 +11,7 @@
 import { Mark, mergeAttributes } from "@tiptap/core";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
+import { markdownToJSON } from "@common/lib/content-converter";
 
 export interface AIDiffMarkOptions {
   HTMLAttributes: Record<string, any>;
@@ -101,17 +102,19 @@ export const AIDiffMark = Mark.create<AIDiffMarkOptions>({
         ({ commands }) => {
           return commands.unsetMark(this.name);
         },
-      /** 接受 AI Diff：删除原文（AIPolishMark），保留新内容（移除 AIDiffMark） */
+      /** 接受 AI Diff：删除原文（AIPolishMark），将 markdown 转换成节点后替换，删除 AIRewriteNode */
       acceptAIDiff:
         (diffId: string) =>
-        ({ state, tr, dispatch }) => {
+        ({ state, tr, dispatch, editor }) => {
           const diffMarkType = state.schema.marks.aiDiff;
           const polishMarkType = state.schema.marks.aiPolishMark;
+          const rewriteNodeType = state.schema.nodes.aiRewrite;
           if (!diffMarkType) return false;
 
-          // 1. 找到 diff mark 范围
+          // 1. 找到 diff mark 范围和内容
           let diffFrom = -1;
           let diffTo = -1;
+          let diffContent = "";
 
           state.doc.descendants((node, pos) => {
             if (!node.isText) return;
@@ -121,54 +124,150 @@ export const AIDiffMark = Mark.create<AIDiffMarkOptions>({
             if (mark) {
               if (diffFrom === -1) diffFrom = pos;
               diffTo = pos + node.nodeSize;
+              diffContent += node.text || "";
             }
           });
 
           if (diffFrom === -1) return false;
 
           // 2. 找到并删除原文（带 AIPolishMark streaming: true 的内容）
+          // 检查是否需要删除整个 block
           if (polishMarkType) {
-            // 收集所有带 streaming polish mark 的范围（支持跨行）
-            const polishRanges: { from: number; to: number }[] = [];
-            
+            const blocksToDelete: { from: number; to: number }[] = [];
+            const processedBlocks = new Set<number>();
+            let totalShift = 0;
+
             state.doc.descendants((node, pos) => {
               if (!node.isText) return true;
               const mark = node.marks.find(
                 (m) => m.type === polishMarkType && m.attrs.streaming === true
               );
               if (mark) {
-                polishRanges.push({ from: pos, to: pos + node.nodeSize });
+                // 找到包含这个文本的 block 节点
+                const $pos = state.doc.resolve(pos);
+                const blockStart = $pos.before($pos.depth);
+
+                if (!processedBlocks.has(blockStart)) {
+                  processedBlocks.add(blockStart);
+                  const blockNode = state.doc.nodeAt(blockStart);
+
+                  if (blockNode) {
+                    // 检查这个 block 是否只包含被标记的文本
+                    let allMarked = true;
+                    blockNode.descendants((child) => {
+                      if (child.isText) {
+                        const hasMark = child.marks.some(
+                          (m) => m.type === polishMarkType && m.attrs.streaming === true
+                        );
+                        if (!hasMark) {
+                          allMarked = false;
+                        }
+                      }
+                      return true;
+                    });
+
+                    if (allMarked) {
+                      blocksToDelete.push({
+                        from: blockStart,
+                        to: blockStart + blockNode.nodeSize,
+                      });
+                    }
+                  }
+                }
               }
               return true;
             });
 
-            // 从后往前删除，避免位置偏移问题
-            let totalShift = 0;
-            for (let i = polishRanges.length - 1; i >= 0; i--) {
-              const range = polishRanges[i];
-              tr.delete(range.from, range.to);
-              totalShift += range.to - range.from;
+            if (blocksToDelete.length > 0) {
+              // 删除整个 block
+              blocksToDelete.sort((a, b) => b.from - a.from);
+              for (const block of blocksToDelete) {
+                tr.delete(block.from, block.to);
+                if (block.from < diffFrom) {
+                  totalShift += block.to - block.from;
+                }
+              }
+            } else {
+              // 只删除文本内容
+              const polishRanges: { from: number; to: number }[] = [];
+
+              state.doc.descendants((node, pos) => {
+                if (!node.isText) return true;
+                const mark = node.marks.find(
+                  (m) => m.type === polishMarkType && m.attrs.streaming === true
+                );
+                if (mark) {
+                  polishRanges.push({ from: pos, to: pos + node.nodeSize });
+                }
+                return true;
+              });
+
+              for (let i = polishRanges.length - 1; i >= 0; i--) {
+                const range = polishRanges[i];
+                tr.delete(range.from, range.to);
+                if (range.from < diffFrom) {
+                  totalShift += range.to - range.from;
+                }
+              }
             }
 
             // 更新 diff 位置
-            if (polishRanges.length > 0 && polishRanges[0].from < diffFrom) {
+            if (totalShift > 0) {
               diffFrom -= totalShift;
               diffTo -= totalShift;
             }
           }
 
-          // 3. 移除 diff mark，保留新内容
-          tr.removeMark(diffFrom, diffTo, diffMarkType);
+          // 3. 将 markdown 内容转换成 ProseMirror 节点并替换
+          const jsonContent = markdownToJSON(diffContent);
+          
+          // 从 JSONContent 创建 ProseMirror 节点
+          // 只取 content 中的内联内容（因为我们是在段落内替换）
+          if (jsonContent.content && jsonContent.content.length > 0) {
+            const firstBlock = jsonContent.content[0];
+            if (firstBlock.content) {
+              // 将 JSONContent 转换成 ProseMirror Fragment
+              const fragment = editor.schema.nodeFromJSON({
+                type: "doc",
+                content: [{ type: "paragraph", content: firstBlock.content }],
+              }).content.firstChild?.content;
+
+              if (fragment) {
+                tr.replaceWith(diffFrom, diffTo, fragment);
+              } else {
+                // 降级：直接移除 mark
+                tr.removeMark(diffFrom, diffTo, diffMarkType);
+              }
+            } else {
+              // 纯文本，直接移除 mark
+              tr.removeMark(diffFrom, diffTo, diffMarkType);
+            }
+          } else {
+            // 降级：直接移除 mark
+            tr.removeMark(diffFrom, diffTo, diffMarkType);
+          }
+
+          // 4. 删除关联的 AIRewriteNode
+          if (rewriteNodeType) {
+            tr.doc.descendants((node, pos) => {
+              if (node.type === rewriteNodeType && node.attrs.diffId === diffId) {
+                tr.delete(pos, pos + node.nodeSize);
+                return false;
+              }
+              return true;
+            });
+          }
 
           if (dispatch) dispatch(tr);
           return true;
         },
-      /** 拒绝 AI Diff：删除新内容（AIDiffMark），保留原文（移除 AIPolishMark） */
+      /** 拒绝 AI Diff：删除新内容（AIDiffMark），保留原文（移除 AIPolishMark），删除 AIRewriteNode */
       rejectAIDiff:
         (diffId: string) =>
         ({ state, tr, dispatch }) => {
           const diffMarkType = state.schema.marks.aiDiff;
           const polishMarkType = state.schema.marks.aiPolishMark;
+          const rewriteNodeType = state.schema.nodes.aiRewrite;
           if (!diffMarkType) return false;
 
           // 1. 找到并删除 diff 内容
@@ -210,6 +309,17 @@ export const AIDiffMark = Mark.create<AIDiffMarkOptions>({
             for (const range of polishRanges) {
               tr.removeMark(range.from, range.to, polishMarkType);
             }
+          }
+
+          // 3. 删除关联的 AIRewriteNode
+          if (rewriteNodeType) {
+            tr.doc.descendants((node, pos) => {
+              if (node.type === rewriteNodeType && node.attrs.diffId === diffId) {
+                tr.delete(pos, pos + node.nodeSize);
+                return false;
+              }
+              return true;
+            });
           }
 
           if (dispatch) dispatch(tr);

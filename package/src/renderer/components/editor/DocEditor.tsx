@@ -17,6 +17,7 @@ import {
   AIPolishMark,
 } from "@/components/editor/extensions/AIRewriteNode";
 import { AIDiffMark } from "@/components/editor/extensions/AIDiffMark";
+import { AIDiffNode } from "@/components/editor/extensions/AIDiffNode";
 import { CodeBlockNode } from "@/components/editor/extensions/CodeBlockNode";
 import { InlineCode } from "@/components/editor/extensions/InlineCode";
 import { Blockquote } from "@/components/editor/extensions/Blockquote";
@@ -83,6 +84,7 @@ export const DocEditor = ({ doc, onChange, onSave }: Props) => {
       AIRewriteNode,
       AIPolishMark,
       AIDiffMark,
+      AIDiffNode,
       SlashCommand.configure({
         suggestion: slashMenuConfig,
       }),

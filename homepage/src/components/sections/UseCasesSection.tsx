@@ -1,42 +1,59 @@
 import { FC } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { User, Users, Building, PenTool } from "lucide-react";
 
 export const UseCasesSection: FC = () => {
   const cases = [
     {
-      title: "独立开发者",
-      desc: "快速验证想法，从 MVP 到上线只需一下午。",
+      title: "Indie Developers",
+      desc: "Validate ideas fast. Go from MVP to live product in a single afternoon.",
+      icon: User,
     },
     {
-      title: "初创团队",
-      desc: "标准化工程与模板，缩短 0→1 的搭建周期。",
+      title: "Startups",
+      desc: "Standardize engineering and templates. Shorten the 0→1 build cycle.",
+      icon: Users,
     },
     {
-      title: "企业内部工具",
-      desc: "统一集成规范，降低维护成本，提高交付效率。",
+      title: "Enterprise Internal Tools",
+      desc: "Unified integration standards. Lower maintenance costs, higher delivery efficiency.",
+      icon: Building,
     },
     {
-      title: "设计师 / 产品",
-      desc: "不必深入复杂配置，也能快速落地你的创意。",
+      title: "Designers / PMs",
+      desc: "No need for complex config deep-dives. Launch your creative ideas independently.",
+      icon: PenTool,
     },
   ];
 
   return (
-    <section className="py-16 border-t">
+    <section className="py-20 border-t">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-10">
-          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">适用场景</h2>
-          <p className="text-muted-foreground mt-3">为不同角色与团队而生。</p>
+        <div className="mb-12">
+          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">
+            Built For Everyone
+          </h2>
+          <p className="text-muted-foreground mt-3 text-lg">
+            Empowering different roles to build better software.
+          </p>
         </div>
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {cases.map((c) => (
-            <Card key={c.title}>
-              <CardHeader>
+            <Card
+              key={c.title}
+              className="bg-transparent border-none shadow-none"
+            >
+              <CardHeader className="px-0 pt-0">
+                <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-foreground">
+                  <c.icon className="h-5 w-5" />
+                </div>
                 <CardTitle className="text-xl">{c.title}</CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">{c.desc}</p>
+              <CardContent className="px-0">
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {c.desc}
+                </p>
               </CardContent>
             </Card>
           ))}
@@ -47,4 +64,3 @@ export const UseCasesSection: FC = () => {
 };
 
 export default UseCasesSection;
-

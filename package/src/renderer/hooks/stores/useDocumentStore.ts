@@ -17,11 +17,14 @@ type DocumentState = {
 type DocumentActions = {
   refreshTree: () => Promise<void>;
   openDoc: (id: string) => Promise<void>;
-  saveDoc: (data: {
-    title?: string;
-    content?: JSONContent;
-    metadata?: Record<string, any>;
-  }) => Promise<void>;
+  saveDoc: (
+    docId: string,
+    data: {
+      title?: string;
+      content?: JSONContent;
+      metadata?: Record<string, any>;
+    }
+  ) => Promise<void>;
   createDoc: (data: {
     parent_id?: string | null;
     title: string;
@@ -68,17 +71,23 @@ export const useDocumentStore = create<DocumentState & DocumentActions>()(
         }
       },
 
-      saveDoc: async (data) => {
+      saveDoc: async (docId, data) => {
         const { activeDocId, activeDoc } = get();
-        if (!activeDocId) return;
+        
+        // 防止竞态条件：如果要保存的文档不是当前激活的文档，跳过保存
+        // 这可能发生在快速切换文档时，旧文档的自动保存定时器触发
+        if (docId !== activeDocId) {
+          console.log('[saveDoc] 跳过过期保存:', { docId, activeDocId });
+          return;
+        }
 
         try {
-          const updated = await window.api.vibecape.updateDoc(
-            activeDocId,
-            data
-          );
+          const updated = await window.api.vibecape.updateDoc(docId, data);
           if (updated) {
-            set({ activeDoc: updated });
+            // 再次检查：确保在保存完成后，当前文档仍然是被保存的文档
+            if (get().activeDocId === docId) {
+              set({ activeDoc: updated });
+            }
             if (data.title !== undefined && data.title !== activeDoc?.title) {
               const tree = await window.api.vibecape.getTree();
               set({ tree });

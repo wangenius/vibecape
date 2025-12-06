@@ -1,6 +1,7 @@
 "use client";
 import { FC, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Check, Copy } from "lucide-react";
 
 const InstallRow: FC<{ cmd: string }> = ({ cmd }) => {
   const [copied, setCopied] = useState(false);
@@ -13,10 +14,21 @@ const InstallRow: FC<{ cmd: string }> = ({ cmd }) => {
   };
 
   return (
-    <div className="flex items-center justify-between rounded-md border bg-muted/40 px-3 py-2">
-      <code className="text-sm overflow-x-auto whitespace-pre">{cmd}</code>
-      <Button size="sm" variant="outline" className="ml-3 shrink-0" onClick={copy}>
-        {copied ? "已复制" : "复制"}
+    <div className="group flex items-center justify-between rounded-md border border-border/50 bg-muted/30 px-4 py-3 transition-colors hover:border-foreground/20 hover:bg-muted/50">
+      <code className="text-sm font-mono overflow-x-auto whitespace-pre text-foreground/90">
+        {cmd}
+      </code>
+      <Button
+        size="icon"
+        variant="ghost"
+        className="ml-3 h-8 w-8 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+        onClick={copy}
+      >
+        {copied ? (
+          <Check className="h-4 w-4 text-green-500" />
+        ) : (
+          <Copy className="h-4 w-4" />
+        )}
       </Button>
     </div>
   );
@@ -24,14 +36,18 @@ const InstallRow: FC<{ cmd: string }> = ({ cmd }) => {
 
 export const InstallSection: FC = () => {
   return (
-    <section className="py-16 border-t">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">安装与启动</h2>
-          <p className="text-muted-foreground mt-3">一分钟上手 vibecape。</p>
+    <section className="py-24 border-t">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
+        <div className="mb-10 text-center">
+          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">
+            Up and Running
+          </h2>
+          <p className="text-muted-foreground mt-3">
+            From zero to deployed in minutes.
+          </p>
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-4">
           <InstallRow cmd="npm install -g vibecape" />
           <InstallRow cmd="vibe create my-app" />
           <InstallRow cmd="vibe install auth --provider=clerk" />
@@ -44,4 +60,3 @@ export const InstallSection: FC = () => {
 };
 
 export default InstallSection;
-

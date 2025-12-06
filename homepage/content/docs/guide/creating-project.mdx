@@ -1,78 +1,109 @@
 ---
-title: create
+title: Project Creation
+description: Deep dive into creating and managing projects with Vibe CLI.
 ---
 
-# 创建项目详解
+# Creating a Project
 
-本指南将介绍如何使用 Vibe CLI 创建不同类型的 SaaS 项目，包括各种配置选项和最佳实践。
+This guide covers the various ways to initialize and extend your projects using Vibe CLI.
 
-## 🎯 创建方式
+## 🎯 Interactive Mode
 
-交互式命令，系统会引导你完成所有配置：
+The easiest way to start is the interactive wizard. It will guide you through template selection, package manager preference, and optional features.
 
 ```bash
 vibe create my-app
 ```
 
-## 其他命令
+## 🛠 Command Reference
 
-### run
+### `vibe run`
 
-```bash
-vibe run xxx
-```
-
-1. 先执行 `./scripts/xxx.sh` 或 `./scripts/xxx.ts` 的脚本
-2. 如果scripts中没有， 则去 package.json 中找 对应的 npm 的script 来执行
-
-### add
+Execute scripts defined in your project.
 
 ```bash
-vibe add [module]
+vibe run [script-name]
 ```
 
-目前只有几个:
+**How it works:**
 
-事实上都是一个对应的 ts 脚本
+1. Checks for a matching script in `./scripts/[script-name].sh` or `./scripts/[script-name].ts`.
+2. Fallback: Checks your `package.json` scripts.
+
+### `vibe add`
+
+Inject capabilities into your project. Features are modular and "drop-in".
+
+```bash
+vibe add [category]
+```
+
+**Common Categories:**
+
+#### 📦 Packages
+
+Add optimized dependencies that are pre-configured for modern stacks.
 
 ```bash
 vibe add package
-[] axios
-[] ai-sdk
+# Choices:
+# [ ] axios
+# [ ] ai-sdk
 ```
+
+#### 🗄️ Database
+
+Spin up database connections and schemas.
 
 ```bash
 vibe add database
-[] drizzle:libsql
-[] supabase
+# Choices:
+# [ ] drizzle:libsql
+# [ ] supabase
 ```
+
+#### 🚀 Workflow
+
+CI/CD and automation scripts.
 
 ```bash
 vibe add workflow
-[] package_publish_on_github
-[] vercel
+# Choices:
+# [ ] package_publish_on_github
+# [ ] vercel
 ```
+
+#### 🧩 Services
+
+Full-stack feature modules with UI, backend, and database logic.
 
 ```bash
 vibe add services
-[] user_manager
-[] mail
-[] payment
+# Choices:
+# [ ] user_manager
+# [ ] mail
+# [ ] payment
 ```
 
-安装 tailwind v4。
+#### 🎨 UI
+
+Design systems and component libraries.
 
 ```bash
 vibe add ui
-[] tailwind:v4
-[] shadcn
-[] icon:tabler
+# Choices:
+# [ ] tailwind:v4
+# [ ] shadcn
+# [ ] icon:tabler
 ```
 
-### 配置文件
+## ⚙️ Configuration
 
-```json vibe.config.json
-{}
+The CLI behavior is controlled by `vibe.config.json` at your project root.
+
+```json title="vibe.config.json"
+{
+  "scripts": "./scripts",
+  "template": "ai-native"
+}
 ```
-
-vibe 通过 配置 `vibe.config.json` 配置脚本运行的目录

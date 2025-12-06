@@ -11,6 +11,7 @@
 import { Mark, mergeAttributes } from "@tiptap/core";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
+import { Slice, Fragment } from "@tiptap/pm/model";
 import { markdownToJSON } from "@common/lib/content-converter";
 
 export interface AIDiffMarkOptions {
@@ -222,25 +223,90 @@ export const AIDiffMark = Mark.create<AIDiffMarkOptions>({
           const jsonContent = markdownToJSON(diffContent);
           
           // 从 JSONContent 创建 ProseMirror 节点
-          // 只取 content 中的内联内容（因为我们是在段落内替换）
           if (jsonContent.content && jsonContent.content.length > 0) {
-            const firstBlock = jsonContent.content[0];
-            if (firstBlock.content) {
-              // 将 JSONContent 转换成 ProseMirror Fragment
-              const fragment = editor.schema.nodeFromJSON({
-                type: "doc",
-                content: [{ type: "paragraph", content: firstBlock.content }],
-              }).content.firstChild?.content;
-
-              if (fragment) {
-                tr.replaceWith(diffFrom, diffTo, fragment);
+            // 检查是否有多个段落
+            if (jsonContent.content.length > 1) {
+              // 多段落：需要将当前段落拆分或替换为多个段落
+              // 找到包含 diff 的段落节点
+              const $from = tr.doc.resolve(diffFrom);
+              const blockStart = $from.before($from.depth);
+              const blockNode = tr.doc.nodeAt(blockStart);
+              
+              if (blockNode) {
+                const blockEnd = blockStart + blockNode.nodeSize;
+                
+                // 创建新的段落节点数组
+                const newNodes: any[] = [];
+                
+                // 计算 diff 在段落内的相对位置
+                const diffStartInBlock = diffFrom - blockStart - 1; // -1 是因为段落开始标签
+                const diffEndInBlock = diffTo - blockStart - 1;
+                
+                // 获取段落内 diff 之前和之后的内容
+                const blockText = blockNode.textContent;
+                const textBefore = blockText.slice(0, diffStartInBlock);
+                const textAfter = blockText.slice(diffEndInBlock);
+                
+                // 处理每个新段落
+                jsonContent.content.forEach((block, index) => {
+                  if (block.type === "paragraph") {
+                    let content: any[] = [];
+                    
+                    if (index === 0 && textBefore) {
+                      // 第一段：前面加上原来的内容
+                      content.push({ type: "text", text: textBefore });
+                    }
+                    
+                    if (block.content) {
+                      content = content.concat(block.content);
+                    }
+                    
+                    if (index === jsonContent.content!.length - 1 && textAfter) {
+                      // 最后一段：后面加上原来的内容
+                      content.push({ type: "text", text: textAfter });
+                    }
+                    
+                    if (content.length > 0) {
+                      newNodes.push(
+                        editor.schema.nodes.paragraph.create(
+                          null,
+                          content.map((c) => editor.schema.nodeFromJSON(c))
+                        )
+                      );
+                    } else {
+                      newNodes.push(editor.schema.nodes.paragraph.create());
+                    }
+                  }
+                });
+                
+                if (newNodes.length > 0) {
+                  // 用新段落替换整个原段落
+                  const slice = new Slice(Fragment.from(newNodes), 0, 0);
+                  tr.replace(blockStart, blockEnd, slice);
+                } else {
+                  tr.removeMark(diffFrom, diffTo, diffMarkType);
+                }
               } else {
-                // 降级：直接移除 mark
                 tr.removeMark(diffFrom, diffTo, diffMarkType);
               }
             } else {
-              // 纯文本，直接移除 mark
-              tr.removeMark(diffFrom, diffTo, diffMarkType);
+              // 单段落：只替换 inline 内容
+              const firstBlock = jsonContent.content[0];
+              if (firstBlock.content) {
+                // 将 JSONContent 转换成 ProseMirror Fragment
+                const fragment = editor.schema.nodeFromJSON({
+                  type: "doc",
+                  content: [{ type: "paragraph", content: firstBlock.content }],
+                }).content.firstChild?.content;
+
+                if (fragment) {
+                  tr.replaceWith(diffFrom, diffTo, fragment);
+                } else {
+                  tr.removeMark(diffFrom, diffTo, diffMarkType);
+                }
+              } else {
+                tr.removeMark(diffFrom, diffTo, diffMarkType);
+              }
             }
           } else {
             // 降级：直接移除 mark

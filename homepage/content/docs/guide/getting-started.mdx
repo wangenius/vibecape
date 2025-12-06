@@ -1,219 +1,153 @@
 ---
-title: quick
+title: Getting Started
+description: From zero to production-ready AI app in 5 minutes.
 ---
 
-# 快速开始
+# Getting Started
 
-欢迎使用 Vibe CLI！这个指南将带你在 5 分钟内创建你的第一个 SaaS 项目。
+Welcome to Vibe CLI! This guide will help you launch your first AI-native SaaS project in under 5 minutes.
 
-## 📋 前置要求
+## 📋 Prerequisites
 
-在开始之前，请确保你的系统已安装：
+Before you begin, ensure you have:
 
-- **Node.js** 16.0 或更高版本
-- **npm** 或 **yarn** 或 **pnpm**
-- **Git** (可选，用于版本控制)
+- **Node.js** 18.0 or higher
+- **npm**, **yarn**, or **pnpm**
+- **Git** (optional, recommended for version control)
 
-:::tip 检查版本
+:::tip Check Version
+
 ```bash
-node --version  # 应该显示 v16.0.0 或更高
-npm --version   # 应该显示 8.0.0 或更高
+node --version  # Should be v18.0.0+
+npm --version   # Should be 9.0.0+
 ```
+
 :::
 
-## 🚀 安装 Vibe CLI
+## 🚀 Installation
 
-### 全局安装（推荐）
+### Global Install (Recommended)
 
 ```bash
 npm install -g vibecape
 ```
 
-### 验证安装
+### Verify Installation
 
 ```bash
 vibe --version
-vibe --help
 ```
 
-你应该看到类似这样的输出：
+You should see output confirming the **vibecape** CLI is active.
 
-```
-🚀 Vibe CLI - SaaS 应用搭建神器
-让每个有想法的人都能在半小时内搭建出自己的在线服务产品
+## 🎯 Create Your First Project
 
-Usage: vibe [options] [command]
-```
+### 1. Interactive Creation
 
-## 🎯 创建你的第一个项目
-
-### 1. 交互式创建
-
-最简单的方式是使用交互式命令：
+Run the command and follow the prompts:
 
 ```bash
 vibe create
 ```
 
-系统会询问你以下问题：
+**You will be asked to:**
 
-- **项目名称**: 输入你的项目名称（如：my-awesome-saas）
-- **选择模板**: 选择一个项目模板
-- **包管理器**: 选择 npm、yarn 或 pnpm
-- **启用 TypeScript**: 推荐选择 Yes
-- **启用 Tailwind CSS**: 推荐选择 Yes
-- **启用 ESLint**: 推荐选择 Yes
+- **Name your project**: e.g., `my-ai-app`
+- **Pick a template**: Start with `ai-saas` for a full stack.
+- **Select tools**: TypeScript (Recommended), Tailwind CSS (Recommended).
 
-### 2. 命令行直接创建
+### 2. Quick Command
 
-如果你已经知道要什么，可以直接指定参数：
+If you know what you want, skip the prompts:
 
 ```bash
-vibe create my-saas-app \
-  --template=ai-saas \
-  --typescript \
-  --tailwind \
-  --eslint
+vibe create my-ai-app --template=ai-saas --typescript --tailwind
 ```
 
-### 3. 等待项目创建
+## 📁 Project Structure
 
-创建过程包括：
-- ✅ 复制模板文件
-- ✅ 安装依赖包
-- ✅ 配置项目设置
-- ✅ 生成配置文件
+Your new project is optimized for modularity:
 
-## 📁 项目结构
-
-创建完成后，你会看到这样的项目结构：
-
-```
-my-saas-app/
-├── client/                  # 前端项目
-│   ├── components/          # React 组件
-│   ├── pages/              # 页面文件
-│   ├── hooks/              # React Hooks
-│   └── services/           # 前端服务
-├── server/                 # 后端项目
-│   ├── router/             # API 路由
-│   ├── service/            # 业务逻辑
-│   └── database/           # 数据库配置
-├── types/                  # 类型定义
-├── vibe.config.json        # Vibe CLI 配置
+```text
+my-ai-app/
+├── client/                  # Frontend (Next.js/React)
+│   ├── components/
+│   ├── app/
+│   └── hooks/
+├── server/                 # Backend / API
+│   ├── routes/
+│   └── services/
+├── vibe.config.json        # CLI Configuration
 ├── package.json
-├── tsconfig.json
 └── README.md
 ```
 
-## 🚀 启动项目
+## 🚀 Launch
 
-### 1. 进入项目目录
+### 1. Enter Directory
 
 ```bash
-cd my-saas-app
+cd my-ai-app
 ```
 
-### 2. 安装依赖（如果还没有安装）
+### 2. Install Dependencies
 
 ```bash
 npm install
 ```
 
-### 3. 启动开发服务器
+### 3. Start Dev Server
 
 ```bash
-npm run dev
+vibe run dev
 ```
 
-### 4. 打开浏览器
+Visit [http://localhost:3000](http://localhost:3000) to see your app live!
 
-访问 [http://localhost:3000](http://localhost:3000) 查看你的项目！
+## ⚡ Add Capabilities
 
-## ⚡ 添加功能
+Enhance your app immediately with `vibe add`.
 
-现在你有了一个基础项目，让我们添加一些常用功能：
-
-### 添加用户认证
+### Add Authentication
 
 ```bash
-vibe install auth --provider=clerk
+vibe add auth --provider=clerk
 ```
 
-这会：
-- 安装 Clerk 认证服务
-- 配置认证组件
-- 生成登录/注册页面
-- 设置环境变量模板
+_Installs Clerk, configures middleware, and adds login pages._
 
-### 添加支付系统
+### Add Payments
 
 ```bash
-vibe install payments --provider=stripe
+vibe add payments --provider=stripe
 ```
 
-这会：
-- 安装 Stripe 支付集成
-- 配置支付组件
-- 生成订阅管理页面
-- 设置 Webhook 处理
+_Sets up Stripe webhooks, pricing tables, and subscription management._
 
-### 添加国际化
+## 🔧 Environment Setup
 
-```bash
-vibe install i18n --provider=next-intl
-```
-
-这会：
-- 配置多语言支持
-- 生成语言文件结构
-- 设置语言切换组件
-
-## 🔧 配置环境变量
-
-根据你添加的集成，需要配置相应的环境变量：
-
-### 1. 复制环境变量模板
+When adding integrations, `vibe` will generate a `.env.local` template.
 
 ```bash
 cp .env.example .env.local
 ```
 
-### 2. 填写必要的 API 密钥
+Fill in your keys:
 
-```bash
-# .env.local
+```bash title=".env.local"
+# Clerk Auth
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+CLERK_SECRET_KEY=sk_test_...
 
-# Clerk 认证
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_xxx
-CLERK_SECRET_KEY=sk_test_xxx
-
-# Stripe 支付
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_xxx
-STRIPE_SECRET_KEY=sk_test_xxx
-
-# 数据库
-DATABASE_URL=postgresql://xxx
+# Database
+DATABASE_URL=postgresql://...
 ```
 
-:::warning 重要提醒
-- 不要将 `.env.local` 文件提交到 Git
-- 生产环境请使用正式的 API 密钥
-- 保护好你的密钥，不要泄露给他人
+:::warning Security
+Never commit `.env.local` to Git. Keep your API keys secure.
 :::
 
-## 🎉 下一步
+## 🎉 Next Steps
 
-恭喜！你已经成功创建了第一个 SaaS 项目。接下来你可以：
-
-- [学习如何创建项目](./creating-project) - 深入了解项目创建的各种选项
-- [查看集成指南](../integrations/) - 了解如何添加更多功能
-- [查看模板文档](../templates/) - 了解不同的项目模板
-
-## 💬 需要帮助？
-
-如果你遇到任何问题：
-
-- 查看 [常见问题](../FAQ)
-- 在 [GitHub](https://github.com/vibe-cli/vibe) 上提交 Issue
-- 加入我们的社区讨论 
+- [Deep dive into project creation](./creating-project)
+- [Explore Templates](../templates)

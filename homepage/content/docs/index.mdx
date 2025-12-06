@@ -1,45 +1,49 @@
 ---
-title: quick start
+title: Quick Start
+description: Get started with vibecape in disconnected environments or cloud workspaces.
 ---
 
-# 什么是 vibecape
+# Introduction
 
-vibecape 是一个 面向 AI vibecoder 的CLI开发工具。
+**vibecape** is the definitive CLI toolchain for the AI-native developer. It bridges the gap between terminal-based workflows and modern AI coding agents.
 
-## 用户
+## Who is this for?
 
-AI native coder
+- **AI-Native Coders**: Developers who use LLMs (Claude, GPT-4) as their primary coding engine.
+- **Product Creators**: Makers building SaaS, apps, or tools who need production-ready infrastructure instantly.
 
-Product Creator
+## Key Features
 
-## 主要特性
+- **Template scaffolding**: Launch production-ready stacks with comprehensive documentation optimized for AI consumption.
+- **Agent Integration**: A CLI that speaks "Agent". Pipe context directly to your AI tools.
+- **Modular Architecture**: Add/remove capabilities (Auth, Database, Payments) via `vibe add`.
+- **Node.js Integrated**: Built on the ecosystem you already know.
 
-- 基于场景的模版快速集成（包括对应模版的文档， 用于AI 开发）
-- 深度集成AI，CLI本身可以使用 Agent
-- 可拆式 模块化 功能
-- 集成 node
+## Getting Started
 
-## 一分钟上手
+Get up and running in less than 60 seconds.
 
 ```bash
-# 安装 vibecape
+# Global installation
 npm install -g vibecape
 
-# 创建新项目
-vibe create my-app
+# Initialize a new project
+vibe init my-app
 
-# 项目开始
+# Start the development server
 vibe run dev
 ```
 
-## 你也可以
+## AI Interactions
+
+Vibecape is designed to be conversational.
 
 ```bash
-vibe chat
-[user]: 你知道今天的天气吗。
-[vibe]: 今天上海有雨。
+# Ask questions about your project context
+vibe chat "How do I add a new API route?"
 ```
 
-```
-vibe hero
+```bash
+# Generate a new feature implementation plan
+vibe hero "Plan a user authentication flow"
 ```

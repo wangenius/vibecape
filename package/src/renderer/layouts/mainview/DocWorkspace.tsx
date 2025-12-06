@@ -10,11 +10,14 @@ import { useTranslation } from "react-i18next";
 
 type Props = {
   doc: DocData;
-  onSave: (data: {
-    title?: string;
-    content?: JSONContent;
-    metadata?: Record<string, any>;
-  }) => Promise<void>;
+  onSave: (
+    docId: string,
+    data: {
+      title?: string;
+      content?: JSONContent;
+      metadata?: Record<string, any>;
+    }
+  ) => Promise<void>;
 };
 
 export const DocWorkspace = ({ doc, onSave }: Props) => {
@@ -71,18 +74,21 @@ export const DocWorkspace = ({ doc, onSave }: Props) => {
     }
   }, [doc.id, doc.title, doc.metadata?.description, title, description]);
 
-  // 保存函数
-  const handleSave = useCallback(async () => {
-    try {
-      await onSave({
-        title,
-        content: editorContentRef.current ?? doc.content,
-        metadata: { ...doc.metadata, description },
-      });
-    } catch (error) {
-      console.error("保存失败:", error);
-    }
-  }, [description, title, onSave, doc.content, doc.metadata]);
+  // 保存函数 - 接受显式 docId 以防止竞态条件
+  const createSaveHandler = useCallback(
+    (docIdToSave: string) => async () => {
+      try {
+        await onSave(docIdToSave, {
+          title,
+          content: editorContentRef.current ?? doc.content,
+          metadata: { ...doc.metadata, description },
+        });
+      } catch (error) {
+        console.error("保存失败:", error);
+      }
+    },
+    [description, title, onSave, doc.content, doc.metadata]
+  );
 
   // 编辑器内容变化回调
   const handleEditorChange = useCallback((content: JSONContent) => {
@@ -96,15 +102,20 @@ export const DocWorkspace = ({ doc, onSave }: Props) => {
     setContentVersion((v) => v + 1);
   }, []);
 
-  // 重置初始化状态当切换文档时
+  // 重置初始化状态当切换文档时，并清除待处理的保存定时器
   useEffect(() => {
     if (doc.id !== lastDocIdRef.current) {
+      // 清除任何待处理的保存定时器（防止旧文档的保存操作）
+      if (autoSaveTimerRef.current) {
+        clearTimeout(autoSaveTimerRef.current);
+        autoSaveTimerRef.current = null;
+      }
       isInitializedRef.current = false;
       lastDocIdRef.current = doc.id;
     }
   }, [doc.id]);
 
-  // 触发自动保存
+  // 触发自动保存 - 在设置定时器时捕获当前 doc.id
   useEffect(() => {
     if (!isInitializedRef.current) {
       isInitializedRef.current = true;
@@ -115,8 +126,10 @@ export const DocWorkspace = ({ doc, onSave }: Props) => {
       clearTimeout(autoSaveTimerRef.current);
     }
 
+    // 在设置定时器时捕获 doc.id，而不是在定时器触发时
+    const docIdToSave = doc.id;
     autoSaveTimerRef.current = setTimeout(() => {
-      handleSave();
+      createSaveHandler(docIdToSave)();
     }, 300);
 
     return () => {
@@ -124,7 +137,7 @@ export const DocWorkspace = ({ doc, onSave }: Props) => {
         clearTimeout(autoSaveTimerRef.current);
       }
     };
-  }, [title, description, contentVersion, handleSave]);
+  }, [title, description, contentVersion, createSaveHandler, doc.id]);
 
   return (
     <div className="flex-1 flex flex-col bg-background">

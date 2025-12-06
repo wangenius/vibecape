@@ -607,10 +607,12 @@ function AIRewriteComponent(props: any) {
   const nodeId = node.attrs.id as string;
   const mode = node.attrs.mode as "generate" | "polish";
   const markId = node.attrs.markId as string | null;
-  const diffId = node.attrs.diffId as string | null;
+  // const diffId = node.attrs.diffId as string | null;
 
   const [prompt, setPrompt] = useState("");
-  const [status, setStatus] = useState<"idle" | "loading" | "completed">("idle");
+  const [status, setStatus] = useState<"idle" | "loading" | "completed">(
+    "idle"
+  );
   const [error, setError] = useState("");
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -647,7 +649,7 @@ function AIRewriteComponent(props: any) {
         const diffNodeType = editor.state.schema.nodes.aiDiffNode;
         const polishMarkType = editor.state.schema.marks.aiPolishMark;
         const { tr } = editor.state;
-        
+
         // 删除 diff node
         editor.state.doc.descendants((n, pos) => {
           if (n.type === diffNodeType && n.attrs.diffId === currentDiffId) {
@@ -656,7 +658,7 @@ function AIRewriteComponent(props: any) {
           }
           return true;
         });
-        
+
         // 移除 polish mark 的 streaming 状态
         if (polishMarkType) {
           tr.doc.descendants((n, pos) => {
@@ -666,20 +668,24 @@ function AIRewriteComponent(props: any) {
               );
               if (mark) {
                 tr.removeMark(pos, pos + n.nodeSize, polishMarkType);
-                tr.addMark(pos, pos + n.nodeSize, polishMarkType.create({ id: mark.attrs.id, streaming: false }));
+                tr.addMark(
+                  pos,
+                  pos + n.nodeSize,
+                  polishMarkType.create({ id: mark.attrs.id, streaming: false })
+                );
               }
             }
             return true;
           });
         }
-        
+
         editor.view.dispatch(tr);
       } else {
         // 单节点：删除 AIDiffMark 内容，保留原文
         const diffMarkType = editor.state.schema.marks.aiDiff;
         const polishMarkType = editor.state.schema.marks.aiPolishMark;
         const { tr } = editor.state;
-        
+
         // 删除 diff 内容
         let diffFrom = -1;
         let diffTo = -1;
@@ -693,11 +699,11 @@ function AIRewriteComponent(props: any) {
             diffTo = pos + n.nodeSize;
           }
         });
-        
+
         if (diffFrom !== -1) {
           tr.delete(diffFrom, diffTo);
         }
-        
+
         // 移除 polish mark 的 streaming 状态
         if (polishMarkType) {
           tr.doc.descendants((n, pos) => {
@@ -707,13 +713,17 @@ function AIRewriteComponent(props: any) {
               );
               if (mark) {
                 tr.removeMark(pos, pos + n.nodeSize, polishMarkType);
-                tr.addMark(pos, pos + n.nodeSize, polishMarkType.create({ id: mark.attrs.id, streaming: false }));
+                tr.addMark(
+                  pos,
+                  pos + n.nodeSize,
+                  polishMarkType.create({ id: mark.attrs.id, streaming: false })
+                );
               }
             }
             return true;
           });
         }
-        
+
         editor.view.dispatch(tr);
       }
     }
@@ -818,15 +828,6 @@ ${savedOriginalText}
     }
   }, [prompt, status, editor, isPolishMode, markId, nodeId, props, t, node]);
 
-  // 停止生成
-  const handleStop = useCallback(() => {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-      abortControllerRef.current = null;
-    }
-    setStatus("completed");
-  }, []);
-
   // 取消：拒绝 diff 并关闭输入节点，光标移动到原文末尾
   const handleCancel = useCallback(() => {
     // 停止进行中的请求
@@ -834,15 +835,15 @@ ${savedOriginalText}
       abortControllerRef.current.abort();
       abortControllerRef.current = null;
     }
-    
+
     // 获取当前节点的 diffId（可能是从 undo/redo 恢复的）
     const currentDiffId = node.attrs.diffId;
     const currentMarkId = node.attrs.markId;
-    
+
     // 找到原文的位置（用于定位光标）
     let originalTextEndPos = -1;
     const polishMarkType = editor.state.schema.marks.aiPolishMark;
-    
+
     if (polishMarkType && currentMarkId) {
       editor.state.doc.descendants((n, pos) => {
         if (n.isText) {
@@ -856,7 +857,7 @@ ${savedOriginalText}
         return true;
       });
     }
-    
+
     // 如果有 diff，拒绝它
     if (currentDiffId) {
       const nodeAttrs = editor.state.doc.nodeAt(props.getPos())?.attrs;
@@ -873,7 +874,7 @@ ${savedOriginalText}
         deleteNode();
       }
     }
-    
+
     // 将光标移动到原文末尾
     setTimeout(() => {
       const { state } = editor;
@@ -881,7 +882,10 @@ ${savedOriginalText}
       let targetPos = originalTextEndPos;
       if (targetPos === -1 || targetPos > state.doc.content.size) {
         // 找不到原文位置，尝试定位到 AIRewriteNode 原来的位置附近
-        targetPos = Math.max(0, Math.min(props.getPos() || 0, state.doc.content.size));
+        targetPos = Math.max(
+          0,
+          Math.min(props.getPos() || 0, state.doc.content.size)
+        );
       }
       editor.commands.focus();
       editor.commands.setTextSelection(targetPos);
@@ -904,7 +908,7 @@ ${savedOriginalText}
     // 获取 diff 内容的文本长度（用于计算接受后的光标位置）
     let diffTextLength = 0;
     let diffStartPos = -1;
-    
+
     if (isCrossNode) {
       // 跨节点：查找 AIDiffNode
       const diffNodeType = editor.state.schema.nodes.aiDiffNode;
@@ -936,7 +940,7 @@ ${savedOriginalText}
     let originalTextStartPos = -1;
     const polishMarkType = editor.state.schema.marks.aiPolishMark;
     const currentMarkId = node.attrs.markId;
-    
+
     if (polishMarkType && currentMarkId) {
       editor.state.doc.descendants((n, pos) => {
         if (n.isText) {
@@ -963,15 +967,16 @@ ${savedOriginalText}
     setTimeout(() => {
       const { state } = editor;
       // 接受后，新内容会在原文的位置，所以光标应该在 原文起始位置 + diff内容长度
-      let targetPos = originalTextStartPos !== -1 
-        ? originalTextStartPos + diffTextLength 
-        : diffStartPos !== -1 
-          ? diffStartPos + diffTextLength 
-          : state.doc.content.size;
-      
+      let targetPos =
+        originalTextStartPos !== -1
+          ? originalTextStartPos + diffTextLength
+          : diffStartPos !== -1
+            ? diffStartPos + diffTextLength
+            : state.doc.content.size;
+
       // 确保不超出文档范围
       targetPos = Math.max(0, Math.min(targetPos, state.doc.content.size));
-      
+
       editor.commands.focus();
       editor.commands.setTextSelection(targetPos);
     }, 0);
@@ -1000,20 +1005,20 @@ ${savedOriginalText}
       if (e.key === "Enter") {
         e.preventDefault();
         e.stopPropagation();
-        
+
         const currentDiffId = node.attrs.diffId;
-        
+
         // 有 diff 内容且不在生成中则接受（status 可能是 idle 因为 undo/redo 会重置状态）
         if (currentDiffId && status !== "loading" && !error) {
           handleAccept();
           return;
         }
-        
+
         // 没有 input 内容且没有 diff 内容 → 不响应
         if (!prompt.trim() && !currentDiffId) {
           return;
         }
-        
+
         // 有 input 但没有 diff（或有错误）→ 关闭节点
         deleteNode();
         return;
@@ -1062,7 +1067,10 @@ ${savedOriginalText}
             <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground/70">
               {status === "idle" && (
                 <span>
-                  {t("common.aiRewrite.idleHint", "⌘+Enter 发送 · Enter/Esc 关闭")}
+                  {t(
+                    "common.aiRewrite.idleHint",
+                    "⌘+Enter 发送 · Enter/Esc 关闭"
+                  )}
                 </span>
               )}
               {status === "loading" && (
@@ -1081,7 +1089,11 @@ ${savedOriginalText}
               )}
               {error && (
                 <span className="text-destructive">
-                  {error} · {t("common.aiRewrite.errorHint", "⌘+Enter 重试 · Enter/Esc 关闭")}
+                  {error} ·{" "}
+                  {t(
+                    "common.aiRewrite.errorHint",
+                    "⌘+Enter 重试 · Enter/Esc 关闭"
+                  )}
                 </span>
               )}
             </div>
@@ -1096,9 +1108,7 @@ ${savedOriginalText}
         </div>
 
         {/* 错误提示 */}
-        {error && (
-          <div className="text-xs text-destructive pl-6">{error}</div>
-        )}
+        {error && <div className="text-xs text-destructive pl-6">{error}</div>}
       </div>
     </NodeViewWrapper>
   );

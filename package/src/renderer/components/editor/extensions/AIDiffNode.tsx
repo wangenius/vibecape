@@ -10,6 +10,7 @@
 
 import { Node, mergeAttributes } from "@tiptap/core";
 import { NodeViewWrapper, ReactNodeViewRenderer } from "@tiptap/react";
+import { Slice } from "@tiptap/pm/model";
 import { markdownToJSON } from "@common/lib/content-converter";
 import { Check, X } from "lucide-react";
 
@@ -370,8 +371,11 @@ export const AIDiffNode = Node.create<AIDiffNodeOptions>({
           if (newNodePos !== -1) {
             // 获取节点内容并替换节点
             const diffNode = tr.doc.nodeAt(newNodePos);
-            if (diffNode) {
-              tr.replaceWith(newNodePos, newNodePos + newNodeSize, diffNode.content);
+            if (diffNode && diffNode.content.size > 0) {
+              // 使用 Slice 来确保所有子节点都被正确保留
+              // openStart 和 openEnd 都是 0，表示完整的块级内容
+              const slice = new Slice(diffNode.content, 0, 0);
+              tr.replace(newNodePos, newNodePos + newNodeSize, slice);
             }
           }
 

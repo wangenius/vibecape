@@ -1,13 +1,16 @@
 "use client";
+import React, { useEffect, useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
 import { IconBrandGithub, IconBrandX } from "@tabler/icons-react";
 import { Menu } from "lucide-react";
-import Link from "next/link";
-import { useEffect, useState } from "react";
+
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem, DropdownMenuTrigger
+  DropdownMenuItem,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
   Sheet,
@@ -16,7 +19,6 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import Image from "next/image";
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -32,81 +34,90 @@ export function Navbar() {
 
   return (
     <header
-      className={`sticky top-0 z-50 w-full transition-colors duration-200 ${scrolled ? "bg-background border-b" : "bg-transparent"}`}
+      className={`sticky top-0 z-50 w-full transition-all duration-200 border-b border-transparent ${
+        scrolled
+          ? "bg-background/80 backdrop-blur-md border-border"
+          : "bg-transparent"
+      }`}
     >
-      <div className="container mx-auto px-6 lg:px-8 py-3">
-        {/* 桌面端导航 */}
-        <nav className="hidden justify-between lg:flex">
-          <div className="flex items-center gap-6">
-            {/* Logo */}
-            <Link href="/" className="flex items-center gap-2">
-              <Image
-                src="/icon-black.svg"
-                alt="vibecape"
-                width={32}
-                height={32}
-              />
-              <span className="text-xl font-semibold tracking-tight">
-                vibecape
-              </span>
+      <div className="container mx-auto px-6 h-14 flex items-center justify-between">
+        {/* Desktop Nav */}
+        <div className="hidden lg:flex items-center gap-8 w-full">
+          <Link href="/" className="flex items-center gap-2 mr-4">
+            <Image
+              src="/icon-black.svg"
+              alt="vibecape"
+              width={24}
+              height={24}
+              className="opacity-90"
+            />
+            <span className="text-lg font-medium tracking-tight">vibecape</span>
+          </Link>
+
+          <nav className="flex items-center gap-1">
+            <Link href="/docs">
+              <Button
+                variant="ghost"
+                className="h-8 text-sm text-muted-foreground hover:text-foreground"
+              >
+                Docs
+              </Button>
             </Link>
 
-            {/* 导航链接 */}
-            <div className="flex items-center space-x-2">
-              <Link href="/docs">
-                <Button variant="ghost" className="text-sm font-medium">
-                  Docs
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="h-8 text-sm text-muted-foreground hover:text-foreground"
+                >
+                  Templates
                 </Button>
-              </Link>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                <Link
+                  href="https://vibetake.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <DropdownMenuItem>vibetake</DropdownMenuItem>
+                </Link>
+              </DropdownMenuContent>
+            </DropdownMenu>
 
-              {/* Templates 下拉菜单 */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="text-sm font-medium">
-                    Templates
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start">
-                  <Link
-                    href="https://vibetake.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <DropdownMenuItem className="text-sm font-medium">
-                      vibetake
-                    </DropdownMenuItem>
-                  </Link>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="text-sm font-medium">
-                    Lesson
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start">
-                  <Link
-                    href="https://vibemeet.ai"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <DropdownMenuItem className="text-sm font-medium">
-                      vibemeet: AI producting lesson
-                    </DropdownMenuItem>
-                  </Link>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="h-8 text-sm text-muted-foreground hover:text-foreground"
+                >
+                  Lesson
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                <Link
+                  href="https://vibemeet.ai"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <DropdownMenuItem>
+                    vibemeet: AI producting lesson
+                  </DropdownMenuItem>
+                </Link>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </nav>
 
-          {/* 用户认证区域 */}
-          <div className="flex items-center gap-2">
+          <div className="ml-auto flex items-center gap-1">
             <Link
               href="https://x.com/iamwangenius"
               target="_blank"
               rel="noopener noreferrer"
             >
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-muted-foreground hover:text-foreground"
+              >
                 <IconBrandX className="h-4 w-4" />
                 <span className="sr-only">Twitter</span>
               </Button>
@@ -116,125 +127,79 @@ export function Navbar() {
               target="_blank"
               rel="noopener noreferrer"
             >
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-muted-foreground hover:text-foreground"
+              >
                 <IconBrandGithub className="h-4 w-4" />
                 <span className="sr-only">GitHub</span>
               </Button>
             </Link>
           </div>
-        </nav>
+        </div>
 
-        {/* 移动端导航 */}
-        <div className="block lg:hidden">
-          <div className="flex h-16 items-center justify-between">
-            {/* Logo */}
-            <Link href="/" className="flex items-center gap-2">
-              <Image
-                src="/icon-black.svg"
-                alt="vibecape"
-                height={32}
-                width={32}
-              />
-              <span className="text-xl font-semibold tracking-tight">
-                vibecape
-              </span>
-            </Link>
+        {/* Mobile Nav */}
+        <div className="flex lg:hidden w-full items-center justify-between">
+          <Link href="/" className="flex items-center gap-2">
+            <Image
+              src="/icon-black.svg"
+              alt="vibecape"
+              height={24}
+              width={24}
+            />
+            <span className="text-lg font-medium tracking-tight">vibecape</span>
+          </Link>
 
-            {/* 移动端菜单 */}
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="outline" size="icon">
-                  <Menu className="h-4 w-4" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent className="overflow-y-auto">
-                <SheetHeader>
-                  <SheetTitle>
-                    <Link href="/" className="flex items-center gap-2">
-                      <Image
-                        src="/icon-black.svg"
-                        alt="vibecape"
-                        width={32}
-                        height={32}
-                      />
-                      <span className="text-xl font-semibold tracking-tight">
-                        vibecape
-                      </span>
-                    </Link>
-                  </SheetTitle>
-                </SheetHeader>
-
-                <div className="flex flex-col gap-6 p-4">
-                  {/* 导航链接 */}
-                  <div className="flex flex-col gap-4">
-                    <Link href="/docs">
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start text-sm font-medium"
-                      >
-                        Docs
-                      </Button>
-                    </Link>
-
-                    {/* Templates 折叠项（移动端用简单链接代替下拉）*/}
-                    <Link href="/docs/templates">
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start text-sm font-medium"
-                      >
-                        Templates
-                      </Button>
-                    </Link>
-
-                    {/* vibetake 外链 */}
-                    <Link
-                      href="https://vibetake.com"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start text-sm font-medium"
-                      >
-                        vibetake
-                      </Button>
-                    </Link>
-
-                    <div className="flex items-center gap-2">
-                      <Link
-                        href="https://x.com/iamwangenius"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 w-8 p-0"
-                        >
-                          <IconBrandX className="h-4 w-4" />
-                          <span className="sr-only">Twitter</span>
-                        </Button>
-                      </Link>
-                      <Link
-                        href="https://github.com/wangenius/vibecape"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 w-8 p-0"
-                        >
-                          <IconBrandGithub className="h-4 w-4" />
-                          <span className="sr-only">GitHub</span>
-                        </Button>
-                      </Link>
-                    </div>
-                  </div>
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-9 w-9">
+                <Menu className="h-4 w-4" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right">
+              <SheetHeader className="text-left">
+                <SheetTitle>
+                  <Link href="/" className="flex items-center gap-2">
+                    <Image
+                      src="/icon-black.svg"
+                      alt="vibecape"
+                      width={24}
+                      height={24}
+                    />
+                    <span className="text-lg font-medium">vibecape</span>
+                  </Link>
+                </SheetTitle>
+              </SheetHeader>
+              <div className="flex flex-col gap-2 mt-8">
+                <Link href="/docs">
+                  <Button variant="ghost" className="w-full justify-start">
+                    Docs
+                  </Button>
+                </Link>
+                <Link href="https://vibetake.com" target="_blank">
+                  <Button variant="ghost" className="w-full justify-start">
+                    Templates
+                  </Button>
+                </Link>
+                <div className="flex items-center gap-2 pt-4 mt-4 border-t border-border">
+                  <Link href="https://x.com/iamwangenius" target="_blank">
+                    <Button variant="ghost" size="icon" className="h-9 w-9">
+                      <IconBrandX className="h-4 w-4" />
+                    </Button>
+                  </Link>
+                  <Link
+                    href="https://github.com/wangenius/vibecape"
+                    target="_blank"
+                  >
+                    <Button variant="ghost" size="icon" className="h-9 w-9">
+                      <IconBrandGithub className="h-4 w-4" />
+                    </Button>
+                  </Link>
                 </div>
-              </SheetContent>
-            </Sheet>
-          </div>
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
     </header>

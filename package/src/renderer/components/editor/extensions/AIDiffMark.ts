@@ -109,10 +109,9 @@ export const AIDiffMark = Mark.create<AIDiffMarkOptions>({
           const polishMarkType = state.schema.marks.aiPolishMark;
           if (!diffMarkType) return false;
 
-          // 1. 找到 diff mark 并获取 originalText（用于定位原文）
+          // 1. 找到 diff mark 范围
           let diffFrom = -1;
           let diffTo = -1;
-          let originalText = "";
 
           state.doc.descendants((node, pos) => {
             if (!node.isText) return;
@@ -120,38 +119,41 @@ export const AIDiffMark = Mark.create<AIDiffMarkOptions>({
               (m) => m.type === diffMarkType && m.attrs.diffId === diffId
             );
             if (mark) {
-              if (diffFrom === -1) {
-                diffFrom = pos;
-                originalText = mark.attrs.originalText || "";
-              }
+              if (diffFrom === -1) diffFrom = pos;
               diffTo = pos + node.nodeSize;
             }
           });
 
           if (diffFrom === -1) return false;
 
-          // 2. 找到并删除原文（带 AIPolishMark 的内容）
-          if (polishMarkType && originalText) {
-            let polishFrom = -1;
-            let polishTo = -1;
-
+          // 2. 找到并删除原文（带 AIPolishMark streaming: true 的内容）
+          if (polishMarkType) {
+            // 收集所有带 streaming polish mark 的范围（支持跨行）
+            const polishRanges: { from: number; to: number }[] = [];
+            
             state.doc.descendants((node, pos) => {
               if (!node.isText) return true;
-              const mark = node.marks.find((m) => m.type === polishMarkType);
-              if (mark && node.text === originalText) {
-                polishFrom = pos;
-                polishTo = pos + node.nodeSize;
-                return false;
+              const mark = node.marks.find(
+                (m) => m.type === polishMarkType && m.attrs.streaming === true
+              );
+              if (mark) {
+                polishRanges.push({ from: pos, to: pos + node.nodeSize });
               }
               return true;
             });
 
-            if (polishFrom !== -1 && polishTo !== -1) {
-              tr.delete(polishFrom, polishTo);
-              // 删除原文后，diff 位置会前移
-              const shift = polishTo - polishFrom;
-              diffFrom -= shift;
-              diffTo -= shift;
+            // 从后往前删除，避免位置偏移问题
+            let totalShift = 0;
+            for (let i = polishRanges.length - 1; i >= 0; i--) {
+              const range = polishRanges[i];
+              tr.delete(range.from, range.to);
+              totalShift += range.to - range.from;
+            }
+
+            // 更新 diff 位置
+            if (polishRanges.length > 0 && polishRanges[0].from < diffFrom) {
+              diffFrom -= totalShift;
+              diffTo -= totalShift;
             }
           }
 
@@ -189,15 +191,25 @@ export const AIDiffMark = Mark.create<AIDiffMarkOptions>({
           // 删除 diff 内容
           tr.delete(diffFrom, diffTo);
 
-          // 2. 移除原文的 polish mark
+          // 2. 移除原文的 polish mark（支持跨行）
           if (polishMarkType) {
+            const polishRanges: { from: number; to: number }[] = [];
+            
             tr.doc.descendants((node, pos) => {
-              if (!node.isText) return;
-              const mark = node.marks.find((m) => m.type === polishMarkType);
+              if (!node.isText) return true;
+              const mark = node.marks.find(
+                (m) => m.type === polishMarkType && m.attrs.streaming === true
+              );
               if (mark) {
-                tr.removeMark(pos, pos + node.nodeSize, mark);
+                polishRanges.push({ from: pos, to: pos + node.nodeSize });
               }
+              return true;
             });
+
+            // 移除所有 polish mark
+            for (const range of polishRanges) {
+              tr.removeMark(range.from, range.to, polishMarkType);
+            }
           }
 
           if (dispatch) dispatch(tr);

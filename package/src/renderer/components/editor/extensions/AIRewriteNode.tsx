@@ -212,10 +212,10 @@ export const AIRewriteNode = Node.create<AIRewriteOptions>({
 
           if (!polishMarkType) return false;
 
-          // 找到带有该 mark 的文本范围和原文
+          // 找到带有该 mark 的文本范围（支持跨行）
           let markFrom: number | null = null;
           let markTo: number | null = null;
-          let originalText = "";
+          const markedRanges: { from: number; to: number }[] = [];
 
           state.doc.descendants((n, pos) => {
             if (n.isText) {
@@ -225,13 +225,16 @@ export const AIRewriteNode = Node.create<AIRewriteOptions>({
               if (mark) {
                 if (markFrom === null) markFrom = pos;
                 markTo = pos + n.nodeSize;
-                originalText += n.text || "";
+                markedRanges.push({ from: pos, to: pos + n.nodeSize });
               }
             }
             return true;
           });
 
-          if (markFrom === null || markTo === null) return false;
+          if (markFrom === null || markTo === null || markedRanges.length === 0) return false;
+
+          // 获取完整的原文（包括跨行的情况）
+          const originalText = state.doc.textBetween(markFrom, markTo, "\n");
 
           // 生成 diffId
           const diffId = gen.id({ prefix: "diff-", length: 12 });
@@ -240,9 +243,12 @@ export const AIRewriteNode = Node.create<AIRewriteOptions>({
           const insertPos = markTo;
 
           // 1. 更新原文的 AIPolishMark，设置 streaming: true（显示删除线）
+          // 对每个带 mark 的范围分别更新（支持跨行）
           const newPolishMark = polishMarkType.create({ id: markId, streaming: true });
-          tr.removeMark(markFrom, markTo, polishMarkType);
-          tr.addMark(markFrom, markTo, newPolishMark);
+          for (const range of markedRanges) {
+            tr.removeMark(range.from, range.to, polishMarkType);
+            tr.addMark(range.from, range.to, newPolishMark);
+          }
 
           // 2. 更新节点属性
           const nodeType = state.schema.nodes.aiRewrite;

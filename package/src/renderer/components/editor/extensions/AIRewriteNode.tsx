@@ -356,8 +356,15 @@ export const AIRewriteNode = Node.create<AIRewriteOptions>({
               }
             });
 
-            const diffMark = diffMarkType.create({ diffId, originalText });
-            const textNode = state.schema.text(content, [diffMark]);
+            // 创建 mark 时存储 rawContent（原始内容，包含 \n\n）
+            const diffMark = diffMarkType.create({
+              diffId,
+              originalText,
+              rawContent: content, // 保存原始内容用于 accept
+            });
+            // 显示时将连续换行符合并为单个换行符
+            const displayContent = content.replace(/\n\n+/g, "\n");
+            const textNode = state.schema.text(displayContent, [diffMark]);
 
             if (diffFrom === -1) {
               // 首次插入

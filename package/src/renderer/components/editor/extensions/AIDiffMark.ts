@@ -69,6 +69,15 @@ export const AIDiffMark = Mark.create<AIDiffMarkOptions>({
           return { "data-original-text": attributes.originalText };
         },
       },
+      // AI 生成的原始内容（包含 \n\n），用于 accept 时正确解析多段落
+      rawContent: {
+        default: "",
+        parseHTML: (element) => element.getAttribute("data-raw-content") || "",
+        renderHTML: (attributes) => {
+          if (!attributes.rawContent) return {};
+          return { "data-raw-content": attributes.rawContent };
+        },
+      },
     };
   },
 
@@ -115,7 +124,7 @@ export const AIDiffMark = Mark.create<AIDiffMarkOptions>({
           // 1. 找到 diff mark 范围和内容
           let diffFrom = -1;
           let diffTo = -1;
-          let diffContent = "";
+          let diffContent = ""; // 使用 rawContent（包含 \n\n）而不是显示的文本
 
           state.doc.descendants((node, pos) => {
             if (!node.isText) return;
@@ -123,9 +132,12 @@ export const AIDiffMark = Mark.create<AIDiffMarkOptions>({
               (m) => m.type === diffMarkType && m.attrs.diffId === diffId
             );
             if (mark) {
-              if (diffFrom === -1) diffFrom = pos;
+              if (diffFrom === -1) {
+                diffFrom = pos;
+                // 使用 rawContent（原始内容，包含 \n\n）而不是显示的文本
+                diffContent = mark.attrs.rawContent || node.text || "";
+              }
               diffTo = pos + node.nodeSize;
-              diffContent += node.text || "";
             }
           });
 

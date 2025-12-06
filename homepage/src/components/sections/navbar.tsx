@@ -1,9 +1,9 @@
+```javascript
 "use client";
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { IconBrandGithub, IconBrandX } from "@tabler/icons-react";
-import { Menu } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -19,6 +19,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { Menu } from "lucide-react";
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -54,36 +55,23 @@ export function Navbar() {
             <span className="text-lg font-medium tracking-tight">vibecape</span>
           </Link>
 
-          <nav className="flex items-center gap-1">
-            <Link href="/docs">
-              <Button
-                variant="ghost"
-                className="h-8 text-sm text-muted-foreground hover:text-foreground"
-              >
-                Docs
-              </Button>
+          <div className="hidden md:flex md:items-center md:gap-6">
+            <Link
+              href="/docs"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Docs
             </Link>
+            <Link
+              href="https://github.com/wangenius/vibecape"
+              target="_blank"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              GitHub
+            </Link>
+          </div>
 
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  className="h-8 text-sm text-muted-foreground hover:text-foreground"
-                >
-                  Templates
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start">
-                <Link
-                  href="https://vibetake.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <DropdownMenuItem>vibetake</DropdownMenuItem>
-                </Link>
-              </DropdownMenuContent>
-            </DropdownMenu>
-
+          <nav className="flex items-center gap-1">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button

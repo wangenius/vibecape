@@ -116,13 +116,13 @@ export const createDocumentTools = (webContents: WebContents) => {
         }),
     }),
 
-    setDocument: tool({
-      description: "替换整个文档内容。用于全文重写。慎用。",
-      inputSchema: z.object({
-        paragraphs: z.array(z.string()).describe("新文档的段落数组"),
-      }),
-      execute: async (args) => executeRendererTool("setDocument", args),
-    }),
+    // setDocument: tool({
+    //   description: "替换整个文档内容。用于全文重写。慎用。",
+    //   inputSchema: z.object({
+    //     paragraphs: z.array(z.string()).describe("新文档的段落数组"),
+    //   }),
+    //   execute: async (args) => executeRendererTool("setDocument", args),
+    // }),
 
     // ============ 修改层（安全 - 搜索定位） ============
 

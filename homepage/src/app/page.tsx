@@ -2,7 +2,9 @@
 
 import { HeroSection } from "@/components/sections/HeroSection";
 import { Navbar } from "@/components/sections/navbar";
-import { HowItWorksSection } from "@/components/sections/HowItWorksSection";
+import { FeaturesSection } from "@/components/sections/FeaturesSection";
+import { UseCasesSection } from "@/components/sections/UseCasesSection";
+import { TestimonialsSection } from "@/components/sections/TestimonialsSection";
 import { LogosRow } from "@/components/sections/LogosRow";
 import { CTABanner } from "@/components/sections/CTABanner";
 
@@ -12,7 +14,9 @@ export default function Home() {
       <Navbar />
       <HeroSection />
       <LogosRow />
-      <HowItWorksSection />
+      <FeaturesSection />
+      <UseCasesSection />
+      <TestimonialsSection />
       <CTABanner />
     </div>
   );

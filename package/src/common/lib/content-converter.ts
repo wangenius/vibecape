@@ -169,6 +169,66 @@ export function markdownToJSON(
       continue;
     }
 
+    // 表格
+    if (line.match(/^\|.+\|\s*$/)) {
+      const tableRows: JSONContent[] = [];
+      let isFirstRow = true;
+      let hasSeparator = false;
+
+      while (i < lines.length && lines[i].match(/^\|.+\|\s*$/)) {
+        const rowLine = lines[i];
+        
+        // 检查是否是分隔行 (|---|---|)
+        if (rowLine.match(/^\|[\s\-:|]+\|\s*$/)) {
+          hasSeparator = true;
+          i++;
+          continue;
+        }
+
+        // 解析单元格内容
+        const cellContents = rowLine
+          .split("|")
+          .slice(1, -1) // 去掉首尾空字符串
+          .map((cell) => cell.trim());
+
+        // 判断是否是表头行（第一行且后面有分隔行）
+        const isHeaderRow = isFirstRow && !hasSeparator;
+        const cellType = isHeaderRow && hasSeparator ? "tableHeader" : "tableCell";
+
+        // 如果已经处理过分隔行，第一行之后的都是普通行
+        const actualCellType = hasSeparator && !isFirstRow ? "tableCell" : 
+                               (isFirstRow ? "tableHeader" : "tableCell");
+
+        const cells: JSONContent[] = cellContents.map((cellText) => ({
+          type: actualCellType,
+          content: cellText
+            ? [
+                {
+                  type: "paragraph",
+                  content: parseInlineContent(cellText, options),
+                },
+              ]
+            : [{ type: "paragraph", content: [] }],
+        }));
+
+        tableRows.push({
+          type: "tableRow",
+          content: cells,
+        });
+
+        isFirstRow = false;
+        i++;
+      }
+
+      if (tableRows.length > 0) {
+        content.push({
+          type: "table",
+          content: tableRows,
+        });
+      }
+      continue;
+    }
+
     // 空行
     if (line.trim() === "") {
       if (preserveEmpty) {
@@ -364,6 +424,42 @@ export function jsonToMarkdown(content: JSONContent): string {
         break;
       }
 
+      case "table": {
+        if (node.content) {
+          const rows: string[][] = [];
+          let hasHeader = false;
+
+          for (const row of node.content) {
+            if (row.type === "tableRow" && row.content) {
+              const cells: string[] = [];
+              for (const cell of row.content) {
+                if (cell.type === "tableHeader") {
+                  hasHeader = true;
+                }
+                cells.push(extractText(cell));
+              }
+              rows.push(cells);
+            }
+          }
+
+          if (rows.length > 0) {
+            // 输出第一行
+            lines.push(`| ${rows[0].join(" | ")} |`);
+            
+            // 输出分隔行
+            const separator = rows[0].map(() => "---").join(" | ");
+            lines.push(`| ${separator} |`);
+            
+            // 输出其余行
+            for (let i = 1; i < rows.length; i++) {
+              lines.push(`| ${rows[i].join(" | ")} |`);
+            }
+            lines.push("");
+          }
+        }
+        break;
+      }
+
       default: {
         const text = extractText(node);
         if (text) {
@@ -439,7 +535,7 @@ export function stringifyWithFrontmatter(
     return `${key}: ${String(value)}`;
   });
 
-  return `---\n${lines.join("\n")}\n---\n\n${body}`;
+  return "---\n" + lines.join("\n") + "\n---\n\n" + body;
 }
 
 // ==================== 便捷方法 ====================

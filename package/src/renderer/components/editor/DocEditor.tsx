@@ -27,9 +27,12 @@ import { ImageNode } from "@/components/editor/extensions/ImageNode";
 import { LinkNode } from "@/components/editor/extensions/LinkNode";
 import { PolishManager } from "@/components/editor/PolishManager";
 import { CustomKeyboardExtension } from "@/components/editor/extensions/CustomKeyboardExtension";
+import { TableExtension } from "@/components/editor/extensions/TableExtension";
 import { useTranslation } from "react-i18next";
 import { useRemoteTools } from "@/hooks/editor/useRemoteTools";
 import { useExpandRegion } from "@/hooks/shortcuts/useExpandRegion";
+import { markdownToJSON } from "@common/lib/content-converter";
+import { Slice, Fragment } from "@tiptap/pm/model";
 
 type Props = {
   doc: DocData;
@@ -82,6 +85,7 @@ export const DocEditor = ({ doc, onChange, onSave }: Props) => {
       TaskItem.configure({
         nested: true,
       }),
+      ...TableExtension,
       AIRewriteNode,
       AIPolishMark,
       AIDiffMark,
@@ -176,6 +180,73 @@ export const DocEditor = ({ doc, onChange, onSave }: Props) => {
       attributes: {
         class:
           "text-base overflow-x-hidden focus:outline-none prose prose-sm dark:prose-invert max-w-none",
+      },
+      // Markdown 粘贴处理 - 在所有插件之前执行
+      handlePaste: (view, event) => {
+        const text = event.clipboardData?.getData("text/plain");
+        if (!text || text.trim().length === 0) return false;
+
+        // 检测是否包含 Markdown 格式
+        const mdPatterns = [
+          /^#{1,6}\s+.+$/m, // 标题
+          /^[-*+]\s+.+$/m, // 无序列表
+          /^\d+\.\s+.+$/m, // 有序列表
+          /^>\s+.+$/m, // 引用
+          /^```/m, // 代码块
+          /^\|.+\|$/m, // 表格
+        ];
+
+        let matchCount = 0;
+        let hasStrongSignal = false;
+        for (const pattern of mdPatterns) {
+          if (pattern.test(text)) {
+            matchCount++;
+            if (pattern.source.includes("```") || pattern.source.includes("\\|") || pattern.source.includes("^#")) {
+              hasStrongSignal = true;
+            }
+          }
+        }
+
+        // 判断是否是 Markdown
+        const isMarkdown = hasStrongSignal || matchCount >= 2 || (text.includes("\n") && matchCount >= 1);
+        if (!isMarkdown) return false;
+
+        // 检查是否有复杂 HTML（从网页复制）
+        const html = event.clipboardData?.getData("text/html");
+        if (html && html.includes("<div") && !text.includes("```") && !text.match(/^\|.+\|$/m)) {
+          return false;
+        }
+
+        // 阻止默认行为，转换 Markdown 并插入
+        event.preventDefault();
+        const jsonContent = markdownToJSON(text, {
+          preserveEmptyParagraphs: false,
+          parseInlineStyles: true,
+        });
+
+        if (jsonContent.content && jsonContent.content.length > 0) {
+          // 使用 ProseMirror transaction 插入内容
+          const { state, dispatch } = view;
+          const { schema, tr } = state;
+          
+          // 将 JSONContent 转换为 ProseMirror 节点
+          const nodes = jsonContent.content.map((nodeJson: any) => {
+            try {
+              return schema.nodeFromJSON(nodeJson);
+            } catch (e) {
+              // 如果转换失败，创建纯文本段落
+              const text = nodeJson.content?.[0]?.text || "";
+              return schema.nodes.paragraph.create(null, text ? schema.text(text) : null);
+            }
+          });
+          
+          // 插入所有节点
+          const fragment = Fragment.fromArray(nodes);
+          const transaction = tr.replaceSelection(new Slice(fragment, 0, 0));
+          dispatch(transaction);
+        }
+
+        return true;
       },
     },
     onUpdate: ({ editor }) => {

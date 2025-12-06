@@ -1,153 +1,55 @@
+```
 ---
 title: Getting Started
-description: From zero to production-ready AI app in 5 minutes.
+description: Installation and World Creation Guide
 ---
 
 # Getting Started
 
-Welcome to Vibe CLI! This guide will help you launch your first AI-native SaaS project in under 5 minutes.
+Welcome to Vibecape! This guide will help you set up your creative studio and start your first project.
 
 ## 📋 Prerequisites
 
-Before you begin, ensure you have:
-
-- **Node.js** 18.0 or higher
-- **npm**, **yarn**, or **pnpm**
-- **Git** (optional, recommended for version control)
-
-:::tip Check Version
-
-```bash
-node --version  # Should be v18.0.0+
-npm --version   # Should be 9.0.0+
-```
-
-:::
+- **macOS** 13.0 (Ventura) or later
+- Apple Silicon (M1/M2/M3) recommended for local AI performance
 
 ## 🚀 Installation
 
-### Global Install (Recommended)
+1.  **Download**: Get the latest `.dmg` from our [Releases Page](https://github.com/wangenius/vibecape/releases).
+2.  **Install**: Drag the **Vibecape** icon to your `Applications` folder.
+3.  **Launch**: Open the app via Spotlight or Launchpad.
 
-```bash
-npm install -g vibecape
-```
-
-### Verify Installation
-
-```bash
-vibe --version
-```
-
-You should see output confirming the **vibecape** CLI is active.
-
-## 🎯 Create Your First Project
-
-### 1. Interactive Creation
-
-Run the command and follow the prompts:
-
-```bash
-vibe create
-```
-
-**You will be asked to:**
-
-- **Name your project**: e.g., `my-ai-app`
-- **Pick a template**: Start with `ai-saas` for a full stack.
-- **Select tools**: TypeScript (Recommended), Tailwind CSS (Recommended).
-
-### 2. Quick Command
-
-If you know what you want, skip the prompts:
-
-```bash
-vibe create my-ai-app --template=ai-saas --typescript --tailwind
-```
-
-## 📁 Project Structure
-
-Your new project is optimized for modularity:
-
-```text
-my-ai-app/
-├── client/                  # Frontend (Next.js/React)
-│   ├── components/
-│   ├── app/
-│   └── hooks/
-├── server/                 # Backend / API
-│   ├── routes/
-│   └── services/
-├── vibe.config.json        # CLI Configuration
-├── package.json
-└── README.md
-```
-
-## 🚀 Launch
-
-### 1. Enter Directory
-
-```bash
-cd my-ai-app
-```
-
-### 2. Install Dependencies
-
-```bash
-npm install
-```
-
-### 3. Start Dev Server
-
-```bash
-vibe run dev
-```
-
-Visit [http://localhost:3000](http://localhost:3000) to see your app live!
-
-## ⚡ Add Capabilities
-
-Enhance your app immediately with `vibe add`.
-
-### Add Authentication
-
-```bash
-vibe add auth --provider=clerk
-```
-
-_Installs Clerk, configures middleware, and adds login pages._
-
-### Add Payments
-
-```bash
-vibe add payments --provider=stripe
-```
-
-_Sets up Stripe webhooks, pricing tables, and subscription management._
-
-## 🔧 Environment Setup
-
-When adding integrations, `vibe` will generate a `.env.local` template.
-
-```bash
-cp .env.example .env.local
-```
-
-Fill in your keys:
-
-```bash title=".env.local"
-# Clerk Auth
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
-CLERK_SECRET_KEY=sk_test_...
-
-# Database
-DATABASE_URL=postgresql://...
-```
-
-:::warning Security
-Never commit `.env.local` to Git. Keep your API keys secure.
+:::note First Launch
+You may need to approve the application in "System Settings > Privacy & Security" if you downloaded it directly from GitHub.
 :::
 
-## 🎉 Next Steps
+## 🎯 Creating Your First World
 
-- [Deep dive into project creation](./creating-project)
-- [Explore Templates](../templates)
+Vibecape organizes work into "Worlds". A world contains all your stories, characters, locations, and lore.
+
+### 1. New World
+
+- Click **"New World"** on the welcome screen.
+- Choose a template:
+    - **Novel**: Optimized for long-form prose with chapter management.
+    - **Screenplay**: Standard formatting for scripts.
+    - **World Bible**: Logic-first workspace for pure lore building.
+
+### 2. Configure AI Persona
+
+Every world has a dedicated AI assistant.
+
+- **Name**: Give your co-pilot a name (e.g., "Jarvis", "Muse").
+- **Role**: Select a preset (Editor, Brainstormer, Critic).
+- **Creativity**: Adjust the "Temperature" slider to control how imaginative (or hallucinations) the AI should likely be.
+
+## 📁 Workspace Overview
+
+-   **Left Sidebar**: Character sheets, Locations, timeline events.
+-   **Center Canvas**: Your main writing area (infinite canvas or document view).
+-   **Right Sidebar**: AI Chat and Context Inspector.
+
+## ⚡ Next Steps
+
+- [Learn about World Orchestration](../guide/creating-project)
+```

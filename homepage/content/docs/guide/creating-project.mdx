@@ -1,109 +1,45 @@
 ---
-title: Project Creation
-description: Deep dive into creating and managing projects with Vibe CLI.
+title: World Orchestration
+description: Managing complex narratives with the World Bible.
 ---
 
-# Creating a Project
+# World Orchestration
 
-This guide covers the various ways to initialize and extend your projects using Vibe CLI.
+Vibecape's core differentiator is "World Orchestration". Unlike standard writing tools that see text, Vibecape sees **entities** and **relationships**.
 
-## 🎯 Interactive Mode
+## 🌍 The World Bible
 
-The easiest way to start is the interactive wizard. It will guide you through template selection, package manager preference, and optional features.
+The World Bible is a structured database living alongside your prose.
 
-```bash
-vibe create my-app
-```
+### Entities
 
-## 🛠 Command Reference
+Everything in your story is an entity:
 
-### `vibe run`
+- **Characters**: Protagonists, NPCs, villains.
+- **Locations**: Cities, rooms, planets.
+- **Items**: Magical artifacts, weapons, key evidence.
+- **Events**: Historical wars, backstory moments.
 
-Execute scripts defined in your project.
+### Relationships
 
-```bash
-vibe run [script-name]
-```
+Define how entities interact.
 
-**How it works:**
+- _Alice_ is the **daughter** of _Bob_.
+- _The Sword of Omens_ is **located in** _The Cave of Wonders_.
+- _The Great War_ **precipitated** _The Fall of the Kingdom_.
 
-1. Checks for a matching script in `./scripts/[script-name].sh` or `./scripts/[script-name].ts`.
-2. Fallback: Checks your `package.json` scripts.
+## 🔗 Context Injection
 
-### `vibe add`
+When you write, Vibecape analyzes your cursor position.
 
-Inject capabilities into your project. Features are modular and "drop-in".
+1. **Mention Detection**: If you type "Alice", the AI pulls Alice's character sheet into context.
+2. **Consistency Check**: If you write "Alice drew her gun", but Alice's inventory only has a knife, the AI (in Critic mode) might flag a continuity error.
+3. **Lore Suggestions**: Ask "What happened here 50 years ago?", and the AI checks the Location history and Event timeline to answer.
 
-```bash
-vibe add [category]
-```
+## 🧩 Modules
 
-**Common Categories:**
+You can extend your world with specialized modules:
 
-#### 📦 Packages
-
-Add optimized dependencies that are pre-configured for modern stacks.
-
-```bash
-vibe add package
-# Choices:
-# [ ] axios
-# [ ] ai-sdk
-```
-
-#### 🗄️ Database
-
-Spin up database connections and schemas.
-
-```bash
-vibe add database
-# Choices:
-# [ ] drizzle:libsql
-# [ ] supabase
-```
-
-#### 🚀 Workflow
-
-CI/CD and automation scripts.
-
-```bash
-vibe add workflow
-# Choices:
-# [ ] package_publish_on_github
-# [ ] vercel
-```
-
-#### 🧩 Services
-
-Full-stack feature modules with UI, backend, and database logic.
-
-```bash
-vibe add services
-# Choices:
-# [ ] user_manager
-# [ ] mail
-# [ ] payment
-```
-
-#### 🎨 UI
-
-Design systems and component libraries.
-
-```bash
-vibe add ui
-# Choices:
-# [ ] tailwind:v4
-# [ ] shadcn
-# [ ] icon:tabler
-```
-
-## ⚙️ Configuration
-
-The CLI behavior is controlled by `vibe.config.json` at your project root.
-
-```json title="vibe.config.json"
-{
-  "scripts": "./scripts",
-  "template": "ai-native"
-}
-```
+- **Timeline Manager**: Visualize chronological events.
+- **Relationship Map**: A node-graph of character dynamics.
+- **Export Manager**: Compile your world into a PDF bible or EPUB novel.

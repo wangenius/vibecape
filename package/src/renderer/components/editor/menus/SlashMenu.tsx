@@ -35,6 +35,7 @@ import {
   AlertCircle,
   ImageIcon,
   Link2,
+  Table,
 } from "lucide-react";
 
 export type SlashMenuCategory = "ai" | "heading" | "list" | "insert";
@@ -238,6 +239,15 @@ export const getSlashMenuItems = (t: any): SlashMenuItem[] => [
     category: "insert",
     command: ({ editor }) => {
       editor.chain().focus().insertLinkPlaceholder().run();
+    },
+  },
+  {
+    title: t("common.slashMenu.table"),
+    description: t("common.slashMenu.tableDesc"),
+    icon: <Table className="size-4" />,
+    category: "insert",
+    command: ({ editor }) => {
+      editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
     },
   },
 ];

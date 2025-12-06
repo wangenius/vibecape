@@ -350,3 +350,160 @@
 .dark [data-type="ai-diff-node"] * {
   color: rgb(134, 239, 172) !important;
 }
+
+/* ========== 表格样式 ========== */
+/* 完全重置 prose 的表格样式 */
+.prose table,
+.prose-sm table,
+.tiptap.prose table,
+.tiptap.prose-sm table,
+.prose .tiptap table,
+.tiptap table,
+.custom-table,
+.ProseMirror table {
+  border-collapse: collapse !important;
+  border-spacing: 0 !important;
+  width: 100% !important;
+  margin: 1rem 0 !important;
+  table-layout: auto !important;
+  display: table !important;
+  border-radius: 0.375rem !important;
+  overflow: hidden !important;
+  border: 1px solid var(--border) !important;
+}
+
+/* 表格行 - 重置所有样式 */
+.prose table tr,
+.prose table tbody,
+.prose table thead,
+.tiptap table tr,
+.tiptap table tbody,
+.tiptap table thead,
+.custom-table-row,
+.ProseMirror table tr {
+  border: none !important;
+  background: transparent !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* 表格单元格 */
+.prose table td,
+.prose table th,
+.tiptap table td,
+.tiptap table th,
+.custom-table-cell,
+.custom-table-header,
+.ProseMirror table td,
+.ProseMirror table th {
+  border: 1px solid var(--border) !important;
+  border-top: none !important;
+  border-left: none !important;
+  padding: 0.625rem 0.875rem !important;
+  vertical-align: top !important;
+  box-sizing: border-box !important;
+  position: relative !important;
+  min-width: 100px !important;
+  background: var(--background) !important;
+  margin: 0 !important;
+}
+
+/* 第一列单元格 */
+.prose table td:first-child,
+.prose table th:first-child,
+.tiptap table td:first-child,
+.tiptap table th:first-child {
+  border-left: 1px solid var(--border) !important;
+}
+
+/* 第一行单元格 */
+.prose table tr:first-child td,
+.prose table tr:first-child th,
+.prose table thead tr th,
+.tiptap table tr:first-child td,
+.tiptap table tr:first-child th,
+.tiptap table thead tr th {
+  border-top: 1px solid var(--border) !important;
+}
+
+/* 表头样式 */
+.prose table th,
+.prose table thead td,
+.tiptap table th,
+.tiptap table thead td,
+.custom-table-header {
+  background-color: var(--muted) !important;
+  font-weight: 600 !important;
+  text-align: left !important;
+  color: var(--foreground) !important;
+}
+
+/* 单元格内容样式 */
+.prose table td > *,
+.prose table th > *,
+.prose table td p,
+.prose table th p,
+.tiptap table td > *,
+.tiptap table th > *,
+.tiptap table td p,
+.tiptap table th p,
+.custom-table-cell > *,
+.custom-table-header > * {
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: 1.5 !important;
+}
+
+/* 表格单元格选中样式 */
+.tiptap table .selectedCell {
+  background-color: rgba(59, 130, 246, 0.1) !important;
+}
+
+.tiptap table .selectedCell::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border: 2px solid rgb(59, 130, 246);
+  z-index: 1;
+}
+
+/* 表格容器 */
+.tiptap .tableWrapper {
+  overflow-x: auto;
+  margin: 1em 0;
+}
+
+/* 表格列宽度调整拉柄 */
+.tiptap .column-resize-handle {
+  position: absolute;
+  right: -2px;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background-color: rgb(59, 130, 246);
+  cursor: col-resize;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 10;
+}
+
+.tiptap table:hover .column-resize-handle,
+.tiptap .column-resize-handle:hover {
+  opacity: 1;
+}
+
+/* 暗色模式 */
+.dark .tiptap table td,
+.dark .tiptap table th {
+  background: var(--background);
+}
+
+.dark .tiptap table th,
+.dark .custom-table-header {
+  background-color: var(--muted) !important;
+}
+
+.dark .tiptap table .selectedCell {
+  background-color: rgba(59, 130, 246, 0.2) !important;
+}

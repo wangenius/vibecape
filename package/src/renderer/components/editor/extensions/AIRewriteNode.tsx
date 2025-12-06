@@ -187,7 +187,7 @@ export const AIRewriteNode = Node.create<AIRewriteOptions>({
           return found;
         },
 
-      /** 开始流式编辑：删除原文，创建初始 AIDiffMark，更新节点属性 */
+      /** 开始流式编辑：保留原文（带删除线样式），在原文后插入 diff 内容 */
       startAIPolishStream:
         (nodeId: string) =>
         ({ state, tr, dispatch }) => {
@@ -209,9 +209,8 @@ export const AIRewriteNode = Node.create<AIRewriteOptions>({
 
           const markId = nodeAttrs.markId;
           const polishMarkType = state.schema.marks.aiPolishMark;
-          const diffMarkType = state.schema.marks.aiDiff;
 
-          if (!polishMarkType || !diffMarkType) return false;
+          if (!polishMarkType) return false;
 
           // 找到带有该 mark 的文本范围和原文
           let markFrom: number | null = null;
@@ -237,23 +236,22 @@ export const AIRewriteNode = Node.create<AIRewriteOptions>({
           // 生成 diffId
           const diffId = gen.id({ prefix: "diff-", length: 12 });
 
-          // 保存原文插入位置（删除前的位置）
-          const insertPos = markFrom;
+          // 保存插入位置（原文结束位置，新内容插入到原文后面）
+          const insertPos = markTo;
 
-          // 1. 删除原文（带 polishMark 的内容）
-          tr.delete(markFrom, markTo);
+          // 1. 更新原文的 AIPolishMark，设置 streaming: true（显示删除线）
+          const newPolishMark = polishMarkType.create({ id: markId, streaming: true });
+          tr.removeMark(markFrom, markTo, polishMarkType);
+          tr.addMark(markFrom, markTo, newPolishMark);
 
-          // 2. 更新节点属性，保存 diffId、originalText 和 insertPos
+          // 2. 更新节点属性
           const nodeType = state.schema.nodes.aiRewrite;
           if (targetPos !== null) {
-            // 注意：删除原文后，节点位置会前移
-            const deletedLength = markTo - markFrom;
-            const newNodePos = targetPos - deletedLength;
-            tr.setNodeMarkup(newNodePos, nodeType, {
+            tr.setNodeMarkup(targetPos, nodeType, {
               ...nodeAttrs,
               diffId,
               originalText,
-              insertPos, // 保存原文的插入位置
+              insertPos, // 新内容插入位置（原文后面）
             });
           }
 
@@ -427,6 +425,15 @@ export const AIPolishMark = Mark.create({
           return { "data-polish-id": attributes.id };
         },
       },
+      // streaming 状态：true 表示正在流式生成，原文应显示删除线
+      streaming: {
+        default: false,
+        parseHTML: (element) => element.getAttribute("data-streaming") === "true",
+        renderHTML: (attributes) => {
+          if (!attributes.streaming) return {};
+          return { "data-streaming": "true" };
+        },
+      },
     };
   },
 
@@ -435,13 +442,15 @@ export const AIPolishMark = Mark.create({
   },
 
   renderHTML({ HTMLAttributes }) {
+    const isStreaming = HTMLAttributes["data-streaming"] === "true";
     return [
       "span",
       mergeAttributes(
         {
           "data-type": "ai-polish-mark",
-          class:
-            "relative underline decoration-primary/50 decoration-wavy decoration-from-font underline-offset-2",
+          class: isStreaming
+            ? "ai-diff-deleted" // 流式生成时显示删除线
+            : "relative underline decoration-primary/50 decoration-wavy decoration-from-font underline-offset-2",
         },
         this.options.HTMLAttributes,
         HTMLAttributes

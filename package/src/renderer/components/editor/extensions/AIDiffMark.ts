@@ -101,61 +101,104 @@ export const AIDiffMark = Mark.create<AIDiffMarkOptions>({
         ({ commands }) => {
           return commands.unsetMark(this.name);
         },
-      /** 接受 AI Diff：移除 mark，保留新内容 */
+      /** 接受 AI Diff：删除原文（AIPolishMark），保留新内容（移除 AIDiffMark） */
       acceptAIDiff:
         (diffId: string) =>
         ({ state, tr, dispatch }) => {
-          const markType = state.schema.marks.aiDiff;
-          if (!markType) return false;
+          const diffMarkType = state.schema.marks.aiDiff;
+          const polishMarkType = state.schema.marks.aiPolishMark;
+          if (!diffMarkType) return false;
 
-          let found = false;
-
-          // 找到所有带有该 diffId 的 mark 并移除
-          state.doc.descendants((node, pos) => {
-            if (!node.isText) return;
-            const mark = node.marks.find(
-              (m) => m.type === markType && m.attrs.diffId === diffId
-            );
-            if (mark) {
-              tr.removeMark(pos, pos + node.nodeSize, mark);
-              found = true;
-            }
-          });
-
-          if (found && dispatch) dispatch(tr);
-          return found;
-        },
-      /** 拒绝 AI Diff：用原文替换新内容 */
-      rejectAIDiff:
-        (diffId: string) =>
-        ({ state, tr, dispatch }) => {
-          const markType = state.schema.marks.aiDiff;
-          if (!markType) return false;
-
-          // 找到带有该 diffId 的 mark 范围和原文
-          let markFrom: number | null = null;
-          let markTo: number | null = null;
+          // 1. 找到 diff mark 并获取 originalText（用于定位原文）
+          let diffFrom = -1;
+          let diffTo = -1;
           let originalText = "";
 
           state.doc.descendants((node, pos) => {
             if (!node.isText) return;
             const mark = node.marks.find(
-              (m) => m.type === markType && m.attrs.diffId === diffId
+              (m) => m.type === diffMarkType && m.attrs.diffId === diffId
             );
             if (mark) {
-              if (markFrom === null) {
-                markFrom = pos;
+              if (diffFrom === -1) {
+                diffFrom = pos;
                 originalText = mark.attrs.originalText || "";
               }
-              markTo = pos + node.nodeSize;
+              diffTo = pos + node.nodeSize;
             }
           });
 
-          if (markFrom === null || markTo === null) return false;
+          if (diffFrom === -1) return false;
 
-          // 用原文替换当前内容
-          const textNode = state.schema.text(originalText);
-          tr.replaceWith(markFrom, markTo, textNode);
+          // 2. 找到并删除原文（带 AIPolishMark 的内容）
+          if (polishMarkType && originalText) {
+            let polishFrom = -1;
+            let polishTo = -1;
+
+            state.doc.descendants((node, pos) => {
+              if (!node.isText) return true;
+              const mark = node.marks.find((m) => m.type === polishMarkType);
+              if (mark && node.text === originalText) {
+                polishFrom = pos;
+                polishTo = pos + node.nodeSize;
+                return false;
+              }
+              return true;
+            });
+
+            if (polishFrom !== -1 && polishTo !== -1) {
+              tr.delete(polishFrom, polishTo);
+              // 删除原文后，diff 位置会前移
+              const shift = polishTo - polishFrom;
+              diffFrom -= shift;
+              diffTo -= shift;
+            }
+          }
+
+          // 3. 移除 diff mark，保留新内容
+          tr.removeMark(diffFrom, diffTo, diffMarkType);
+
+          if (dispatch) dispatch(tr);
+          return true;
+        },
+      /** 拒绝 AI Diff：删除新内容（AIDiffMark），保留原文（移除 AIPolishMark） */
+      rejectAIDiff:
+        (diffId: string) =>
+        ({ state, tr, dispatch }) => {
+          const diffMarkType = state.schema.marks.aiDiff;
+          const polishMarkType = state.schema.marks.aiPolishMark;
+          if (!diffMarkType) return false;
+
+          // 1. 找到并删除 diff 内容
+          let diffFrom = -1;
+          let diffTo = -1;
+
+          state.doc.descendants((node, pos) => {
+            if (!node.isText) return;
+            const mark = node.marks.find(
+              (m) => m.type === diffMarkType && m.attrs.diffId === diffId
+            );
+            if (mark) {
+              if (diffFrom === -1) diffFrom = pos;
+              diffTo = pos + node.nodeSize;
+            }
+          });
+
+          if (diffFrom === -1 || diffTo === -1) return false;
+
+          // 删除 diff 内容
+          tr.delete(diffFrom, diffTo);
+
+          // 2. 移除原文的 polish mark
+          if (polishMarkType) {
+            tr.doc.descendants((node, pos) => {
+              if (!node.isText) return;
+              const mark = node.marks.find((m) => m.type === polishMarkType);
+              if (mark) {
+                tr.removeMark(pos, pos + node.nodeSize, mark);
+              }
+            });
+          }
 
           if (dispatch) dispatch(tr);
           return true;
@@ -210,23 +253,7 @@ export const AIDiffMark = Mark.create<AIDiffMarkOptions>({
               if (processedDiffIds.has(diffId)) continue;
               processedDiffIds.add(diffId);
 
-              // 1. 在开始位置添加被删除的原文（红色划掉）
-              if (info.originalText) {
-                const deletedWidget = Decoration.widget(
-                  info.startPos,
-                  () => {
-                    const span = document.createElement("span");
-                    span.className = "ai-diff-deleted";
-                    span.textContent = info.originalText;
-                    span.contentEditable = "false";
-                    return span;
-                  },
-                  { side: -1 }
-                );
-                decorations.push(deletedWidget);
-              }
-
-              // 2. 在结束位置添加 Accept/Reject 按钮
+              // 在结束位置添加 Accept/Reject 按钮
               const actionsWidget = Decoration.widget(
                 info.endPos,
                 () => {

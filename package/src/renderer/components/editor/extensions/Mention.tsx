@@ -32,6 +32,8 @@ import {
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
+import { useMentionHistoryStore } from "@/hooks/stores/useMentionHistoryStore";
+import { useDocumentStore } from "@/hooks/stores/useDocumentStore";
 
 declare module "@tiptap/core" {
   interface Commands<ReturnType> {
@@ -347,6 +349,23 @@ export const Mention = Node.create({
       }
     };
 
+    // 获取排序后的文档列表
+    const getSortedDocs = (docs: MentionMenuItem[]): MentionMenuItem[] => {
+      const activeDocId = useDocumentStore.getState().activeDocId;
+      const { getScore } = useMentionHistoryStore.getState();
+
+      return [...docs].sort((a, b) => {
+        const scoreA = getScore(a.id, activeDocId);
+        const scoreB = getScore(b.id, activeDocId);
+        return scoreB - scoreA; // 降序，分数高的在前
+      });
+    };
+
+    // 记录 mention 历史
+    const recordMention = (id: string, title: string) => {
+      useMentionHistoryStore.getState().recordMention(id, title);
+    };
+
     // 初始加载
     fetchDocs();
 
@@ -359,12 +378,10 @@ export const Mention = Node.create({
           // 刷新文档列表
           fetchDocs();
 
-          if (!query) {
-            return cachedDocs.slice(0, 10);
-          }
+          let filteredDocs = cachedDocs;
 
-          return cachedDocs
-            .filter((doc) => {
+          if (query) {
+            filteredDocs = cachedDocs.filter((doc) => {
               // 普通文本匹配
               if (doc.title.toLowerCase().includes(query.toLowerCase())) {
                 return true;
@@ -372,8 +389,11 @@ export const Mention = Node.create({
               // 拼音匹配
               const match = PinyinMatch.match(doc.title, query);
               return match !== false;
-            })
-            .slice(0, 10);
+            });
+          }
+
+          // 应用智能排序
+          return getSortedDocs(filteredDocs).slice(0, 10);
         },
         render: () => {
           let popup: TippyInstance[] | null = null;
@@ -385,6 +405,9 @@ export const Mention = Node.create({
                 props: {
                   items: props.items,
                   command: (item: MentionMenuItem) => {
+                    // 记录到历史
+                    recordMention(item.id, item.title);
+
                     props.editor
                       .chain()
                       .focus()
@@ -416,6 +439,9 @@ export const Mention = Node.create({
               component.updateProps({
                 items: props.items,
                 command: (item: MentionMenuItem) => {
+                  // 记录到历史
+                  recordMention(item.id, item.title);
+
                   props.editor
                     .chain()
                     .focus()

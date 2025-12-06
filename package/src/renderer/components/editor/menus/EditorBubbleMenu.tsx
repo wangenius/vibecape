@@ -6,9 +6,18 @@
 import { BubbleMenu } from "@tiptap/react/menus";
 import type { Editor } from "@tiptap/react";
 import { cn } from "@/lib/utils";
-import { Bold, Italic, Code, Link, Sparkles } from "lucide-react";
+import {
+  Bold,
+  Italic,
+  Code,
+  Link,
+  Sparkles,
+  MessageSquareQuote,
+} from "lucide-react";
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
+import { dispatchQuoteEvent } from "@/lib/events/quoteEvent";
+import { useDocumentStore } from "@/hooks/stores/useDocumentStore";
 
 interface EditorBubbleMenuProps {
   editor: Editor | null;
@@ -20,6 +29,7 @@ interface ToolbarButtonProps {
   disabled?: boolean;
   icon: React.ReactNode;
   title: string;
+  shortcut?: string;
 }
 
 const ToolbarButton = ({
@@ -28,12 +38,14 @@ const ToolbarButton = ({
   disabled,
   icon,
   title,
+  shortcut,
 }: ToolbarButtonProps) => {
+  const displayTitle = shortcut ? `${title} (${shortcut})` : title;
   return (
     <button
       onClick={onClick}
       disabled={disabled}
-      title={title}
+      title={displayTitle}
       className={cn(
         "h-7 w-7 flex items-center justify-center rounded-lg",
         "transition-all duration-100 hover:bg-muted",
@@ -48,6 +60,7 @@ const ToolbarButton = ({
 
 export const EditorBubbleMenu = ({ editor }: EditorBubbleMenuProps) => {
   const { t } = useTranslation();
+
   const handleLink = useCallback(() => {
     if (!editor) return;
 
@@ -66,6 +79,24 @@ export const EditorBubbleMenu = ({ editor }: EditorBubbleMenuProps) => {
         .setLink({ href: url })
         .run();
     }
+  }, [editor, t]);
+
+  /** 引用选中内容到 Chat */
+  const handleQuote = useCallback(() => {
+    if (!editor) return;
+
+    const { from, to } = editor.state.selection;
+    const text = editor.state.doc.textBetween(from, to, "\n");
+
+    if (!text.trim()) return;
+
+    const activeDoc = useDocumentStore.getState().activeDoc;
+
+    dispatchQuoteEvent({
+      text: text.trim(),
+      docId: activeDoc?.id,
+      docTitle: activeDoc?.title,
+    });
   }, [editor]);
 
   if (!editor) return null;
@@ -117,6 +148,12 @@ export const EditorBubbleMenu = ({ editor }: EditorBubbleMenuProps) => {
           title={t("common.bubbleMenu.link")}
         />
         <div className="w-px h-4 bg-zinc-700 mx-0.5" />
+        <ToolbarButton
+          onClick={handleQuote}
+          icon={<MessageSquareQuote className="size-4" strokeWidth={2} />}
+          title={t("common.bubbleMenu.quote")}
+          shortcut="⌘L"
+        />
         <ToolbarButton
           onClick={() => editor.commands.insertAIPolish()}
           icon={<Sparkles className="size-4" strokeWidth={2} />}

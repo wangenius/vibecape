@@ -4,6 +4,7 @@
 export { useWorkspaceStore } from "./useWorkspaceStore";
 export { useDocumentStore } from "./useDocumentStore";
 export { useUIStore } from "./useUIStore";
+export { useMentionHistoryStore } from "./useMentionHistoryStore";
 
 // Bootstrap 函数 - 初始化应用
 import { initModels, initDefaultModels } from "@/hooks/model/useModel";
@@ -34,6 +35,18 @@ export const bootstrap = async () => {
         await useDocumentStore.getState().restoreDoc(activeDocId);
       }
     }
+
+    // 监听文档变更事件 - 当 AI 工具修改文档后自动刷新
+    window.api.vibecape.onDocsChanged(async (data) => {
+      console.log("[Stores] 文档变更通知:", data.tool);
+      // 刷新文档树
+      await useDocumentStore.getState().refreshTree();
+      // 如果当前有打开的文档，也刷新它
+      const { activeDocId } = useDocumentStore.getState();
+      if (activeDocId) {
+        await useDocumentStore.getState().restoreDoc(activeDocId);
+      }
+    });
   } catch (error) {
     const { useUIStore } = await import("./useUIStore");
     useUIStore.getState().setError((error as Error).message);

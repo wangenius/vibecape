@@ -34,16 +34,42 @@ export const DocWorkspace = ({ doc, onSave }: Props) => {
   const lastDocIdRef = useRef<string | null>(null);
   const [contentVersion, setContentVersion] = useState(0);
 
-  // 仅当切换文档时更新状态
+  // 仅当切换文档时或外部更新时同步状态
   const prevDocIdRef = useRef<string | null>(null);
+  const prevDocTitleRef = useRef<string | null>(null);
+  const prevDocDescRef = useRef<string | null>(null);
+
   useEffect(() => {
+    const currentDesc = doc.metadata?.description ?? "";
+
+    // 切换文档时完全重置
     if (doc.id && doc.id !== prevDocIdRef.current) {
       prevDocIdRef.current = doc.id;
+      prevDocTitleRef.current = doc.title;
+      prevDocDescRef.current = currentDesc;
       setTitle(doc.title);
-      setDescription(doc.metadata?.description ?? "");
+      setDescription(currentDesc);
       editorContentRef.current = null;
+      return;
     }
-  }, [doc.id]);
+
+    // 同一文档但数据变化（外部更新，如 AI 重命名）
+    // 只有当用户没有主动修改时才同步
+    if (doc.title !== prevDocTitleRef.current) {
+      // 如果当前 title 等于之前记录的外部值，说明用户没有修改，可以更新
+      if (title === prevDocTitleRef.current) {
+        setTitle(doc.title);
+      }
+      prevDocTitleRef.current = doc.title;
+    }
+
+    if (currentDesc !== prevDocDescRef.current) {
+      if (description === prevDocDescRef.current) {
+        setDescription(currentDesc);
+      }
+      prevDocDescRef.current = currentDesc;
+    }
+  }, [doc.id, doc.title, doc.metadata?.description, title, description]);
 
   // 保存函数
   const handleSave = useCallback(async () => {

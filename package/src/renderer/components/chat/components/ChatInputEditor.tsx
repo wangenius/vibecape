@@ -1,13 +1,20 @@
-import { useState, useRef, useCallback, useEffect } from "react";
-import { TbSquareRoundedX } from "react-icons/tb";
+import { useRef, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useEditor, EditorContent, Extension } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
 import { StopIcon } from "@radix-ui/react-icons";
 import { ArrowUp } from "lucide-react";
-import { Mention } from "@/components/editor/extensions/Mention";
 import { useTranslation } from "react-i18next";
+import {
+  RefExtension,
+  refContentToText,
+  insertTextRef,
+} from "../extensions/RefExtension";
+import {
+  addQuoteListener,
+  type QuoteEventDetail,
+} from "@/lib/events/quoteEvent";
 import "@/@styles/chatinput.css";
 
 export interface ChatInputProps {
@@ -23,10 +30,9 @@ export const ChatInputEditor = ({
   status,
   placeholder,
   onStop,
-  enableQuote,
+  enableQuote = true,
 }: ChatInputProps) => {
   const { t } = useTranslation();
-  const [quote, setQuote] = useState("");
   const isStreaming = status === "streaming" || status === "submitted";
   const handleSubmitRef = useRef<() => void>(() => {});
   const placeholderText = placeholder || t("chat.input.placeholder");
@@ -42,7 +48,8 @@ export const ChatInputEditor = ({
           placeholder: placeholderText,
           emptyEditorClass: "is-editor-empty",
         }),
-        Mention,
+        // 使用 RefExtension 替代 Mention
+        ...RefExtension,
         Extension.create({
           name: "chatInputKeymap",
           addKeyboardShortcuts() {
@@ -67,41 +74,45 @@ export const ChatInputEditor = ({
     [placeholderText]
   );
 
+  /**
+   * 将编辑器内容转换为消息文本
+   * 使用 refContentToText 处理 docRef 和 textRef 节点
+   */
+  const getMessageText = useCallback((): string => {
+    if (!editor) return "";
+    const json = editor.getJSON();
+    return refContentToText(json);
+  }, [editor]);
+
   const handleSubmit = useCallback(() => {
     if (!editor || editor.isEmpty) return;
-    const text = editor.getText();
+
+    const text = getMessageText();
     if (!text.trim()) return;
 
-    let finalMessage = text;
-    if (enableQuote && quote) {
-      finalMessage = `[QUOTE_START]\n${quote}\n[QUOTE_END]\n\n${text}`;
-      setQuote("");
-    }
-
-    onSubmit({ text: finalMessage });
+    onSubmit({ text });
     editor.commands.clearContent();
-  }, [editor, quote, enableQuote, onSubmit]);
+  }, [editor, onSubmit, getMessageText]);
 
   useEffect(() => {
     handleSubmitRef.current = handleSubmit;
   }, [handleSubmit]);
 
+  // 监听引用事件 - 当用户按 Cmd+L 或点击引用按钮时
+  useEffect(() => {
+    if (!enableQuote || !editor) return;
+
+    const removeListener = addQuoteListener((detail: QuoteEventDetail) => {
+      // 使用 textRef 节点插入引用
+      insertTextRef(editor, detail.text, detail.docId, detail.docTitle);
+      editor.commands.focus("end");
+    });
+
+    return removeListener;
+  }, [enableQuote, editor]);
 
   return (
     <div className="chat-input-wrapper">
-      {enableQuote && quote && (
-        <div className="chat-input-quote">
-          <div className="chat-input-quote-text">{quote}</div>
-          <Button
-            onClick={() => setQuote("")}
-            className="chat-input-quote-close"
-            size="icon"
-            variant="ghost"
-          >
-            <TbSquareRoundedX className="h-4 w-4" />
-          </Button>
-        </div>
-      )}
       <div className="chat-input-container">
         <EditorContent editor={editor} />
         <div className="chat-input-actions">

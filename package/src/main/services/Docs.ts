@@ -11,91 +11,15 @@ import { docs, type DocTreeNode, type DocData } from "@common/schema/docs";
 import { getDocsDb } from "@main/db/docs";
 import { WorkspaceService } from "./Workspace";
 import type { JSONContent } from "@tiptap/core";
+import {
+  jsonToMarkdown,
+  markdownToJSON,
+  parseMarkdownWithFrontmatter,
+  stringifyWithFrontmatter,
+} from "@common/lib/content-converter";
 
-// ==================== Markdown 工具 ====================
-
-function stringifyFrontmatter(
-  body: string,
-  metadata?: Record<string, any>
-): string {
-  const meta = metadata ?? {};
-  if (Object.keys(meta).length === 0) {
-    return body;
-  }
-
-  const lines = Object.entries(meta).map(([key, value]) => {
-    if (typeof value === "object") {
-      return `${key}: ${JSON.stringify(value)}`;
-    }
-    return `${key}: ${String(value)}`;
-  });
-
-  return `---\n${lines.join("\n")}\n---\n\n${body}`;
-}
-
-function jsonContentToMarkdown(content: JSONContent): string {
-  if (!content.content) return "";
-
-  const lines: string[] = [];
-
-  const extractText = (node: JSONContent): string => {
-    if (node.text) return node.text;
-    if (!node.content) return "";
-    return node.content.map(extractText).join("");
-  };
-
-  for (const node of content.content) {
-    switch (node.type) {
-      case "heading": {
-        const level = node.attrs?.level || 1;
-        const text = extractText(node);
-        lines.push(`${"#".repeat(level)} ${text}`);
-        break;
-      }
-      case "paragraph": {
-        const text = extractText(node);
-        lines.push(text);
-        break;
-      }
-      case "bulletList": {
-        if (node.content) {
-          for (const item of node.content) {
-            const text = extractText(item);
-            lines.push(`- ${text}`);
-          }
-        }
-        break;
-      }
-      case "orderedList": {
-        if (node.content) {
-          node.content.forEach((item, i) => {
-            const text = extractText(item);
-            lines.push(`${i + 1}. ${text}`);
-          });
-        }
-        break;
-      }
-      case "codeBlock": {
-        const lang = node.attrs?.language || "";
-        const text = extractText(node);
-        lines.push(`\`\`\`${lang}\n${text}\n\`\`\``);
-        break;
-      }
-      case "blockquote": {
-        const text = extractText(node);
-        lines.push(`> ${text}`);
-        break;
-      }
-      default: {
-        const text = extractText(node);
-        if (text) lines.push(text);
-      }
-    }
-    lines.push("");
-  }
-
-  return lines.join("\n").trim();
-}
+// ==================== 文档服务 ====================
+// 注意: Markdown 转换工具已移至 @common/lib/content-converter
 
 // ==================== 文档服务 ====================
 
@@ -192,11 +116,14 @@ export class DocsService {
       .select({ order: docs.order })
       .from(docs)
       .where(
-        data.parent_id ? eq(docs.parent_id, data.parent_id) : isNull(docs.parent_id)
+        data.parent_id
+          ? eq(docs.parent_id, data.parent_id)
+          : isNull(docs.parent_id)
       )
       .orderBy(asc(docs.order));
 
-    const maxOrder = siblings.length > 0 ? siblings[siblings.length - 1].order : -1;
+    const maxOrder =
+      siblings.length > 0 ? siblings[siblings.length - 1].order : -1;
 
     const now = Date.now();
     const result = await db
@@ -204,7 +131,10 @@ export class DocsService {
       .values({
         parent_id: data.parent_id ?? null,
         title: data.title,
-        content: data.content || { type: "doc", content: [{ type: "paragraph" }] },
+        content: data.content || {
+          type: "doc",
+          content: [{ type: "paragraph" }],
+        },
         metadata: data.metadata || {},
         order: maxOrder + 1,
         created_at: now,
@@ -296,7 +226,10 @@ export class DocsService {
   static async reorderDoc(activeId: string, overId: string): Promise<void> {
     const db = await this.getDb();
 
-    const [activeDoc] = await db.select().from(docs).where(eq(docs.id, activeId));
+    const [activeDoc] = await db
+      .select()
+      .from(docs)
+      .where(eq(docs.id, activeId));
     const [overDoc] = await db.select().from(docs).where(eq(docs.id, overId));
 
     if (!activeDoc || !overDoc) {
@@ -326,23 +259,32 @@ export class DocsService {
     siblings.splice(overIndex, 0, removed);
 
     for (let i = 0; i < siblings.length; i++) {
-      await db.update(docs).set({ order: i }).where(eq(docs.id, siblings[i].id));
+      await db
+        .update(docs)
+        .set({ order: i })
+        .where(eq(docs.id, siblings[i].id));
     }
   }
 
   /**
    * 移动文档到新的父级
    */
-  static async moveDoc(docId: string, newParentId: string | null): Promise<void> {
+  static async moveDoc(
+    docId: string,
+    newParentId: string | null
+  ): Promise<void> {
     const db = await this.getDb();
 
     const siblings = await db
       .select()
       .from(docs)
-      .where(newParentId ? eq(docs.parent_id, newParentId) : isNull(docs.parent_id))
+      .where(
+        newParentId ? eq(docs.parent_id, newParentId) : isNull(docs.parent_id)
+      )
       .orderBy(asc(docs.order));
 
-    const maxOrder = siblings.length > 0 ? siblings[siblings.length - 1].order + 1 : 0;
+    const maxOrder =
+      siblings.length > 0 ? siblings[siblings.length - 1].order + 1 : 0;
 
     await db
       .update(docs)
@@ -361,8 +303,8 @@ export class DocsService {
       throw new Error("文档不存在");
     }
 
-    const markdown = jsonContentToMarkdown(doc.content);
-    const content = stringifyFrontmatter(markdown, {
+    const markdown = jsonToMarkdown(doc.content);
+    const content = stringifyWithFrontmatter(markdown, {
       title: doc.title,
       ...doc.metadata,
     });
@@ -399,7 +341,7 @@ export class DocsService {
       return;
     }
 
-    const markdown = jsonContentToMarkdown(doc.content);
+    const markdown = jsonToMarkdown(doc.content);
     const html = markdownToHtml(markdown, doc.title);
 
     const { BrowserWindow } = await import("electron");
@@ -408,7 +350,9 @@ export class DocsService {
       webPreferences: { offscreen: true },
     });
 
-    await win.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`);
+    await win.loadURL(
+      `data:text/html;charset=utf-8,${encodeURIComponent(html)}`
+    );
     const pdfData = await win.webContents.printToPDF({
       printBackground: true,
       margins: { top: 0.5, bottom: 0.5, left: 0.5, right: 0.5 },
@@ -424,8 +368,14 @@ export class DocsService {
    */
   static async importMarkdownFile(filePath: string): Promise<DocData> {
     const content = await fs.readFile(filePath, "utf-8");
-    const { title, body, metadata } = parseMarkdownFile(content, filePath);
-    const jsonContent = markdownToJsonContent(body);
+    const { title, body, metadata } = parseMarkdownWithFrontmatter(
+      content,
+      filePath
+        .split("/")
+        .pop()
+        ?.replace(/\.(md|mdx)$/, "")
+    );
+    const jsonContent = markdownToJSON(body);
 
     return this.createDoc({
       title,
@@ -465,11 +415,11 @@ export class DocsService {
           count += await importDir(fullPath, folderDoc.id);
         } else if (entry.name.endsWith(".md") || entry.name.endsWith(".mdx")) {
           const content = await fs.readFile(fullPath, "utf-8");
-          const { title, body, metadata } = parseMarkdownFile(
+          const { title, body, metadata } = parseMarkdownWithFrontmatter(
             content,
-            fullPath
+            entry.name.replace(/\.(md|mdx)$/, "")
           );
-          const jsonContent = markdownToJsonContent(body);
+          const jsonContent = markdownToJSON(body);
 
           await self.createDoc({
             parent_id: parentId,
@@ -532,151 +482,6 @@ export class DocsService {
   }
 }
 
-// ==================== Markdown 解析工具 ====================
-
-function parseMarkdownFile(
-  content: string,
-  filePath: string
-): { title: string; body: string; metadata: Record<string, any> } {
-  let title = filePath.split("/").pop()?.replace(/\.(md|mdx)$/, "") || "Untitled";
-  let body = content;
-  let metadata: Record<string, any> = {};
-
-  // 解析 frontmatter
-  const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
-  if (frontmatterMatch) {
-    const frontmatter = frontmatterMatch[1];
-    body = frontmatterMatch[2];
-
-    // 简单解析 YAML frontmatter
-    for (const line of frontmatter.split("\n")) {
-      const match = line.match(/^(\w+):\s*(.+)$/);
-      if (match) {
-        const [, key, value] = match;
-        if (key === "title") {
-          title = value.replace(/^["']|["']$/g, "");
-        } else {
-          try {
-            metadata[key] = JSON.parse(value);
-          } catch {
-            metadata[key] = value.replace(/^["']|["']$/g, "");
-          }
-        }
-      }
-    }
-  }
-
-  return { title, body: body.trim(), metadata };
-}
-
-function markdownToJsonContent(markdown: string): JSONContent {
-  const lines = markdown.split("\n");
-  const content: JSONContent[] = [];
-
-  let i = 0;
-  while (i < lines.length) {
-    const line = lines[i];
-
-    // 标题
-    const headingMatch = line.match(/^(#{1,6})\s+(.+)$/);
-    if (headingMatch) {
-      content.push({
-        type: "heading",
-        attrs: { level: headingMatch[1].length },
-        content: [{ type: "text", text: headingMatch[2] }],
-      });
-      i++;
-      continue;
-    }
-
-    // 代码块
-    if (line.startsWith("```")) {
-      const lang = line.slice(3).trim();
-      const codeLines: string[] = [];
-      i++;
-      while (i < lines.length && !lines[i].startsWith("```")) {
-        codeLines.push(lines[i]);
-        i++;
-      }
-      content.push({
-        type: "codeBlock",
-        attrs: { language: lang },
-        content: [{ type: "text", text: codeLines.join("\n") }],
-      });
-      i++;
-      continue;
-    }
-
-    // 引用
-    if (line.startsWith("> ")) {
-      content.push({
-        type: "blockquote",
-        content: [
-          {
-            type: "paragraph",
-            content: [{ type: "text", text: line.slice(2) }],
-          },
-        ],
-      });
-      i++;
-      continue;
-    }
-
-    // 无序列表
-    if (line.match(/^[-*]\s+/)) {
-      const items: JSONContent[] = [];
-      while (i < lines.length && lines[i].match(/^[-*]\s+/)) {
-        items.push({
-          type: "listItem",
-          content: [
-            {
-              type: "paragraph",
-              content: [{ type: "text", text: lines[i].replace(/^[-*]\s+/, "") }],
-            },
-          ],
-        });
-        i++;
-      }
-      content.push({ type: "bulletList", content: items });
-      continue;
-    }
-
-    // 有序列表
-    if (line.match(/^\d+\.\s+/)) {
-      const items: JSONContent[] = [];
-      while (i < lines.length && lines[i].match(/^\d+\.\s+/)) {
-        items.push({
-          type: "listItem",
-          content: [
-            {
-              type: "paragraph",
-              content: [{ type: "text", text: lines[i].replace(/^\d+\.\s+/, "") }],
-            },
-          ],
-        });
-        i++;
-      }
-      content.push({ type: "orderedList", content: items });
-      continue;
-    }
-
-    // 空行
-    if (line.trim() === "") {
-      i++;
-      continue;
-    }
-
-    // 普通段落
-    content.push({
-      type: "paragraph",
-      content: [{ type: "text", text: line }],
-    });
-    i++;
-  }
-
-  return { type: "doc", content };
-}
-
 // ==================== HTML 工具 ====================
 
 function markdownToHtml(markdown: string, title: string): string {
@@ -689,7 +494,10 @@ function markdownToHtml(markdown: string, title: string): string {
     .replace(/^# (.+)$/gm, "<h1>$1</h1>")
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
     .replace(/\*(.+?)\*/g, "<em>$1</em>")
-    .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code class="$1">$2</code></pre>')
+    .replace(
+      /```(\w*)\n([\s\S]*?)```/g,
+      '<pre><code class="$1">$2</code></pre>'
+    )
     .replace(/`([^`]+)`/g, "<code>$1</code>")
     .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>')
     .replace(/^- (.+)$/gm, "<li>$1</li>")

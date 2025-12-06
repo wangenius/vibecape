@@ -12,6 +12,8 @@ import {
   Hero,
   type HeroMeta,
 } from "../../heroes";
+import { createDocumentTools } from "../../heroes/tools/document";
+import { createDocManagementTools } from "../../heroes/tools/docs";
 
 // 流式请求状态管理
 interface StreamState {
@@ -95,7 +97,7 @@ async function generateThreadTitle(
  * 获取 Agent 模块
  */
 function getHeroForPayload(heroId?: string): Hero {
-  return heroId ? getHero(heroId) ?? getDefaultHero() : getDefaultHero();
+  return heroId ? (getHero(heroId) ?? getDefaultHero()) : getDefaultHero();
 }
 
 /**
@@ -108,8 +110,16 @@ async function buildMessages(
   // 获取 Hero 配置
   const hero = getHeroForPayload(payload.heroId);
   const systemPrompt = hero.getSystemPrompt();
-  console.log("[ChatHandler] buildMessages - heroId:", payload.heroId, "hero.id:", hero.id);
-  console.log("[ChatHandler] systemPrompt (first 200 chars):", systemPrompt.substring(0, 200));
+  console.log(
+    "[ChatHandler] buildMessages - heroId:",
+    payload.heroId,
+    "hero.id:",
+    hero.id
+  );
+  console.log(
+    "[ChatHandler] systemPrompt (first 200 chars):",
+    systemPrompt.substring(0, 200)
+  );
   const systemMessage = { role: "system" as const, content: systemPrompt };
 
   if (!thread) {
@@ -182,8 +192,17 @@ async function handleStreamResponse(
 
   // 合并 Hero 工具和 MCP 工具（AI SDK MCP 已返回可直接使用的工具格式）
   const mcpTools = MCPManager.getAllTools();
-  const allTools = { ...hero.tools, ...mcpTools };
-  console.log(`[ChatHandler] Using ${Object.keys(hero.tools).length} hero tools + ${Object.keys(mcpTools).length} MCP tools`);
+  const docEditorTools = createDocumentTools(webContents);
+  const docManagementTools = createDocManagementTools();
+  const allTools = {
+    ...hero.tools,
+    ...docEditorTools,
+    ...docManagementTools,
+    ...mcpTools,
+  };
+  console.log(
+    `[ChatHandler] Using ${Object.keys(hero.tools).length} hero tools + ${Object.keys(docEditorTools).length} editor tools + ${Object.keys(docManagementTools).length} management tools + ${Object.keys(mcpTools).length} MCP tools`
+  );
 
   const result = streamText({
     model: main,
@@ -204,19 +223,39 @@ async function handleStreamResponse(
         const toolName = (chunk as { toolName?: string }).toolName || "unknown";
         state.parts.push({
           type: `tool-${toolName}`,
-          toolCallId: (chunk as { toolCallId?: string }).toolCallId || `${toolName}-${Date.now()}`,
+          toolCallId:
+            (chunk as { toolCallId?: string }).toolCallId ||
+            `${toolName}-${Date.now()}`,
           state: "input-available",
           input: (chunk as { args?: unknown }).args,
         } as MessagePart);
       } else if (chunk.type === "tool-result") {
         const resultToolCallId = (chunk as { toolCallId?: string }).toolCallId;
         const tc = state.parts.find(
-          (p) => p.type.startsWith("tool-") && 
-                 (p as { toolCallId?: string }).toolCallId === resultToolCallId
+          (p) =>
+            p.type.startsWith("tool-") &&
+            (p as { toolCallId?: string }).toolCallId === resultToolCallId
         );
         if (tc) {
-          (tc as { state: string; output?: unknown }).state = "output-available";
-          (tc as { output?: unknown }).output = (chunk as { result?: unknown }).result;
+          (tc as { state: string; output?: unknown }).state =
+            "output-available";
+          (tc as { output?: unknown }).output = (
+            chunk as { result?: unknown }
+          ).result;
+
+          // 检测文档管理工具，通知前端刷新
+          const docManagementTools = [
+            "createDocument",
+            "renameDocument",
+            "updateDocumentMetadata",
+            "moveDocument",
+            "reorderDocument",
+            "deleteDocument",
+          ];
+          const toolName = tc.type.replace("tool-", "");
+          if (docManagementTools.includes(toolName)) {
+            webContents.send("docs:changed", { tool: toolName });
+          }
         }
       }
       webContents.send(channel, chunk);
@@ -228,7 +267,10 @@ async function handleStreamResponse(
         await saveMessage(threadId, state.parts);
         webContents.send(channel, { type: "end" });
       } catch (error: any) {
-        webContents.send(channel, { type: "error", message: error?.message || "保存消息失败" });
+        webContents.send(channel, {
+          type: "error",
+          message: error?.message || "保存消息失败",
+        });
       } finally {
         activeStreams.delete(requestId);
       }

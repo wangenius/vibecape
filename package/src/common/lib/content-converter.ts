@@ -1,0 +1,435 @@
+/**
+ * Tiptap Content Converter
+ *
+ * 提供 Markdown ↔ JSONContent 的双向转换能力
+ * 可用于：
+ * - Agent 工具（理解和生成结构化内容）
+ * - 导入/导出功能
+ * - 复制粘贴处理
+ */
+
+import type { JSONContent } from "@tiptap/core";
+
+// ==================== Types ====================
+
+export interface ParsedMarkdown {
+  title: string;
+  body: string;
+  metadata: Record<string, any>;
+}
+
+export interface ConverterOptions {
+  /** 是否保留空段落 */
+  preserveEmptyParagraphs?: boolean;
+  /** 是否解析内联样式（粗体、斜体等） */
+  parseInlineStyles?: boolean;
+}
+
+// ==================== Markdown → JSONContent ====================
+
+/**
+ * 将 Markdown 转换为 Tiptap JSONContent
+ */
+export function markdownToJSON(
+  markdown: string,
+  options?: ConverterOptions
+): JSONContent {
+  const lines = markdown.split("\n");
+  const content: JSONContent[] = [];
+  const preserveEmpty = options?.preserveEmptyParagraphs ?? false;
+
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i];
+
+    // 标题
+    const headingMatch = line.match(/^(#{1,6})\s+(.+)$/);
+    if (headingMatch) {
+      content.push({
+        type: "heading",
+        attrs: { level: headingMatch[1].length },
+        content: parseInlineContent(headingMatch[2], options),
+      });
+      i++;
+      continue;
+    }
+
+    // 代码块
+    if (line.startsWith("```")) {
+      const lang = line.slice(3).trim();
+      const codeLines: string[] = [];
+      i++;
+      while (i < lines.length && !lines[i].startsWith("```")) {
+        codeLines.push(lines[i]);
+        i++;
+      }
+      content.push({
+        type: "codeBlock",
+        attrs: { language: lang || "plaintext" },
+        content: [{ type: "text", text: codeLines.join("\n") }],
+      });
+      i++;
+      continue;
+    }
+
+    // 引用块
+    if (line.startsWith("> ")) {
+      const quoteLines: string[] = [];
+      while (
+        i < lines.length &&
+        (lines[i].startsWith("> ") || lines[i].startsWith(">"))
+      ) {
+        quoteLines.push(lines[i].replace(/^>\s?/, ""));
+        i++;
+      }
+      content.push({
+        type: "blockquote",
+        content: [
+          {
+            type: "paragraph",
+            content: parseInlineContent(quoteLines.join("\n"), options),
+          },
+        ],
+      });
+      continue;
+    }
+
+    // 无序列表
+    if (line.match(/^[-*]\s+/)) {
+      const items: JSONContent[] = [];
+      while (i < lines.length && lines[i].match(/^[-*]\s+/)) {
+        items.push({
+          type: "listItem",
+          content: [
+            {
+              type: "paragraph",
+              content: parseInlineContent(
+                lines[i].replace(/^[-*]\s+/, ""),
+                options
+              ),
+            },
+          ],
+        });
+        i++;
+      }
+      content.push({ type: "bulletList", content: items });
+      continue;
+    }
+
+    // 有序列表
+    if (line.match(/^\d+\.\s+/)) {
+      const items: JSONContent[] = [];
+      while (i < lines.length && lines[i].match(/^\d+\.\s+/)) {
+        items.push({
+          type: "listItem",
+          content: [
+            {
+              type: "paragraph",
+              content: parseInlineContent(
+                lines[i].replace(/^\d+\.\s+/, ""),
+                options
+              ),
+            },
+          ],
+        });
+        i++;
+      }
+      content.push({ type: "orderedList", content: items });
+      continue;
+    }
+
+    // 任务列表
+    if (line.match(/^[-*]\s+\[[ x]\]\s+/i)) {
+      const items: JSONContent[] = [];
+      while (i < lines.length && lines[i].match(/^[-*]\s+\[[ x]\]\s+/i)) {
+        const checked = lines[i].match(/^[-*]\s+\[x\]/i) !== null;
+        items.push({
+          type: "taskItem",
+          attrs: { checked },
+          content: [
+            {
+              type: "paragraph",
+              content: parseInlineContent(
+                lines[i].replace(/^[-*]\s+\[[ x]\]\s+/i, ""),
+                options
+              ),
+            },
+          ],
+        });
+        i++;
+      }
+      content.push({ type: "taskList", content: items });
+      continue;
+    }
+
+    // 分隔线
+    if (line.match(/^[-*_]{3,}\s*$/)) {
+      content.push({ type: "horizontalRule" });
+      i++;
+      continue;
+    }
+
+    // 空行
+    if (line.trim() === "") {
+      if (preserveEmpty) {
+        content.push({ type: "paragraph", content: [] });
+      }
+      i++;
+      continue;
+    }
+
+    // 普通段落
+    content.push({
+      type: "paragraph",
+      content: parseInlineContent(line, options),
+    });
+    i++;
+  }
+
+  return { type: "doc", content };
+}
+
+/**
+ * 解析内联内容（文本、粗体、斜体、链接等）
+ */
+function parseInlineContent(
+  text: string,
+  options?: ConverterOptions
+): JSONContent[] {
+  if (!text) return [];
+
+  // 简单模式：直接返回纯文本
+  if (!options?.parseInlineStyles) {
+    return [{ type: "text", text }];
+  }
+
+  // TODO: 实现内联样式解析（粗体、斜体、链接、代码）
+  // 目前返回纯文本
+  return [{ type: "text", text }];
+}
+
+// ==================== JSONContent → Markdown ====================
+
+/**
+ * 将 Tiptap JSONContent 转换为 Markdown
+ */
+export function jsonToMarkdown(content: JSONContent): string {
+  if (!content.content) return "";
+
+  const lines: string[] = [];
+
+  const extractText = (node: JSONContent): string => {
+    if (node.text) return node.text;
+    if (!node.content) return "";
+    return node.content.map(extractText).join("");
+  };
+
+  for (const node of content.content) {
+    switch (node.type) {
+      case "heading": {
+        const level = node.attrs?.level || 1;
+        const text = extractText(node);
+        lines.push(`${"#".repeat(level)} ${text}`);
+        lines.push("");
+        break;
+      }
+
+      case "paragraph": {
+        const text = extractText(node);
+        lines.push(text);
+        lines.push("");
+        break;
+      }
+
+      case "bulletList": {
+        if (node.content) {
+          for (const item of node.content) {
+            const text = extractText(item);
+            lines.push(`- ${text}`);
+          }
+          lines.push("");
+        }
+        break;
+      }
+
+      case "orderedList": {
+        if (node.content) {
+          node.content.forEach((item, i) => {
+            const text = extractText(item);
+            lines.push(`${i + 1}. ${text}`);
+          });
+          lines.push("");
+        }
+        break;
+      }
+
+      case "taskList": {
+        if (node.content) {
+          for (const item of node.content) {
+            const checked = item.attrs?.checked ? "x" : " ";
+            const text = extractText(item);
+            lines.push(`- [${checked}] ${text}`);
+          }
+          lines.push("");
+        }
+        break;
+      }
+
+      case "codeBlock": {
+        const lang = node.attrs?.language || "";
+        const text = extractText(node);
+        lines.push(`\`\`\`${lang}`);
+        lines.push(text);
+        lines.push("```");
+        lines.push("");
+        break;
+      }
+
+      case "blockquote": {
+        const text = extractText(node);
+        const quotedLines = text.split("\n").map((l) => `> ${l}`);
+        lines.push(...quotedLines);
+        lines.push("");
+        break;
+      }
+
+      case "horizontalRule": {
+        lines.push("---");
+        lines.push("");
+        break;
+      }
+
+      default: {
+        const text = extractText(node);
+        if (text) {
+          lines.push(text);
+          lines.push("");
+        }
+      }
+    }
+  }
+
+  return lines.join("\n").trim();
+}
+
+// ==================== Frontmatter 处理 ====================
+
+/**
+ * 解析带 Frontmatter 的 Markdown 文件
+ */
+export function parseMarkdownWithFrontmatter(
+  content: string,
+  fallbackTitle?: string
+): ParsedMarkdown {
+  let title = fallbackTitle || "Untitled";
+  let body = content;
+  let metadata: Record<string, any> = {};
+
+  // 解析 frontmatter
+  const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
+  if (frontmatterMatch) {
+    const frontmatter = frontmatterMatch[1];
+    body = frontmatterMatch[2];
+
+    // 简单解析 YAML frontmatter
+    for (const line of frontmatter.split("\n")) {
+      const match = line.match(/^(\w+):\s*(.+)$/);
+      if (match) {
+        const [, key, value] = match;
+        if (key === "title") {
+          title = value.replace(/^["']|["']$/g, "");
+        } else {
+          try {
+            metadata[key] = JSON.parse(value);
+          } catch {
+            metadata[key] = value.replace(/^["']|["']$/g, "");
+          }
+        }
+      }
+    }
+  }
+
+  return { title, body: body.trim(), metadata };
+}
+
+/**
+ * 将 Markdown 和 Frontmatter 合并为完整文件内容
+ */
+export function stringifyWithFrontmatter(
+  body: string,
+  metadata?: Record<string, any>
+): string {
+  const meta = metadata ?? {};
+  if (Object.keys(meta).length === 0) {
+    return body;
+  }
+
+  const lines = Object.entries(meta).map(([key, value]) => {
+    if (typeof value === "object") {
+      return `${key}: ${JSON.stringify(value)}`;
+    }
+    return `${key}: ${String(value)}`;
+  });
+
+  return `---\n${lines.join("\n")}\n---\n\n${body}`;
+}
+
+// ==================== 便捷方法 ====================
+
+/**
+ * 文本 → JSONContent（按段落分割）
+ */
+export function textToParagraphs(text: string): JSONContent {
+  const paragraphs = text.split(/\n\n+/).filter((p) => p.trim());
+
+  return {
+    type: "doc",
+    content: paragraphs.map((p) => ({
+      type: "paragraph",
+      content: [{ type: "text", text: p.replace(/\n/g, " ") }],
+    })),
+  };
+}
+
+/**
+ * 创建空文档
+ */
+export function createEmptyDoc(): JSONContent {
+  return {
+    type: "doc",
+    content: [{ type: "paragraph", content: [] }],
+  };
+}
+
+/**
+ * 创建包含单个段落的文档
+ */
+export function createDocWithText(text: string): JSONContent {
+  return {
+    type: "doc",
+    content: [
+      {
+        type: "paragraph",
+        content: text ? [{ type: "text", text }] : [],
+      },
+    ],
+  };
+}
+
+/**
+ * 从 JSONContent 提取纯文本
+ */
+export function jsonToText(content: JSONContent): string {
+  const extractText = (node: JSONContent): string => {
+    if (node.text) return node.text;
+    if (!node.content) return "";
+    return node.content.map(extractText).join("");
+  };
+
+  if (!content.content) return "";
+
+  return content.content
+    .map((node) => extractText(node))
+    .filter(Boolean)
+    .join("\n\n");
+}

@@ -25,11 +25,8 @@ const api = {
         content,
         metadata,
       }),
-    saveMeta: (
-      storyId: string,
-      tree: any,
-      rawMeta: Record<string, any>
-    ) => ipcRenderer.invoke("docs:saveMeta", { storyId, tree, rawMeta }),
+    saveMeta: (storyId: string, tree: any, rawMeta: Record<string, any>) =>
+      ipcRenderer.invoke("docs:saveMeta", { storyId, tree, rawMeta }),
     deleteDoc: (storyId: string, docPath: string) =>
       ipcRenderer.invoke("docs:deleteDoc", { storyId, docPath }),
     reorderDoc: (storyId: string, activeId: string, overId: string) =>
@@ -70,8 +67,10 @@ const api = {
     mcp: {
       get: () => ipcRenderer.invoke("mcp:get"),
       set: (config: MCPConfig) => ipcRenderer.invoke("mcp:set", config),
-      connect: (serverName: string) => ipcRenderer.invoke("mcp:connect", serverName),
-      disconnect: (serverName: string) => ipcRenderer.invoke("mcp:disconnect", serverName),
+      connect: (serverName: string) =>
+        ipcRenderer.invoke("mcp:connect", serverName),
+      disconnect: (serverName: string) =>
+        ipcRenderer.invoke("mcp:disconnect", serverName),
       status: () => ipcRenderer.invoke("mcp:status"),
       tools: () => ipcRenderer.invoke("mcp:tools"),
       callTool: (toolName: string, args: Record<string, unknown>) =>
@@ -98,8 +97,10 @@ const api = {
     onThreadUpdated: (
       callback: (data: { threadId: string; title: string }) => void
     ) => {
-      const handler = (_event: any, data: { threadId: string; title: string }) =>
-        callback(data);
+      const handler = (
+        _event: any,
+        data: { threadId: string; title: string }
+      ) => callback(data);
       ipcRenderer.on("chat:thread-updated", handler);
       return () => ipcRenderer.removeListener("chat:thread-updated", handler);
     },
@@ -108,16 +109,23 @@ const api = {
     // 工作区管理
     getWorkspace: () => ipcRenderer.invoke("vibecape:getWorkspace"),
     getDocsRoot: () => ipcRenderer.invoke("vibecape:getDocsRoot"),
-    setDocsRoot: (path: string) => ipcRenderer.invoke("vibecape:setDocsRoot", path),
-    createWorkspace: (name: string) => ipcRenderer.invoke("vibecape:createWorkspace", name),
-    openWorkspace: (id: string) => ipcRenderer.invoke("vibecape:openWorkspace", id),
+    setDocsRoot: (path: string) =>
+      ipcRenderer.invoke("vibecape:setDocsRoot", path),
+    createWorkspace: (name: string) =>
+      ipcRenderer.invoke("vibecape:createWorkspace", name),
+    openWorkspace: (id: string) =>
+      ipcRenderer.invoke("vibecape:openWorkspace", id),
     closeWorkspace: () => ipcRenderer.invoke("vibecape:closeWorkspace"),
-    deleteWorkspace: (id: string) => ipcRenderer.invoke("vibecape:deleteWorkspace", id),
+    deleteWorkspace: (id: string) =>
+      ipcRenderer.invoke("vibecape:deleteWorkspace", id),
     listWorkspaces: () => ipcRenderer.invoke("vibecape:listWorkspaces"),
-    restoreLastWorkspace: () => ipcRenderer.invoke("vibecape:restoreLastWorkspace"),
+    restoreLastWorkspace: () =>
+      ipcRenderer.invoke("vibecape:restoreLastWorkspace"),
     getLlmTxt: (id?: string) => ipcRenderer.invoke("vibecape:getLlmTxt", id),
-    setLlmTxt: (content: string, id?: string) => ipcRenderer.invoke("vibecape:setLlmTxt", content, id),
-    updateWorkspaceConfig: (config: any) => ipcRenderer.invoke("vibecape:updateWorkspaceConfig", config),
+    setLlmTxt: (content: string, id?: string) =>
+      ipcRenderer.invoke("vibecape:setLlmTxt", content, id),
+    updateWorkspaceConfig: (config: any) =>
+      ipcRenderer.invoke("vibecape:updateWorkspaceConfig", config),
     // 兼容旧 API
     /** @deprecated 使用 listWorkspaces */
     getWorkspaceHistory: () => ipcRenderer.invoke("vibecape:listWorkspaces"),
@@ -147,8 +155,17 @@ const api = {
     // 图片
     resolveAssetPath: (assetPath: string) =>
       ipcRenderer.invoke("vibecape:resolveAssetPath", assetPath),
-    uploadImage: (payload: { filename: string; data: string; useOss?: boolean }) =>
-      ipcRenderer.invoke("vibecape:uploadImage", payload),
+    uploadImage: (payload: {
+      filename: string;
+      data: string;
+      useOss?: boolean;
+    }) => ipcRenderer.invoke("vibecape:uploadImage", payload),
+    // 文档变更监听 - 用于 AI 工具操作后刷新前端
+    onDocsChanged: (callback: (data: { tool: string }) => void) => {
+      const handler = (_event: any, data: { tool: string }) => callback(data);
+      ipcRenderer.on("docs:changed", handler);
+      return () => ipcRenderer.removeListener("docs:changed", handler);
+    },
   },
 };
 

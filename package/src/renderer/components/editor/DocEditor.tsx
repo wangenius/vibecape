@@ -26,6 +26,7 @@ import { LinkNode } from "@/components/editor/extensions/LinkNode";
 import { PolishManager } from "@/components/editor/PolishManager";
 import { CustomKeyboardExtension } from "@/components/editor/extensions/CustomKeyboardExtension";
 import { useTranslation } from "react-i18next";
+import { useRemoteTools } from "@/hooks/editor/useRemoteTools";
 
 type Props = {
   doc: DocData;
@@ -95,6 +96,38 @@ export const DocEditor = ({ doc, onChange, onSave }: Props) => {
           };
         },
       }),
+      Extension.create({
+        name: "quoteKeymap",
+        addKeyboardShortcuts() {
+          return {
+            "Mod-l": ({ editor }) => {
+              const { from, to, empty } = editor.state.selection;
+              if (empty) return false;
+
+              const text = editor.state.doc.textBetween(from, to, "\n");
+              if (!text.trim()) return false;
+
+              // 动态导入避免循环依赖
+              import("@/lib/events/quoteEvent").then(
+                ({ dispatchQuoteEvent }) => {
+                  import("@/hooks/stores/useDocumentStore").then(
+                    ({ useDocumentStore }) => {
+                      const activeDoc = useDocumentStore.getState().activeDoc;
+                      dispatchQuoteEvent({
+                        text: text.trim(),
+                        docId: activeDoc?.id,
+                        docTitle: activeDoc?.title,
+                      });
+                    }
+                  );
+                }
+              );
+
+              return true;
+            },
+          };
+        },
+      }),
     ],
     content: doc.content,
     editorProps: {
@@ -107,6 +140,9 @@ export const DocEditor = ({ doc, onChange, onSave }: Props) => {
       onChange?.(editor.getJSON());
     },
   });
+
+  // 启用远程工具控制
+  useRemoteTools(editor);
 
   // 仅当切换文档时更新编辑器内容
   const prevDocIdRef = useRef<string | null>(null);

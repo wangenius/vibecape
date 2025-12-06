@@ -39,7 +39,9 @@ export interface VibecapeAPI {
   setLlmTxt: (content: string, id?: string) => Promise<void>;
 
   /** 更新工作区配置 */
-  updateWorkspaceConfig: (config: Partial<import("@common/schema/workspace").WorkspaceConfig>) => Promise<import("@common/schema/workspace").WorkspaceConfig>;
+  updateWorkspaceConfig: (
+    config: Partial<import("@common/schema/workspace").WorkspaceConfig>
+  ) => Promise<import("@common/schema/workspace").WorkspaceConfig>;
 
   // 兼容旧 API
   /** @deprecated 使用 listWorkspaces */
@@ -107,4 +109,9 @@ export interface VibecapeAPI {
 
   /** 在 Finder 中打开工作区目录 */
   openInFinder: () => Promise<void>;
+
+  // ==================== 事件监听 ====================
+
+  /** 监听文档变更事件 - AI 工具操作后触发 */
+  onDocsChanged: (callback: (data: { tool: string }) => void) => () => void;
 }

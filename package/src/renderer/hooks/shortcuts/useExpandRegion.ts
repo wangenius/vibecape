@@ -1,12 +1,15 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import type { Editor } from "@tiptap/core";
 
 /**
- * 扩展选区（expand-region）功能
- * 监听 IPC 事件 shortcut:expand-region，触发选区扩展
- * 扩展顺序：单词 → 段落 → 全文
+ * 扩展/收缩选区功能（基于历史记录）
+ * - cmd + w: 扩展选区，并记录每次选区到历史栈
+ * - shift + cmd + w: 从历史栈中弹出，回退到上一个选区
  */
 export const useExpandRegion = (editor: Editor | null) => {
+  // 选区历史栈
+  const selectionHistory = useRef<Array<{ from: number; to: number }>>([]);
+
   useEffect(() => {
     if (!editor) return;
 
@@ -16,6 +19,9 @@ export const useExpandRegion = (editor: Editor | null) => {
       const { state } = editor;
       const { selection, doc } = state;
       const { from, to, $from, $to } = selection;
+
+      // 记录当前选区到历史栈
+      selectionHistory.current.push({ from, to });
 
       // 如果没有选中内容，先选中当前单词
       if (from === to) {
@@ -74,17 +80,41 @@ export const useExpandRegion = (editor: Editor | null) => {
       }
     };
 
+    const handleShrinkRegion = () => {
+      if (!editor.isFocused) return;
+
+      // 从历史栈中弹出上一个选区
+      const prevSelection = selectionHistory.current.pop();
+      if (!prevSelection) return;
+
+      editor
+        .chain()
+        .focus()
+        .setTextSelection({ from: prevSelection.from, to: prevSelection.to })
+        .run();
+    };
+
     // 监听 IPC 事件
-    const removeListener = window.electron.ipcRenderer.on(
+    const removeExpandListener = window.electron.ipcRenderer.on(
       "shortcut:expand-region",
       handleExpandRegion
     );
 
+    const removeShrinkListener = window.electron.ipcRenderer.on(
+      "shortcut:shrink-region",
+      handleShrinkRegion
+    );
+
     return () => {
-      if (typeof removeListener === "function") {
-        removeListener();
+      if (typeof removeExpandListener === "function") {
+        removeExpandListener();
       } else {
         window.electron.ipcRenderer.removeAllListeners("shortcut:expand-region");
+      }
+      if (typeof removeShrinkListener === "function") {
+        removeShrinkListener();
+      } else {
+        window.electron.ipcRenderer.removeAllListeners("shortcut:shrink-region");
       }
     };
   }, [editor]);

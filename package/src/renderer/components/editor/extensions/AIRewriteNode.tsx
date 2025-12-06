@@ -996,18 +996,26 @@ ${savedOriginalText}
         return;
       }
 
-      // Enter: 确认（有内容则接受，无内容也关闭）
+      // Enter: 确认（有 diff 内容则接受，无任何内容则不响应）
       if (e.key === "Enter") {
         e.preventDefault();
         e.stopPropagation();
-        // 有 diff 内容则接受，否则直接关闭
+        
         const currentDiffId = node.attrs.diffId;
-        if (currentDiffId && status === "completed" && !error) {
+        
+        // 有 diff 内容且不在生成中则接受（status 可能是 idle 因为 undo/redo 会重置状态）
+        if (currentDiffId && status !== "loading" && !error) {
           handleAccept();
-        } else {
-          // 无内容或未完成，直接关闭节点（不拒绝 diff）
-          deleteNode();
+          return;
         }
+        
+        // 没有 input 内容且没有 diff 内容 → 不响应
+        if (!prompt.trim() && !currentDiffId) {
+          return;
+        }
+        
+        // 有 input 但没有 diff（或有错误）→ 关闭节点
+        deleteNode();
         return;
       }
 

@@ -94,10 +94,16 @@ app.whenReady().then(async () => {
         window.webContents.toggleDevTools();
         event.preventDefault();
       }
-      // Prevent Cmd+W / Ctrl+W from closing window, trigger expand-region in renderer
+      // Prevent Cmd+W / Ctrl+W from closing window, trigger expand/shrink-region in renderer
       if ((input.control || input.meta) && input.key.toLowerCase() === "w") {
         event.preventDefault();
-        window.webContents.send("shortcut:expand-region");
+        if (input.shift) {
+          // Shift+Cmd+W: shrink selection (reverse order)
+          window.webContents.send("shortcut:shrink-region");
+        } else {
+          // Cmd+W: expand selection
+          window.webContents.send("shortcut:expand-region");
+        }
       }
       // Ignore refresh in production
       if (!app.isPackaged) return;

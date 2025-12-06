@@ -36,6 +36,8 @@
     "imageDesc": "Insert image from local or URL",
     "link": "Link",
     "linkDesc": "Insert link card",
+    "table": "Table",
+    "tableDesc": "Insert 3×3 table",
     "noCommands": "No matching commands",
     "category": {
       "ai": "AI",
@@ -122,5 +124,17 @@
     "confirm": "Confirm",
     "loadFailed": "Failed to load image",
     "uploadSuccess": "Image uploaded successfully"
+  },
+  "table": {
+    "addRowBefore": "Insert row above",
+    "addRowAfter": "Insert row below",
+    "addColBefore": "Insert column left",
+    "addColAfter": "Insert column right",
+    "deleteRow": "Delete row",
+    "deleteCol": "Delete column",
+    "deleteTable": "Delete table",
+    "mergeCells": "Merge cells",
+    "splitCell": "Split cell",
+    "toggleHeaderRow": "Toggle header row"
   }
 }

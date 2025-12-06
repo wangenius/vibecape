@@ -169,31 +169,54 @@ export function markdownToJSON(
       continue;
     }
 
-    // 表格
+    // 表格（支持行之间有空行的情况）
     if (line.match(/^\|.+\|\s*$/)) {
       const tableRows: JSONContent[] = [];
       let isFirstRow = true;
       let hasSeparator = false;
 
-      while (i < lines.length && lines[i].match(/^\|.+\|\s*$/)) {
-        const rowLine = lines[i];
+      // 收集所有连续的表格行（跳过中间的空行）
+      while (i < lines.length) {
+        const currentLine = lines[i];
+        
+        // 跳过空行
+        if (currentLine.trim() === "") {
+          // 向前看是否还有表格行
+          let hasMoreTableRows = false;
+          for (let j = i + 1; j < lines.length && j < i + 3; j++) {
+            if (lines[j].match(/^\|.+\|\s*$/)) {
+              hasMoreTableRows = true;
+              break;
+            }
+            if (lines[j].trim() !== "") {
+              break; // 遇到非空非表格行，停止
+            }
+          }
+          if (hasMoreTableRows) {
+            i++;
+            continue;
+          } else {
+            break; // 没有更多表格行，结束表格解析
+          }
+        }
+        
+        // 不是表格行，结束
+        if (!currentLine.match(/^\|.+\|\s*$/)) {
+          break;
+        }
         
         // 检查是否是分隔行 (|---|---|)
-        if (rowLine.match(/^\|[\s\-:|]+\|\s*$/)) {
+        if (currentLine.match(/^\|[\s\-:|]+\|\s*$/)) {
           hasSeparator = true;
           i++;
           continue;
         }
 
         // 解析单元格内容
-        const cellContents = rowLine
+        const cellContents = currentLine
           .split("|")
           .slice(1, -1) // 去掉首尾空字符串
           .map((cell) => cell.trim());
-
-        // 判断是否是表头行（第一行且后面有分隔行）
-        const isHeaderRow = isFirstRow && !hasSeparator;
-        const cellType = isHeaderRow && hasSeparator ? "tableHeader" : "tableCell";
 
         // 如果已经处理过分隔行，第一行之后的都是普通行
         const actualCellType = hasSeparator && !isFirstRow ? "tableCell" : 

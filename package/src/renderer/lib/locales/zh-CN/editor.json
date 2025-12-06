@@ -36,6 +36,8 @@
     "imageDesc": "插入本地或网络图片",
     "link": "链接",
     "linkDesc": "插入链接卡片",
+    "table": "表格",
+    "tableDesc": "插入3×3表格",
     "noCommands": "未找到匹配的命令",
     "category": {
       "ai": "AI",
@@ -122,5 +124,17 @@
     "confirm": "确定",
     "loadFailed": "图片加载失败",
     "uploadSuccess": "图片上传成功"
+  },
+  "table": {
+    "addRowBefore": "在上方插入行",
+    "addRowAfter": "在下方插入行",
+    "addColBefore": "在左侧插入列",
+    "addColAfter": "在右侧插入列",
+    "deleteRow": "删除行",
+    "deleteCol": "删除列",
+    "deleteTable": "删除表格",
+    "mergeCells": "合并单元格",
+    "splitCell": "拆分单元格",
+    "toggleHeaderRow": "切换表头行"
   }
 }

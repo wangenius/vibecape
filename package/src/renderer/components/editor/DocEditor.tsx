@@ -12,6 +12,7 @@ import type { DocData } from "@common/schema/docs";
 import { SlashCommand } from "@/components/editor/extensions/SlashCommand";
 import { createSlashMenuPlugin } from "@/components/editor/menus/SlashMenu";
 import { EditorBubbleMenu } from "@/components/editor/menus/EditorBubbleMenu";
+import { TableBubbleMenu } from "@/components/editor/menus/TableBubbleMenu";
 import {
   AIRewriteNode,
   AIPolishMark,
@@ -325,6 +326,7 @@ export const DocEditor = ({ doc, onChange, onSave }: Props) => {
         />
       </div>
       <EditorBubbleMenu editor={editor} />
+      <TableBubbleMenu editor={editor} />
       <PolishManager editor={editor} />
     </div>
   );

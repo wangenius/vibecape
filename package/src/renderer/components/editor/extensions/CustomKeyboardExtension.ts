@@ -2,6 +2,8 @@
  * 自定义键盘快捷键扩展
  * - Cmd+A: 渐进式选择（先选段落，再选全文）
  * - Alt+Backspace: 删除到上一个标点符号
+ * 
+ * 注意：Cmd+W 由 useExpandRegion hook 通过 IPC 处理
  */
 
 import { Extension } from "@tiptap/core";

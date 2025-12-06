@@ -87,11 +87,17 @@ app.whenReady().then(async () => {
   }
 
   // Handle dev shortcuts: F12 for DevTools, ignore Ctrl+R in production
+  // Prevent Cmd+W from closing window (let renderer handle it as expand-region)
   app.on("browser-window-created", (_, window) => {
     window.webContents.on("before-input-event", (event, input) => {
       if (input.key === "F12") {
         window.webContents.toggleDevTools();
         event.preventDefault();
+      }
+      // Prevent Cmd+W / Ctrl+W from closing window, trigger expand-region in renderer
+      if ((input.control || input.meta) && input.key.toLowerCase() === "w") {
+        event.preventDefault();
+        window.webContents.send("shortcut:expand-region");
       }
       // Ignore refresh in production
       if (!app.isPackaged) return;

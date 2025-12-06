@@ -380,6 +380,10 @@ export const AIRewriteNode = Node.create<AIRewriteOptions>({
         // Cmd+K 触发润色模式（选中文本后插入输入节点）
         return this.editor.commands.insertAIPolish();
       },
+      "Mod-j": () => {
+        // Cmd+J 与 Cmd+K 相同，触发润色模式
+        return this.editor.commands.insertAIPolish();
+      },
     };
   },
 

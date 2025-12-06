@@ -29,6 +29,7 @@ import { PolishManager } from "@/components/editor/PolishManager";
 import { CustomKeyboardExtension } from "@/components/editor/extensions/CustomKeyboardExtension";
 import { useTranslation } from "react-i18next";
 import { useRemoteTools } from "@/hooks/editor/useRemoteTools";
+import { useExpandRegion } from "@/hooks/shortcuts/useExpandRegion";
 
 type Props = {
   doc: DocData;
@@ -184,6 +185,9 @@ export const DocEditor = ({ doc, onChange, onSave }: Props) => {
 
   // 启用远程工具控制
   useRemoteTools(editor);
+
+  // 启用 Cmd+W 扩展选区快捷键
+  useExpandRegion(editor);
 
   // 当切换文档或文档内容外部更新时同步编辑器
   const prevDocIdRef = useRef<string | null>(null);

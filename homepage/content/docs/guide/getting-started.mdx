@@ -1,53 +1,97 @@
 ---
 title: Getting Started
-description: Installation and World Creation Guide
+description: 安装和配置 Vibecape
 ---
 
 # Getting Started
 
-Welcome to Vibecape! This guide will help you set up your creative studio and start your first project.
+本指南将帮助你安装 Vibecape 并完成初始配置。
 
-## 📋 Prerequisites
+## 系统要求
 
-- **macOS** 13.0 (Ventura) or later
-- Apple Silicon (M1/M2/M3) recommended for local AI performance
+| 平台 | 要求 |
+|------|------|
+| **macOS** | 12.0 (Monterey) 或更高 |
+| **Windows** | Windows 10 或更高 |
+| **Linux** | Ubuntu 20.04 或同等发行版 |
+| **存储** | 至少 500MB 可用空间 |
+| **内存** | 建议 8GB RAM |
 
-## 🚀 Installation
+## 安装
 
-1.  **Download**: Get the latest `.dmg` from our [Releases Page](https://github.com/wangenius/vibecape/releases).
-2.  **Install**: Drag the **Vibecape** icon to your `Applications` folder.
-3.  **Launch**: Open the app via Spotlight or Launchpad.
+### macOS
 
-:::note First Launch
-You may need to approve the application in "System Settings > Privacy & Security" if you downloaded it directly from GitHub.
+1. 下载最新的 `.dmg` 文件：[Releases](https://github.com/wangenius/vibecape/releases/latest)
+2. 打开 DMG 文件，将 Vibecape 拖入 Applications 文件夹
+3. 首次启动可能需要右键选择「打开」以绕过 Gatekeeper
+
+:::info
+如果遇到「无法打开，因为无法验证开发者」的提示，请在系统偏好设置 → 安全性与隐私中点击「仍要打开」。
 :::
 
-## 🎯 Creating Your First World
+### Windows
 
-Vibecape organizes work into "Worlds". A world contains all your stories, characters, locations, and lore.
+1. 下载最新的 `.exe` 安装程序
+2. 运行安装程序，按提示完成安装
 
-### 1. New World
+### Linux
 
-- Click **"New World"** on the welcome screen.
-- Choose a template:
-  - **Novel**: Optimized for long-form prose with chapter management.
-  - **Screenplay**: Standard formatting for scripts.
-  - **World Bible**: Logic-first workspace for pure lore building.
+1. 下载 `.AppImage` 或 `.deb` 包
+2. AppImage: `chmod +x Vibecape.AppImage && ./Vibecape.AppImage`
+3. Deb: `sudo dpkg -i vibecape.deb`
 
-### 2. Configure AI Persona
+## 配置 AI 服务商
 
-Every world has a dedicated AI assistant.
+首次启动后，需要配置至少一个 AI 服务商：
 
-- **Name**: Give your co-pilot a name (e.g., "Jarvis", "Muse").
-- **Role**: Select a preset (Editor, Brainstormer, Critic).
-- **Creativity**: Adjust the "Temperature" slider to control how imaginative (or hallucinations) the AI should likely be.
+:::warning
+请妥善保管你的 API Key，不要将其分享给他人或提交到公开仓库。
+:::
 
-## 📁 Workspace Overview
+1. 打开 **设置** → **AI 服务商**
+2. 添加服务商（如 OpenAI、DeepSeek、Google 等）
+3. 填入 API Key 和 Base URL（如需要）
+4. 添加并选择要使用的模型
 
-- **Left Sidebar**: Character sheets, Locations, timeline events.
-- **Center Canvas**: Your main writing area (infinite canvas or document view).
-- **Right Sidebar**: AI Chat and Context Inspector.
+支持的服务商：
+- OpenAI / Azure OpenAI
+- DeepSeek
+- Google (Gemini)
+- xAI (Grok)
+- 302.AI
+- 任何 OpenAI 兼容 API
 
-## ⚡ Next Steps
+## 数据存储
 
-- [Learn about World Orchestration](../guide/creating-project)
+Vibecape 使用本地存储，数据目录结构：
+
+```bash
+~/vibecape/
+├── config.json          # 应用配置
+├── app.db               # AI 配置数据库
+├── chat.db              # 全局聊天记录
+└── workspaces.json      # 工作区索引
+
+{docs_root}/             # 文档根目录（可配置）
+├── {workspace_id}/      # 工作区目录
+│   ├── config.json      # 工作区配置
+│   ├── docs.db          # 文档数据
+│   ├── chat.db          # 项目聊天
+│   └── llm.txt          # AI 提示词
+└── ...
+```
+
+## 创建工作区
+
+1. 点击侧边栏的 **+** 按钮
+2. 输入工作区名称
+3. 开始创建文档
+
+每个工作区拥有独立的：
+- 文档树
+- 聊天记录
+- AI 上下文提示词 (`llm.txt`)
+
+## 下一步
+
+- [工作区管理](/docs/guide/creating-project) - 了解工作区的详细功能

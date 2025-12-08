@@ -18,6 +18,8 @@
     "paths": {
       "~/*": ["./app/*"],
       "@/*": ["./app/*"],
+      "@/.source": ["./.source/server"],
+      "@/.source/browser": ["./.source/browser"],
       "fumadocs-mdx:collections/*": ["./.source/*"]
     },
     "esModuleInterop": true,

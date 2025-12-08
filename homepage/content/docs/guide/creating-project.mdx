@@ -1,45 +1,81 @@
 ---
-title: World Orchestration
-description: Managing complex narratives with the World Bible.
+title: 工作区管理
+description: 了解 Vibecape 工作区的功能和使用方法
 ---
 
-# World Orchestration
+# 工作区管理
 
-Vibecape's core differentiator is "World Orchestration". Unlike standard writing tools that see text, Vibecape sees **entities** and **relationships**.
+工作区是 Vibecape 的核心概念，每个工作区是一个独立的文档项目。
 
-## 🌍 The World Bible
+## 工作区结构
 
-The World Bible is a structured database living alongside your prose.
+每个工作区包含以下内容：
 
-### Entities
+```
+{workspace_id}/
+├── config.json      # 工作区配置
+├── docs.db          # 文档数据库
+├── chat.db          # 项目聊天记录
+└── llm.txt          # AI 上下文提示词
+```
 
-Everything in your story is an entity:
+## 文档管理
 
-- **Characters**: Protagonists, NPCs, villains.
-- **Locations**: Cities, rooms, planets.
-- **Items**: Magical artifacts, weapons, key evidence.
-- **Events**: Historical wars, backstory moments.
+### 树形结构
 
-### Relationships
+文档支持父子层级组织：
 
-Define how entities interact.
+- 根文档
+  - 子文档 1
+    - 孙文档
+  - 子文档 2
 
-- _Alice_ is the **daughter** of _Bob_.
-- _The Sword of Omens_ is **located in** _The Cave of Wonders_.
-- _The Great War_ **precipitated** _The Fall of the Kingdom_.
+### 文档属性
 
-## 🔗 Context Injection
+每个文档包含：
 
-When you write, Vibecape analyzes your cursor position.
+| 属性 | 说明 |
+|------|------|
+| `title` | 文档标题 |
+| `content` | Tiptap JSONContent 格式的内容 |
+| `metadata` | Frontmatter 元数据 |
+| `parent_id` | 父文档 ID |
+| `order` | 同级排序权重 |
 
-1. **Mention Detection**: If you type "Alice", the AI pulls Alice's character sheet into context.
-2. **Consistency Check**: If you write "Alice drew her gun", but Alice's inventory only has a knife, the AI (in Critic mode) might flag a continuity error.
-3. **Lore Suggestions**: Ask "What happened here 50 years ago?", and the AI checks the Location history and Event timeline to answer.
+## llm.txt - AI 上下文
 
-## 🧩 Modules
+每个工作区可以有一个 `llm.txt` 文件，用于为 AI 提供项目上下文：
 
-You can extend your world with specialized modules:
+```markdown
+这是一个关于 XXX 的文档项目。
 
-- **Timeline Manager**: Visualize chronological events.
-- **Relationship Map**: A node-graph of character dynamics.
-- **Export Manager**: Compile your world into a PDF bible or EPUB novel.
+## 写作风格
+- 简洁明了
+- 技术准确
+
+## 术语表
+- Vibecape: 文档编辑器
+- Workspace: 工作区
+
+## 注意事项
+- 使用中文
+- 代码示例使用 TypeScript
+```
+
+AI 在对话时会自动读取此文件作为上下文。
+
+## 项目聊天
+
+每个工作区有独立的聊天记录（`chat.db`），与全局聊天分离。这样可以：
+
+- 保持项目相关的对话历史
+- AI 可以参考之前的讨论
+- 切换工作区时自动切换聊天上下文
+
+## 备份与迁移
+
+由于所有工作区都存储在 `docs_root` 目录下，备份和迁移非常简单：
+
+1. **备份**: 复制整个 `docs_root` 目录
+2. **迁移**: 将目录复制到新机器，在设置中指定 `docs_root` 路径
+3. **同步**: 可以将 `docs_root` 放在云同步目录（如 iCloud、Dropbox）

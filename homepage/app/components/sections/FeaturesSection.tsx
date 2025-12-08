@@ -1,6 +1,6 @@
 import type { FC } from "react";
 import {
-  BookOpenIcon,
+  FolderTreeIcon,
   BrainCircuitIcon,
   ShieldCheckIcon,
   SparklesIcon,
@@ -9,27 +9,27 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const features = [
   {
-    title: "World Orchestration",
+    title: "工作区管理",
     description:
-      "Manage complex lore, timelines, and character relationships visually. Never lose track of your story's heartbeat.",
-    icon: <BookOpenIcon className="size-6 text-foreground/80" />,
+      "每个项目独立的文档库、聊天记录和 AI 提示词。统一的文档根目录，轻松备份和迁移。",
+    icon: <FolderTreeIcon className="size-6 text-foreground/80" />,
   },
   {
-    title: "AI Co-pilot",
+    title: "多模型支持",
     description:
-      "An intelligent partner that understands your entire world context. Brainstorm plot twists, refine dialogue, and break writer's block.",
+      "支持 OpenAI、DeepSeek、Google、xAI 等多种 AI 服务商。按需切换，灵活配置。",
     icon: <BrainCircuitIcon className="size-6 text-foreground/80" />,
   },
   {
-    title: "Dynamic Context",
+    title: "llm.txt 上下文",
     description:
-      "The AI changes its persona based on your characters. Write valid dialogue for a villain, a hero, or a merchant effortlessly.",
+      "为每个工作区定制 AI 提示词，让 AI 理解你的项目背景、写作风格和术语。",
     icon: <SparklesIcon className="size-6 text-foreground/80" />,
   },
   {
-    title: "Private & Local",
+    title: "本地优先",
     description:
-      "Your stories are yours. All data lives on your device. Zero cloud lock-in, zero data mining.",
+      "所有数据存储在本地，你的文档永远属于你。无云端锁定，无数据收集。",
     icon: <ShieldCheckIcon className="size-6 text-foreground/80" />,
   },
 ];
@@ -40,10 +40,10 @@ export const FeaturesSection: FC = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-12 text-center">
           <h2 className="text-3xl font-medium tracking-tight sm:text-4xl">
-            Built for Long-form Storytelling
+            为文档写作而生
           </h2>
           <p className="mt-4 text-muted-foreground text-lg">
-            Beyond a simple text editor. A complete studio for your imagination.
+            不只是文本编辑器，是你的 AI 写作工作室
           </p>
         </div>
 

@@ -1,15 +1,9 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router";
-import { IconBrandGithub, IconBrandX } from "@tabler/icons-react";
+import { GithubIcon, Menu } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   Sheet,
   SheetContent,
@@ -17,7 +11,6 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { Menu } from "lucide-react";
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -50,7 +43,7 @@ export function Navbar() {
               height={24}
               className="opacity-90"
             />
-            <span className="text-lg font-medium tracking-tight">vibecape</span>
+            <span className="text-lg font-medium tracking-tight">Vibecape</span>
           </Link>
 
           <div className="hidden md:flex md:items-center md:gap-6">
@@ -58,56 +51,18 @@ export function Navbar() {
               to="/docs"
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
-              Docs
+              文档
             </Link>
             <Link
-              to="https://github.com/wangenius/vibecape"
+              to="https://github.com/wangenius/vibecape/releases/latest"
               target="_blank"
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
-              GitHub
+              下载
             </Link>
           </div>
 
-          <nav className="flex items-center gap-1">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  className="h-8 text-sm text-muted-foreground hover:text-foreground"
-                >
-                  Lesson
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start">
-                <Link
-                  to="https://vibemeet.ai"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <DropdownMenuItem>
-                    vibemeet: AI producting lesson
-                  </DropdownMenuItem>
-                </Link>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </nav>
-
           <div className="ml-auto flex items-center gap-1">
-            <Link
-              to="https://x.com/iamwangenius"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-muted-foreground hover:text-foreground"
-              >
-                <IconBrandX className="h-4 w-4" />
-                <span className="sr-only">Twitter</span>
-              </Button>
-            </Link>
             <Link
               to="https://github.com/wangenius/vibecape"
               target="_blank"
@@ -118,7 +73,7 @@ export function Navbar() {
                 size="icon"
                 className="h-8 w-8 text-muted-foreground hover:text-foreground"
               >
-                <IconBrandGithub className="h-4 w-4" />
+                <GithubIcon className="h-4 w-4" />
                 <span className="sr-only">GitHub</span>
               </Button>
             </Link>
@@ -129,7 +84,7 @@ export function Navbar() {
         <div className="flex lg:hidden w-full items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
             <img src="/icon-black.svg" alt="vibecape" height={24} width={24} />
-            <span className="text-lg font-medium tracking-tight">vibecape</span>
+            <span className="text-lg font-medium tracking-tight">Vibecape</span>
           </Link>
 
           <Sheet>
@@ -148,33 +103,28 @@ export function Navbar() {
                       width={24}
                       height={24}
                     />
-                    <span className="text-lg font-medium">vibecape</span>
+                    <span className="text-lg font-medium">Vibecape</span>
                   </Link>
                 </SheetTitle>
               </SheetHeader>
               <div className="flex flex-col gap-2 mt-8">
                 <Link to="/docs">
                   <Button variant="ghost" className="w-full justify-start">
-                    Docs
+                    文档
                   </Button>
                 </Link>
-                <Link to="https://vibetake.com" target="_blank">
+                <Link to="https://github.com/wangenius/vibecape/releases/latest" target="_blank">
                   <Button variant="ghost" className="w-full justify-start">
-                    Templates
+                    下载
                   </Button>
                 </Link>
                 <div className="flex items-center gap-2 pt-4 mt-4 border-t border-border">
-                  <Link to="https://x.com/iamwangenius" target="_blank">
-                    <Button variant="ghost" size="icon" className="h-9 w-9">
-                      <IconBrandX className="h-4 w-4" />
-                    </Button>
-                  </Link>
                   <Link
                     to="https://github.com/wangenius/vibecape"
                     target="_blank"
                   >
                     <Button variant="ghost" size="icon" className="h-9 w-9">
-                      <IconBrandGithub className="h-4 w-4" />
+                      <GithubIcon className="h-4 w-4" />
                     </Button>
                   </Link>
                 </div>

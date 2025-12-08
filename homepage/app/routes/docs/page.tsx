@@ -1,8 +1,15 @@
 import type { Route } from "./+types/page";
+import type { MDXComponents } from "mdx/types";
+import type { ComponentType } from "react";
 import { source } from "@/lib/source";
-import { docs } from "../../../source.generated";
-import { toClientRenderer } from "fumadocs-mdx/runtime/vite";
-import { DocsPage, DocsBody, DocsTitle, DocsDescription } from "fumadocs-ui/page";
+import {
+  DocsPage,
+  DocsBody,
+  DocsTitle,
+  DocsDescription,
+} from "fumadocs-ui/page";
+import { getMDXComponents } from "@/components/docs/mdx-components";
+import browserCollections from "@/.source/browser";
 
 export async function loader({ params }: Route.LoaderArgs) {
   const slugs =
@@ -25,21 +32,22 @@ export function meta({ loaderData }: Route.MetaArgs) {
   ];
 }
 
-const renderer = toClientRenderer(docs.doc, ({ default: Mdx }) => {
-  return <Mdx />;
+const clientLoader = browserCollections.docs.createClientLoader({
+  id: "docs",
+  component: ({ default: Mdx, frontmatter }: { default: ComponentType<{ components?: MDXComponents }>; frontmatter: { title?: string; description?: string } }) => (
+    <DocsPage>
+      <DocsTitle>{frontmatter.title}</DocsTitle>
+      <DocsDescription>{frontmatter.description}</DocsDescription>
+      <DocsBody>
+        <Mdx components={getMDXComponents()} />
+      </DocsBody>
+    </DocsPage>
+  ),
 });
 
 export default function Page({ loaderData }: Route.ComponentProps) {
-  const { path, title, description } = loaderData;
-  const Content = renderer[path];
+  const { path } = loaderData;
+  const Content = clientLoader.getComponent(path);
 
-  return (
-    <DocsPage>
-      <DocsTitle>{title}</DocsTitle>
-      <DocsDescription>{description}</DocsDescription>
-      <DocsBody>
-        <Content />
-      </DocsBody>
-    </DocsPage>
-  );
+  return <Content />;
 }

@@ -2,7 +2,7 @@ import { DocsLayout } from "fumadocs-ui/layouts/docs";
 import { source } from "@/lib/source";
 import { Outlet } from "react-router";
 import type { Route } from "./+types/layout";
-import type { PageTree } from "fumadocs-core/server";
+import type { Root as PageTreeRoot } from "fumadocs-core/page-tree";
 
 export async function loader() {
   return {
@@ -13,7 +13,7 @@ export async function loader() {
 export default function Layout({ loaderData }: Route.ComponentProps) {
   return (
     <DocsLayout
-      tree={loaderData.tree as PageTree.Root}
+      tree={loaderData.tree as PageTreeRoot}
       nav={{
         title: "Vibecape Docs",
       }}

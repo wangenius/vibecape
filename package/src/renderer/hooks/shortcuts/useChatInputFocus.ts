@@ -9,6 +9,7 @@ import { useThreadStore } from "@/hooks/chat/useThread";
 /**
  * 处理 Command+L 聚焦到 ChatInput 的逻辑
  * 处理 Command+Shift+L 创建新对话并聚焦
+ * 处理 Command+R 创建新对话并聚焦
  *
  * @param enabled - 是否启用该快捷键（默认 true）
  * @param autoToggleBaybar - 是否自动切换 Baybar（打开/关闭，默认 false）
@@ -22,6 +23,27 @@ export const useChatInputFocus = (
 
     const handleFocusShortcut = async (event: KeyboardEvent) => {
       const key = event.key?.toLowerCase();
+
+      // Command+R / Ctrl+R: 创建新对话并聚焦
+      if ((event.metaKey || event.ctrlKey) && key === "r" && !event.shiftKey && !event.altKey) {
+        event.preventDefault();
+
+        const isBayBarOpen = getCurrentViewManager().isBayBarOpen;
+
+        // 创建新对话
+        await useThreadStore.getState().createNewThread();
+
+        // 如果 Baybar 未打开，先打开
+        if (!isBayBarOpen) {
+          openBayBar();
+          setTimeout(() => {
+            focusChatInput();
+          }, 350);
+        } else {
+          focusChatInput();
+        }
+        return;
+      }
 
       // 检查是否是 Command+L (Mac) 或 Ctrl+L (Windows/Linux)
       const isCommandL = event.metaKey && key === "l";

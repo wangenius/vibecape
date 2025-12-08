@@ -115,12 +115,13 @@ export const AIDiffNode = Node.create<AIDiffNodeOptions>({
           const nodeType = state.schema.nodes.aiDiffNode;
           if (!nodeType) return false;
 
-          // 找到 polish mark 的结束位置，在其后插入
+          // 找到插入位置
           const polishMarkType = state.schema.marks.aiPolishMark;
           let insertPos = -1;
           let lastMarkPos = -1;
 
           if (polishMarkType && polishMarkId) {
+            // Polish 模式：在 polish mark 的结束位置后插入
             state.doc.descendants((node, pos) => {
               if (node.isText) {
                 const mark = node.marks.find(
@@ -141,6 +142,16 @@ export const AIDiffNode = Node.create<AIDiffNodeOptions>({
               const depth = Math.max(1, $pos.depth);
               insertPos = $pos.after(depth);
             }
+          } else {
+            // Generate 模式：在 AIRewriteNode 的位置插入
+            const rewriteNodeType = state.schema.nodes.aiRewrite;
+            state.doc.descendants((node, pos) => {
+              if (node.type === rewriteNodeType && node.attrs.diffId === diffId) {
+                insertPos = pos;
+                return false;
+              }
+              return true;
+            });
           }
 
           if (insertPos === -1) return false;

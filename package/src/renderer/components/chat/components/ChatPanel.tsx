@@ -20,6 +20,7 @@ export const ChatPanel = () => {
     isInitializing,
     refreshThreads,
     selectThread,
+    deleteThread,
   } = useThread();
 
   const { heroes, currentHero, setCurrentHeroId } = useHero();
@@ -79,6 +80,7 @@ export const ChatPanel = () => {
             activeChatId={activeChatId}
             historyLoading={historyLoading}
             onSelectThread={(threadId) => void handleSelectThread(threadId)}
+            onDeleteThread={deleteThread}
           />
         </div>
       </div>

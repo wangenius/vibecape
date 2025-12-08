@@ -15,6 +15,7 @@ interface HistoryPopoverProps {
   activeChatId: string | null | undefined;
   historyLoading: boolean;
   onSelectThread: (threadId: string) => void;
+  onDeleteThread?: (threadId: string) => void;
 }
 
 export const HistoryPopover: React.FC<HistoryPopoverProps> = ({
@@ -24,6 +25,7 @@ export const HistoryPopover: React.FC<HistoryPopoverProps> = ({
   activeChatId,
   historyLoading,
   onSelectThread,
+  onDeleteThread,
 }) => {
   return (
     <Popover open={open} onOpenChange={onOpenChange}>
@@ -68,6 +70,7 @@ export const HistoryPopover: React.FC<HistoryPopoverProps> = ({
                   thread={thread}
                   isActive={thread.id === activeChatId}
                   onSelect={onSelectThread}
+                  onDelete={onDeleteThread}
                 />
               ))
             )}

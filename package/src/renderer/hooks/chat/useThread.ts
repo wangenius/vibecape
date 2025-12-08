@@ -24,6 +24,7 @@ interface ThreadState {
   refreshThreads: (limit?: number) => Promise<void>;
   selectThread: (targetThreadId?: string) => Promise<void>;
   createNewThread: () => Promise<void>;
+  deleteThread: (threadId: string) => Promise<void>;
 }
 
 export const useThreadStore = create<ThreadState>((set, get) => ({
@@ -150,6 +151,28 @@ export const useThreadStore = create<ThreadState>((set, get) => ({
       get().setActiveChatId(tempId);
     }
   },
+
+  /**
+   * 删除对话
+   */
+  deleteThread: async (threadId: string) => {
+    try {
+      console.log("[useThread] 删除对话:", threadId);
+      await window.api.chat.delete(threadId);
+      
+      // 从列表中移除
+      set((state) => ({
+        threadList: state.threadList.filter((t) => t.id !== threadId),
+      }));
+
+      // 如果删除的是当前激活的对话，切换到新对话
+      if (get().activeChatId === threadId) {
+        await get().createNewThread();
+      }
+    } catch (error) {
+      console.error("[useThread] 删除对话失败", error);
+    }
+  },
 }));
 
 /**
@@ -167,6 +190,7 @@ export function useThread() {
   const refreshThreads = useThreadStore((state) => state.refreshThreads);
   const selectThread = useThreadStore((state) => state.selectThread);
   const updateThreadTitle = useThreadStore((state) => state.updateThreadTitle);
+  const deleteThread = useThreadStore((state) => state.deleteThread);
 
   // 自动初始化：确保全局只执行一次
   useEffect(() => {
@@ -194,5 +218,6 @@ export function useThread() {
     // Actions
     refreshThreads,
     selectThread,
+    deleteThread,
   };
 }

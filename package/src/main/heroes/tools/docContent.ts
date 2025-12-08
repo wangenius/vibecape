@@ -183,11 +183,11 @@ ${currentContent || "（空文档）"}
           const generatedMarkdown = result.text.trim();
           const generatedContent = markdownToJSON(generatedMarkdown);
 
-          // 合并内容
+          // 合并内容 - 确保结构正确
           const newContent = {
-            ...doc.content,
+            type: "doc",
             content: [
-              ...(doc.content.content || []),
+              ...(doc.content?.content || []),
               ...(generatedContent.content || []),
             ],
           };
@@ -261,12 +261,12 @@ ${currentContent || "（空文档）"}
           const generatedMarkdown = result.text.trim();
           const generatedContent = markdownToJSON(generatedMarkdown);
 
-          // 合并内容（插入到开头）
+          // 合并内容（插入到开头）- 确保结构正确
           const newContent = {
-            ...doc.content,
+            type: "doc",
             content: [
               ...(generatedContent.content || []),
-              ...(doc.content.content || []),
+              ...(doc.content?.content || []),
             ],
           };
 

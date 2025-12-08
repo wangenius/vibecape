@@ -22,6 +22,8 @@ declare module "@tiptap/core" {
       insertAIRewrite: () => ReturnType;
       insertAIPolish: () => ReturnType;
       removeAIRewrite: (id: string) => ReturnType;
+      /** 开始 Generate 模式流式编辑 */
+      startAIGenerateStream: (nodeId: string) => ReturnType;
       /** 开始流式编辑：删除原文，创建 AIDiffMark，更新节点属性 */
       startAIPolishStream: (nodeId: string) => ReturnType;
       /** 流式更新 diff 内容 */
@@ -194,6 +196,43 @@ export const AIRewriteNode = Node.create<AIRewriteOptions>({
           return found;
         },
 
+      /** 开始 Generate 模式流式编辑：在节点位置插入 DiffNode */
+      startAIGenerateStream:
+        (nodeId: string) =>
+        ({ state, tr, dispatch }) => {
+          let targetPos: number | null = null;
+          let nodeAttrs: any = null;
+
+          state.doc.descendants((node, pos) => {
+            if (node.type.name === "aiRewrite" && node.attrs.id === nodeId) {
+              targetPos = pos;
+              nodeAttrs = node.attrs;
+              return false;
+            }
+            return true;
+          });
+
+          if (targetPos === null) {
+            return false;
+          }
+
+          // 生成 diffId
+          const diffId = gen.id({ prefix: "diff-", length: 12 });
+
+          // 更新节点属性
+          const nodeType = state.schema.nodes.aiRewrite;
+          tr.setNodeMarkup(targetPos, nodeType, {
+            ...nodeAttrs,
+            diffId,
+            originalText: "", // generate 模式没有原文
+            insertPos: targetPos, // 在节点位置插入
+            isCrossNode: true, // 使用 DiffNode
+          });
+
+          if (dispatch) dispatch(tr);
+          return true;
+        },
+
       /** 开始流式编辑：保留原文（带删除线样式），在原文后插入 diff 内容 */
       startAIPolishStream:
         (nodeId: string) =>
@@ -310,10 +349,11 @@ export const AIRewriteNode = Node.create<AIRewriteOptions>({
             return true;
           });
 
-          if (!polishMarkId || insertPos === -1) return false;
+          // generate 模式没有 polishMarkId，但必须有 insertPos
+          if (insertPos === -1) return false;
 
           if (isCrossNode) {
-            // 跨节点：使用 AIDiffNode
+            // 跨节点或 generate 模式：使用 AIDiffNode
             const diffNodeType = state.schema.nodes.aiDiffNode;
 
             // 查找现有的 diff node
@@ -747,30 +787,30 @@ function AIRewriteComponent(props: any) {
     abortControllerRef.current = abortController;
 
     try {
-      // 润色模式：获取原文
-      const currentOriginalText =
-        isPolishMode && markId ? getMarkedText(editor, markId) : "";
-
-      // 1. 开始流式编辑：删除原文，创建 diff 状态
+      // 1. 开始流式编辑
       if (isPolishMode && markId) {
+        // Polish 模式：获取原文并设置 streaming 状态
         editor.commands.startAIPolishStream(nodeId);
+      } else {
+        // Generate 模式：初始化 DiffNode
+        editor.commands.startAIGenerateStream(nodeId);
       }
 
       // 获取更新后的 diffId
       const updatedDiffId = editor.state.doc.nodeAt(props.getPos())?.attrs
         .diffId;
       const savedOriginalText =
-        editor.state.doc.nodeAt(props.getPos())?.attrs.originalText ||
-        currentOriginalText;
+        editor.state.doc.nodeAt(props.getPos())?.attrs.originalText || "";
 
       if (!updatedDiffId) {
         throw new Error("Failed to start stream edit");
       }
 
       // 构建系统消息
-      const systemMessage = {
-        role: "system",
-        content: `你是一个专业的小说写作助手。请根据用户的润色需求，改写以下文字。
+      const systemMessage = isPolishMode
+        ? {
+            role: "system",
+            content: `你是一个专业的小说写作助手。请根据用户的润色需求，改写以下文字。
 
 原文：
 ${savedOriginalText}
@@ -780,7 +820,16 @@ ${savedOriginalText}
 2. 保持原文的核心意思
 3. 保持与上下文一致的风格和语气
 4. 纯文本输出，不使用 Markdown 格式`,
-      };
+          }
+        : {
+            role: "system",
+            content: `你是一个专业的小说写作助手。请根据用户的指令生成内容。
+
+要求：
+1. 直接输出生成的内容，不要有任何前缀或解释
+2. 保持与上下文一致的风格和语气
+3. 纯文本输出，不使用 Markdown 格式`,
+          };
 
       let fullResponse = "";
 
@@ -830,7 +879,7 @@ ${savedOriginalText}
       setError(
         err instanceof Error ? err.message : t("common.aiRewrite.unknownError")
       );
-      setStatus("completed");
+      setStatus("idle");
       (window as any).electron?.ipcRenderer.removeAllListeners(channel);
     }
   }, [prompt, status, editor, isPolishMode, markId, nodeId, props, t, node]);

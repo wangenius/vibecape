@@ -1,17 +1,9 @@
 import { app, shell, BrowserWindow, ipcMain, nativeImage, protocol, net } from "electron";
-import { join } from "path";
+import { join, normalize, sep } from "path";
 import { pathToFileURL } from "url";
 import icon from "../../resources/new-macOS-Default-1024x1024@2x.png?asset";
 import { ensureDatabaseReady } from "./db/client";
-
-// 自动注册 IPC handlers（副作用导入）
-import "./handler/app/SettingsHandler";
-import "./handler/app/ModelHandler";
-import "./handler/app/ProviderHandler";
-import "./handler/chat/ChatHandler";
-import "./handler/docs/VibecapeHandler";
-import "./handler/docs/DocsAIHandler";
-import "./handler/docs/ImageHandler";
+import { registerAllHandlers } from "./handler";
 
 function createWindow(): void {
   // Create the browser window.
@@ -23,7 +15,7 @@ function createWindow(): void {
     show: false,
     autoHideMenuBar: true,
     titleBarStyle: "hidden",
-    title: "jezzlab",
+    title: "Vibecape",
     // Only set icon for Linux and Windows (macOS uses dock icon instead)
     ...(process.platform !== "darwin" ? { icon } : {}),
     webPreferences: {
@@ -68,11 +60,33 @@ protocol.registerSchemesAsPrivileged([
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(async () => {
-  // 注册 local-asset 协议处理器
-  protocol.handle("local-asset", (request) => {
+  // 注册 local-asset 协议处理器（带路径安全验证）
+  protocol.handle("local-asset", async (request) => {
+    const { getDocsRoot, getUserDataPaths } = await import("./services/UserData");
+
     // local-asset://path/to/file -> file:///path/to/file
     const filePath = decodeURIComponent(request.url.replace("local-asset://", ""));
-    return net.fetch(pathToFileURL(filePath).href);
+    const normalizedPath = normalize(filePath);
+
+    // 路径白名单验证
+    const { vibecapeDir } = getUserDataPaths();
+    const docsRoot = getDocsRoot();
+    const allowedDirs = [vibecapeDir, docsRoot].filter(Boolean) as string[];
+
+    const isAllowed = allowedDirs.some((dir) => {
+      const normalizedDir = normalize(dir);
+      return (
+        normalizedPath === normalizedDir ||
+        normalizedPath.startsWith(normalizedDir + sep)
+      );
+    });
+
+    if (!isAllowed) {
+      console.warn(`[Protocol] Blocked access to unauthorized path: ${normalizedPath}`);
+      return new Response("Forbidden", { status: 403 });
+    }
+
+    return net.fetch(pathToFileURL(normalizedPath).href);
   });
 
   // Set app user model id for windows
@@ -139,6 +153,9 @@ app.whenReady().then(async () => {
   MCPManager.initialize().catch((error) => {
     console.error("[MCP] Failed to initialize MCP:", error);
   });
+
+  // IPC handlers registration
+  registerAllHandlers();
 
   // IPC test
   ipcMain.on("ping", () => console.log("pong"));

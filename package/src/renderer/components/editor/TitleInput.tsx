@@ -19,10 +19,10 @@ export const TitleInput = memo(
       }
     }, [value]);
 
-    // 处理 Enter 键，聚焦到编辑器顶部
+    // 处理 Cmd/Ctrl + Enter 键，聚焦到编辑器顶部
     const handleKeyDown = useCallback(
       (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === "Enter") {
+        if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
           e.preventDefault();
           // 查找 ProseMirror 编辑器并聚焦到顶部
           const proseMirrorElement = document.querySelector<HTMLElement>(
@@ -52,7 +52,7 @@ export const TitleInput = memo(
         onChange={onChange}
         onKeyDown={handleKeyDown}
         className="w-full text-4xl font-medium tracking-tight bg-transparent border-none 
-          focus:bg-transparent
+          focus:bg-transparent hover:bg-transparent
           placeholder:text-muted-foreground/30 px-0 h-20"
         placeholder={t("common.settings.enterTitle")}
       />

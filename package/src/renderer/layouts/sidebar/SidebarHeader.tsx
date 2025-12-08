@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
 import { useWorkspaceStore, useDocumentStore, useUIStore } from "@/hooks/stores";
-import { useViewManager, setSidebarViewMode } from "@/hooks/app/useViewManager";
 import {
   Loader2,
   X,
@@ -11,7 +10,6 @@ import {
   Database,
 } from "lucide-react";
 import { TbDots } from "react-icons/tb";
-import { ViewModeSwitch } from "./ViewModeSwitch";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,7 +33,6 @@ export const SidebarHeader = ({ onCreateDoc }: SidebarHeaderProps) => {
   const closeWorkspace = useWorkspaceStore((state) => state.closeWorkspace);
   const refreshTree = useDocumentStore((state) => state.refreshTree);
   const loading = useUIStore((state) => state.loading);
-  const sidebarViewMode = useViewManager((state) => state.sidebarViewMode);
 
   // 未打开工作区时不显示头部
   if (!workspace) {
@@ -72,16 +69,15 @@ export const SidebarHeader = ({ onCreateDoc }: SidebarHeaderProps) => {
     }
   };
 
+  const workspaceName = workspace?.config?.name || "";
+
   return (
     <div className="px-1 w-full shrink-0">
       <div className="flex items-center gap-1 whitespace-nowrap">
-        {/* 左侧：Switch 切换按钮 */}
-        <ViewModeSwitch
-          mode={sidebarViewMode}
-          onModeChange={setSidebarViewMode}
-        />
-        <div className="flex-1"></div>
-
+        {/* 左侧：工作区名称 */}
+        <span className="text-sm font-medium text-foreground truncate flex-1 px-1">
+          {workspaceName}
+        </span>
         {/* 右侧：新建 + 更多操作 */}
         <Button
           variant="ghost"

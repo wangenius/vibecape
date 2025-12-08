@@ -450,15 +450,11 @@ export function jsonToMarkdown(content: JSONContent): string {
       case "table": {
         if (node.content) {
           const rows: string[][] = [];
-          let hasHeader = false;
 
           for (const row of node.content) {
             if (row.type === "tableRow" && row.content) {
               const cells: string[] = [];
               for (const cell of row.content) {
-                if (cell.type === "tableHeader") {
-                  hasHeader = true;
-                }
                 cells.push(extractText(cell));
               }
               rows.push(cells);

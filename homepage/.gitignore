@@ -13,12 +13,9 @@
 # testing
 /coverage
 
-# next.js
-/.next/
-/out/
-
-# production
-/build
+# react-router / vite
+/.react-router/
+/build/
 
 # misc
 .DS_Store
@@ -49,3 +46,4 @@ drizzle
 supabase
 
 .vscode
+.backup

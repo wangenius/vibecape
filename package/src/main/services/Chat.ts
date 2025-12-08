@@ -6,8 +6,11 @@ import {
   ChatThread,
 } from "@common/schema/chat";
 import { chatDb } from "../db/chat";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, max } from "drizzle-orm";
 import { nanoid } from "nanoid";
+
+type MessageRole = "user" | "assistant" | "system";
+type MessageParts = unknown[];
 
 /**
  * 聊天服务
@@ -72,34 +75,21 @@ export class Chat {
   }
 
   /**
-   * 添加消息到线程
+   * 添加消息到线程（优化版：使用子查询获取序列号）
    */
   static async addMessage(
     threadId: string,
-    role: "user" | "assistant" | "system",
-    parts: any[]
+    role: MessageRole,
+    parts: MessageParts
   ): Promise<ChatMessage> {
-    // 检查线程是否存在
-    const thread = await chatDb
-      .select()
-      .from(chatThreads)
-      .where(eq(chatThreads.id, threadId))
-      .get();
-
-    if (!thread) {
-      throw new Error(`Thread ${threadId} not found`);
-    }
-
-    // 获取当前最大序列号
-    const messages = await chatDb
-      .select()
+    // 使用子查询一次性获取最大序列号，减少一次查询
+    const maxSeqResult = await chatDb
+      .select({ maxSeq: max(chatMessages.sequence) })
       .from(chatMessages)
       .where(eq(chatMessages.thread_id, threadId))
-      .orderBy(desc(chatMessages.sequence))
-      .limit(1)
-      .all();
+      .get();
 
-    const sequence = messages.length > 0 ? messages[0].sequence + 1 : 0;
+    const sequence = (maxSeqResult?.maxSeq ?? -1) + 1;
 
     const [message] = await chatDb
       .insert(chatMessages)
@@ -120,6 +110,48 @@ export class Chat {
       .where(eq(chatThreads.id, threadId));
 
     return message;
+  }
+
+  /**
+   * 批量添加消息（用于流式对话结束后一次性保存）
+   */
+  static async addMessages(
+    threadId: string,
+    messages: Array<{ role: MessageRole; parts: MessageParts }>
+  ): Promise<ChatMessage[]> {
+    if (messages.length === 0) return [];
+
+    // 获取当前最大序列号
+    const maxSeqResult = await chatDb
+      .select({ maxSeq: max(chatMessages.sequence) })
+      .from(chatMessages)
+      .where(eq(chatMessages.thread_id, threadId))
+      .get();
+
+    let sequence = (maxSeqResult?.maxSeq ?? -1) + 1;
+
+    // 批量插入
+    const insertValues = messages.map((msg) => ({
+      id: nanoid(),
+      thread_id: threadId,
+      role: msg.role,
+      parts: msg.parts as any,
+      sequence: sequence++,
+      metadata: {},
+    }));
+
+    const inserted = await chatDb
+      .insert(chatMessages)
+      .values(insertValues as any)
+      .returning();
+
+    // 更新线程的 updated_at
+    await chatDb
+      .update(chatThreads)
+      .set({ updated_at: Date.now() })
+      .where(eq(chatThreads.id, threadId));
+
+    return inserted;
   }
 
   /**

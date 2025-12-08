@@ -5,6 +5,12 @@ import {
   type ProviderInsert,
 } from "@common/schema/app";
 import { appDb } from "../db/app";
+import {
+  encryptApiKey,
+  decryptApiKey,
+  needsMigration,
+  migrateApiKey,
+} from "../utils/crypto";
 
 /**
  * 远程模型信息
@@ -44,8 +50,38 @@ export class Provider {
 
   private static async loadAll(): Promise<void> {
     const allProviders = await appDb.select().from(providers);
-    this.providers = new Map(allProviders.map((p) => [p.id, p]));
 
+    // 解密 API Key 并检查迁移
+    const decryptedProviders: ProviderRecord[] = [];
+    for (const p of allProviders) {
+      try {
+        // 检查是否需要迁移旧格式（明文无前缀）
+        if (needsMigration(p.api_key)) {
+          console.log(`[Provider] Migrating API key for provider: ${p.name}`);
+          const encryptedKey = migrateApiKey(p.api_key);
+          await appDb
+            .update(providers)
+            .set({ api_key: encryptedKey })
+            .where(eq(providers.id, p.id));
+          p.api_key = encryptedKey;
+        }
+
+        // 内存中存储解密后的 API Key
+        decryptedProviders.push({
+          ...p,
+          api_key: decryptApiKey(p.api_key),
+        });
+      } catch (error) {
+        // 单个 Provider 解密失败不影响其他，使用空 API Key 继续
+        console.warn(`[Provider] Failed to decrypt API key for ${p.name}, skipping:`, error);
+        decryptedProviders.push({
+          ...p,
+          api_key: "", // 解密失败时使用空字符串，用户需重新设置
+        });
+      }
+    }
+
+    this.providers = new Map(decryptedProviders.map((p) => [p.id, p]));
     this.initialized = true;
     console.log(`[Provider] 已加载 ${this.providers.size} 个 Provider`);
   }
@@ -93,9 +129,24 @@ export class Provider {
       throw new Error("API Key 不能为空");
     }
 
-    const [record] = await appDb.insert(providers).values(payload).returning();
-    this.providers.set(record.id, record);
-    return record;
+    // 存储加密后的 API Key
+    const encryptedPayload = {
+      ...payload,
+      api_key: encryptApiKey(payload.api_key),
+    };
+
+    const [record] = await appDb
+      .insert(providers)
+      .values(encryptedPayload)
+      .returning();
+
+    // 内存缓存使用明文（方便后续使用）
+    const decryptedRecord = {
+      ...record,
+      api_key: payload.api_key, // 使用原始明文
+    };
+    this.providers.set(record.id, decryptedRecord);
+    return decryptedRecord;
   }
 
   /**
@@ -108,10 +159,15 @@ export class Provider {
     await this.ensureInit();
 
     const updateData: Partial<ProviderInsert> = {};
+    let plainApiKey: string | undefined;
 
     if (changes.name !== undefined) updateData.name = changes.name;
     if (changes.base_url !== undefined) updateData.base_url = changes.base_url;
-    if (changes.api_key !== undefined) updateData.api_key = changes.api_key;
+    if (changes.api_key !== undefined) {
+      // 存储加密后的 API Key
+      plainApiKey = changes.api_key;
+      updateData.api_key = encryptApiKey(changes.api_key);
+    }
     if (changes.models_path !== undefined)
       updateData.models_path = changes.models_path;
     if (changes.enabled !== undefined) updateData.enabled = changes.enabled;
@@ -126,8 +182,14 @@ export class Provider {
       throw new Error(`Provider ${id} 不存在`);
     }
 
-    this.providers.set(record.id, record);
-    return record;
+    // 内存缓存使用解密后的值
+    const existing = this.providers.get(id);
+    const decryptedRecord = {
+      ...record,
+      api_key: plainApiKey ?? existing?.api_key ?? decryptApiKey(record.api_key),
+    };
+    this.providers.set(record.id, decryptedRecord);
+    return decryptedRecord;
   }
 
   /**

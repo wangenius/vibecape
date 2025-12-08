@@ -39,3 +39,5 @@ export type ThinkingPart = ReasoningPart | ToolPart;
 
 // 所有消息部分的联合类型
 export type MessagePart = TextPart | ReasoningPart | ToolPart;
+
+export { type ModelMessage, type UIMessage } from "ai";

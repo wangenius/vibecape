@@ -1,9 +1,13 @@
-appId: com.electron.app
-productName: "jezzlab"
+appId: com.vibecape.app
+productName: "Vibecape"
 electronVersion: "38.1.2"
+
 directories:
   buildResources: build
+  output: dist
+
 icon: build/new-macOS-Default-1024x1024@2x.png
+
 files:
   - "!**/.vscode/*"
   - "!src/*"
@@ -11,16 +15,31 @@ files:
   - "!{.eslintcache,eslint.config.mjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}"
   - "!{.env,.env.*,.npmrc,pnpm-lock.yaml}"
   - "!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}"
+  - "!docs/*"
+  - "!**/*.map"
+
 asarUnpack:
   - resources/**
+
 win:
-  executableName: "jezzlab"
+  executableName: "Vibecape"
+  icon: build/icon.ico
+  target:
+    - nsis
+    - portable
+
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}
   uninstallDisplayName: ${productName}
   createDesktopShortcut: always
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+
 mac:
+  category: public.app-category.productivity
+  hardenedRuntime: true
+  entitlements: build/entitlements.mac.plist
   entitlementsInherit: build/entitlements.mac.plist
   extendInfo:
     - NSCameraUsageDescription: Application requests access to the device's camera.
@@ -28,20 +47,31 @@ mac:
     - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
     - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
   notarize: false
+  # 发布时启用公证
+  # notarize:
+  #   teamId: YOUR_TEAM_ID
+
 dmg:
   artifactName: ${name}-${version}.${ext}
+
 linux:
   target:
     - AppImage
-    - snap
     - deb
-  maintainer: electronjs.org
-  category: Utility
+  maintainer: vibecape.app
+  category: Office
+  icon: build/icons
+
 appImage:
   artifactName: ${name}-${version}.${ext}
+
 npmRebuild: false
+
 publish:
-  provider: generic
-  url: https://example.com/auto-updates
+  provider: github
+  owner: vibecape
+  repo: vibecape
+  releaseType: release
+
 electronDownload:
   mirror: https://npmmirror.com/mirrors/electron/

@@ -51,11 +51,7 @@ interface ChatStore {
   setThreadId: (chatId: string, threadId: string) => void;
 
   // 发送消息
-  sendMessage: (
-    chatId: string,
-    text: string,
-    heroId?: string
-  ) => Promise<void>;
+  sendMessage: (chatId: string, text: string, heroId?: string) => Promise<void>;
 
   // 停止生成
   stop: (chatId: string) => void;
@@ -228,11 +224,20 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   sendMessage: async (chatId, text, heroId) => {
     const { addMessage, setStatus, setError } = get();
 
+    console.log(
+      "[useChat] sendMessage called - chatId:",
+      chatId,
+      "text:",
+      text.substring(0, 50)
+    );
+
     setStatus(chatId, "submitted");
     setError(chatId, null);
 
     const ipc = window.electron?.ipcRenderer;
+    console.log("[useChat] ipcRenderer available:", !!ipc);
     if (!ipc) {
+      console.error("[useChat] ipcRenderer not available!");
       setError(chatId, new Error(lang("common.chat.channelUnavailable")));
       setStatus(chatId, "error");
       return;
@@ -246,6 +251,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         parts: [{ type: "text", text }],
       };
       addMessage(chatId, userMessage);
+      console.log("[useChat] User message added");
 
       // 创建一个占位的助手消息
       const assistantMessage: UIMessage = {
@@ -254,6 +260,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         parts: [{ type: "text", text: "" }],
       };
       addMessage(chatId, assistantMessage);
+      console.log("[useChat] Assistant placeholder added");
 
       const requestId = gen.id();
 
@@ -261,24 +268,23 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         "[useChat] Starting stream with threadId:",
         chatId,
         "heroId:",
-        heroId
-      );
-      const response = await window.api.chat.stream({
-        id: requestId,
-        thread: chatId,
-        prompt: text,
         heroId,
-      });
-
-      if (!response?.success) {
-        throw new Error(lang("common.chat.startStreamFailed"));
-      }
+        "requestId:",
+        requestId
+      );
 
       const channel = getStreamChannel(requestId);
+      console.log("[useChat] Will listen on channel:", channel);
 
-      console.log("[useChat] Stream started - channel:", channel);
-
-      setStatus(chatId, "streaming");
+      // 先注册监听器，再发送请求
+      const cleanup = () => {
+        console.log(
+          "[useChat] Cleanup - removing listeners for channel:",
+          channel
+        );
+        ipc.removeAllListeners(channel);
+        activeRequests.delete(chatId);
+      };
 
       // 按原始顺序累积 parts (v5 格式)
       const parts: MessagePart[] = [];
@@ -335,6 +341,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         }
       ) => {
         if (!chunk || typeof chunk !== "object") return;
+        console.log("[useChat] Received chunk:", chunk.type);
 
         if (chunk.type === "text-delta") {
           if (currentReasoning) flush();
@@ -381,12 +388,8 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         }
       };
 
-      const cleanup = () => {
-        ipc.removeAllListeners(channel);
-        activeRequests.delete(chatId);
-      };
-
       // 注册监听器
+      console.log("[useChat] Registering listener on channel:", channel);
       ipc.on(channel, handler);
 
       // 保存请求信息，用于取消
@@ -397,6 +400,23 @@ export const useChatStore = create<ChatStore>((set, get) => ({
           window.api.chat.cancel(requestId).catch(console.warn);
         },
       });
+
+      // 发送请求
+      console.log("[useChat] Sending stream request...");
+      const response = await window.api.chat.stream({
+        id: requestId,
+        thread: chatId,
+        prompt: text,
+        heroId,
+      });
+      console.log("[useChat] Stream request response:", response);
+
+      if (!response?.success) {
+        cleanup();
+        throw new Error(lang("common.chat.startStreamFailed"));
+      }
+
+      setStatus(chatId, "streaming");
     } catch (error: any) {
       console.error("[useChat] Send message error:", error);
       setError(chatId, error);

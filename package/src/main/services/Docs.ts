@@ -2,14 +2,16 @@
  * 文档服务
  * 处理文档 CRUD 操作
  * 使用 WorkspaceService 管理工作区
+ * 使用 Repository 层进行数据访问
  */
 
 import fs from "fs/promises";
 import { dialog } from "electron";
-import { eq, isNull, asc } from "drizzle-orm";
+import { asc } from "drizzle-orm";
 import { docs, type DocTreeNode, type DocData } from "@common/schema/docs";
 import { getDocsDb } from "@main/db/docs";
 import { WorkspaceService } from "./Workspace";
+import { DocsRepository } from "@main/repositories";
 import type { JSONContent } from "@tiptap/core";
 import {
   jsonToMarkdown,
@@ -35,14 +37,22 @@ export class DocsService {
     return getDocsDb(workspace.docs_db_path);
   }
 
+  /**
+   * 获取当前工作区的 Repository
+   */
+  private static async getRepository(): Promise<DocsRepository> {
+    const db = await this.getDb();
+    return new DocsRepository(db);
+  }
+
   // ==================== 文档 CRUD ====================
 
   /**
    * 获取文档树
    */
   static async getTree(): Promise<DocTreeNode[]> {
-    const db = await this.getDb();
-    const allDocs = await db.select().from(docs).orderBy(asc(docs.order));
+    const repo = await this.getRepository();
+    const allDocs = await repo.findAll();
 
     const nodeMap = new Map<string, DocTreeNode>();
     const roots: DocTreeNode[] = [];
@@ -86,11 +96,10 @@ export class DocsService {
    * 获取单个文档
    */
   static async getDoc(id: string): Promise<DocData | null> {
-    const db = await this.getDb();
-    const result = await db.select().from(docs).where(eq(docs.id, id)).limit(1);
-    if (result.length === 0) return null;
+    const repo = await this.getRepository();
+    const doc = await repo.findById(id);
+    if (!doc) return null;
 
-    const doc = result[0];
     return {
       id: doc.id,
       parent_id: doc.parent_id,
@@ -110,39 +119,17 @@ export class DocsService {
     content?: JSONContent;
     metadata?: Record<string, any>;
   }): Promise<DocData> {
-    const db = await this.getDb();
+    const repo = await this.getRepository();
+    const maxOrder = await repo.getMaxOrder(data.parent_id ?? null);
 
-    const siblings = await db
-      .select({ order: docs.order })
-      .from(docs)
-      .where(
-        data.parent_id
-          ? eq(docs.parent_id, data.parent_id)
-          : isNull(docs.parent_id)
-      )
-      .orderBy(asc(docs.order));
+    const doc = await repo.create({
+      parent_id: data.parent_id ?? null,
+      title: data.title,
+      content: data.content,
+      metadata: data.metadata,
+      order: maxOrder + 1,
+    });
 
-    const maxOrder =
-      siblings.length > 0 ? siblings[siblings.length - 1].order : -1;
-
-    const now = Date.now();
-    const result = await db
-      .insert(docs)
-      .values({
-        parent_id: data.parent_id ?? null,
-        title: data.title,
-        content: data.content || {
-          type: "doc",
-          content: [{ type: "paragraph" }],
-        },
-        metadata: data.metadata || {},
-        order: maxOrder + 1,
-        created_at: now,
-        updated_at: now,
-      })
-      .returning();
-
-    const doc = result[0];
     return {
       id: doc.id,
       parent_id: doc.parent_id,
@@ -166,20 +153,11 @@ export class DocsService {
       order: number;
     }>
   ): Promise<DocData | null> {
-    const db = await this.getDb();
+    const repo = await this.getRepository();
+    const doc = await repo.update(id, data);
 
-    const result = await db
-      .update(docs)
-      .set({
-        ...data,
-        updated_at: Date.now(),
-      })
-      .where(eq(docs.id, id))
-      .returning();
+    if (!doc) return null;
 
-    if (result.length === 0) return null;
-
-    const doc = result[0];
     return {
       id: doc.id,
       parent_id: doc.parent_id,
@@ -191,46 +169,25 @@ export class DocsService {
   }
 
   /**
-   * 删除文档 (递归删除子文档)
+   * 删除文档 (使用 Repository 的递归删除)
    */
   static async deleteDoc(id: string): Promise<void> {
-    const db = await this.getDb();
-
-    const getDescendants = async (parentId: string): Promise<string[]> => {
-      const children = await db
-        .select({ id: docs.id })
-        .from(docs)
-        .where(eq(docs.parent_id, parentId));
-
-      const ids: string[] = [];
-      for (const child of children) {
-        ids.push(child.id);
-        ids.push(...(await getDescendants(child.id)));
-      }
-      return ids;
-    };
-
-    const descendantIds = await getDescendants(id);
-    const allIds = [id, ...descendantIds];
-
-    for (const docId of allIds) {
-      await db.delete(docs).where(eq(docs.id, docId));
-    }
+    const repo = await this.getRepository();
+    await repo.deleteWithDescendants(id);
   }
 
   // ==================== 排序 ====================
 
   /**
-   * 重新排序文档（同级）
+   * 重新排序文档（同级）- 使用 Repository 批量更新
    */
   static async reorderDoc(activeId: string, overId: string): Promise<void> {
-    const db = await this.getDb();
+    const repo = await this.getRepository();
 
-    const [activeDoc] = await db
-      .select()
-      .from(docs)
-      .where(eq(docs.id, activeId));
-    const [overDoc] = await db.select().from(docs).where(eq(docs.id, overId));
+    const [activeDoc, overDoc] = await Promise.all([
+      repo.findById(activeId),
+      repo.findById(overId),
+    ]);
 
     if (!activeDoc || !overDoc) {
       throw new Error("文档不存在");
@@ -240,15 +197,7 @@ export class DocsService {
       throw new Error("只能在同级之间排序");
     }
 
-    const siblings = await db
-      .select()
-      .from(docs)
-      .where(
-        activeDoc.parent_id
-          ? eq(docs.parent_id, activeDoc.parent_id)
-          : isNull(docs.parent_id)
-      )
-      .orderBy(asc(docs.order));
+    const siblings = await repo.findByParent(activeDoc.parent_id);
 
     const activeIndex = siblings.findIndex((d) => d.id === activeId);
     const overIndex = siblings.findIndex((d) => d.id === overId);
@@ -258,12 +207,9 @@ export class DocsService {
     const [removed] = siblings.splice(activeIndex, 1);
     siblings.splice(overIndex, 0, removed);
 
-    for (let i = 0; i < siblings.length; i++) {
-      await db
-        .update(docs)
-        .set({ order: i })
-        .where(eq(docs.id, siblings[i].id));
-    }
+    // 批量更新所有顺序
+    const updates = siblings.map((doc, i) => ({ id: doc.id, order: i }));
+    await repo.updateOrderBatch(updates);
   }
 
   /**
@@ -273,23 +219,13 @@ export class DocsService {
     docId: string,
     newParentId: string | null
   ): Promise<void> {
-    const db = await this.getDb();
+    const repo = await this.getRepository();
+    const maxOrder = await repo.getMaxOrder(newParentId);
 
-    const siblings = await db
-      .select()
-      .from(docs)
-      .where(
-        newParentId ? eq(docs.parent_id, newParentId) : isNull(docs.parent_id)
-      )
-      .orderBy(asc(docs.order));
-
-    const maxOrder =
-      siblings.length > 0 ? siblings[siblings.length - 1].order + 1 : 0;
-
-    await db
-      .update(docs)
-      .set({ parent_id: newParentId, order: maxOrder })
-      .where(eq(docs.id, docId));
+    await repo.update(docId, {
+      parent_id: newParentId,
+      order: maxOrder + 1,
+    });
   }
 
   // ==================== 导出 ====================

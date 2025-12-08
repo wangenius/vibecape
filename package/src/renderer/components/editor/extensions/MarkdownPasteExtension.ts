@@ -64,7 +64,7 @@ export const MarkdownPasteExtension = Extension.create({
       new Plugin({
         key: new PluginKey("markdownPaste"),
         props: {
-          handlePaste: (view, event) => {
+          handlePaste: (_view, event) => {
             // 获取粘贴的纯文本内容
             const text = event.clipboardData?.getData("text/plain");
             if (!text || text.trim().length === 0) return false;

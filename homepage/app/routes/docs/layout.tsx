@@ -1,0 +1,24 @@
+import { DocsLayout } from "fumadocs-ui/layouts/docs";
+import { source } from "@/lib/source";
+import { Outlet } from "react-router";
+import type { Route } from "./+types/layout";
+import type { PageTree } from "fumadocs-core/server";
+
+export async function loader() {
+  return {
+    tree: source.pageTree,
+  };
+}
+
+export default function Layout({ loaderData }: Route.ComponentProps) {
+  return (
+    <DocsLayout
+      tree={loaderData.tree as PageTree.Root}
+      nav={{
+        title: "Vibecape Docs",
+      }}
+    >
+      <Outlet />
+    </DocsLayout>
+  );
+}

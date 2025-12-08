@@ -5,8 +5,13 @@
 
 import type { WebContents } from "electron";
 import { streamText, stepCountIs } from "ai";
+import type { UIMessage, ModelMessage } from "ai";
 import type { ChatThread } from "@common/schema/chat";
-import type { MessagePart } from "@common/types/message";
+import type { MessagePart, TextPart } from "@common/types/message";
+import type {
+  ChatStreamPayload,
+  InlineEditPayload,
+} from "@common/types/chat";
 import { Chat } from "./Chat";
 import { Model } from "./Model";
 import { MCPManager } from "./MCPManager";
@@ -21,6 +26,9 @@ import { createDocumentTools } from "../heroes/tools/document";
 import { createDocContentTools } from "../heroes/tools/docContent";
 import { createDocManagementTools } from "../heroes/tools/docs";
 
+// Re-export types for external use
+export type { ChatStreamPayload, InlineEditPayload };
+
 // 流式请求状态管理
 interface StreamState {
   abortController: AbortController;
@@ -28,32 +36,78 @@ interface StreamState {
   parts: MessagePart[];
   currentText: string;
   currentReasoning: string;
-}
-
-export interface ChatStreamPayload {
-  id: string;
-  thread: string;
-  prompt: string;
-  messages?: any[];
-  heroId?: string;
-  /** @deprecated 使用 heroId */
-  agentId?: string;
-}
-
-export interface InlineEditPayload {
-  id: string;
-  instruction: string;
-  selection: string;
-  context?: {
-    before: string;
-    after: string;
-  };
+  startTime: number; // 流开始时间，用于超时清理
 }
 
 const STREAM_CHANNEL_PREFIX = "llm:stream:";
 
+// 流超时配置
+const STREAM_TIMEOUT_MS = 30 * 60 * 1000; // 30 分钟
+const CLEANUP_INTERVAL_MS = 60 * 1000; // 1 分钟检查一次
+
 class ChatStreamService {
   private activeStreams = new Map<string, StreamState>();
+  private cleanupTimer: NodeJS.Timeout | null = null;
+
+  constructor() {
+    this.startCleanupTimer();
+  }
+
+  /**
+   * 启动超时清理定时器
+   */
+  private startCleanupTimer(): void {
+    if (this.cleanupTimer) return;
+
+    this.cleanupTimer = setInterval(() => {
+      this.cleanupStaleStreams();
+    }, CLEANUP_INTERVAL_MS);
+
+    // 不阻止进程退出
+    this.cleanupTimer.unref();
+  }
+
+  /**
+   * 清理超时的流
+   */
+  private cleanupStaleStreams(): void {
+    const now = Date.now();
+    const staleIds: string[] = [];
+
+    for (const [id, state] of this.activeStreams) {
+      if (now - state.startTime > STREAM_TIMEOUT_MS) {
+        staleIds.push(id);
+      }
+    }
+
+    if (staleIds.length > 0) {
+      console.warn(`[ChatStream] Cleaning up ${staleIds.length} stale streams`);
+      for (const id of staleIds) {
+        this.cancelStream(id).catch(console.error);
+      }
+    }
+  }
+
+  /**
+   * 停止清理定时器（应用退出时调用）
+   */
+  destroy(): void {
+    if (this.cleanupTimer) {
+      clearInterval(this.cleanupTimer);
+      this.cleanupTimer = null;
+    }
+    // 取消所有活跃流
+    for (const id of this.activeStreams.keys()) {
+      this.cancelStream(id).catch(console.error);
+    }
+  }
+
+  /**
+   * 获取活跃流数量
+   */
+  getActiveStreamCount(): number {
+    return this.activeStreams.size;
+  }
 
   /**
    * 获取流式通道名称
@@ -110,10 +164,10 @@ class ChatStreamService {
           },
         ],
         temperature: 0.7,
-        maxOutputTokens: 50,
       });
 
-      // 等待流完成并获取结果
+      // 先消费流，然后获取结果
+      await result.consumeStream();
       const text = await result.text;
       console.log("[ChatStream] 生成标题结果:", text);
 
@@ -130,12 +184,12 @@ class ChatStreamService {
   }
 
   /**
-   * 构建消息列表
+   * 构建消息列表（返回 ModelMessage[] 用于 streamText）
    */
   async buildMessages(
     thread: ChatThread | null,
-    payload: { prompt: string; messages?: any[]; heroId?: string }
-  ) {
+    payload: { prompt: string; messages?: UIMessage[]; heroId?: string }
+  ): Promise<ModelMessage[]> {
     // 获取 Hero 配置
     const hero = this.getHeroForPayload(payload.heroId);
     const systemPrompt = hero.getSystemPrompt();
@@ -149,15 +203,22 @@ class ChatStreamService {
       "[ChatStream] systemPrompt (first 200 chars):",
       systemPrompt.substring(0, 200)
     );
-    const systemMessage = { role: "system" as const, content: systemPrompt };
+    const systemMessage: ModelMessage = { role: "system", content: systemPrompt };
 
     if (!thread) {
-      // 非聊天场景：使用前端传来的消息
-      const messages = [
-        ...(payload.messages || []),
-        { role: "user" as const, content: payload.prompt },
-      ];
-      return systemMessage ? [systemMessage, ...messages] : messages;
+      // 非聊天场景：将 UIMessage 转换为 ModelMessage
+      const convertedMessages: ModelMessage[] = (payload.messages || []).map((msg) => {
+        const textContent = msg.parts
+          .filter((p): p is { type: "text"; text: string } => p.type === "text")
+          .map((p) => p.text)
+          .join("");
+        return {
+          role: msg.role as "user" | "assistant" | "system",
+          content: textContent || "",
+        };
+      });
+      const userMessage: ModelMessage = { role: "user", content: payload.prompt };
+      return [systemMessage, ...convertedMessages, userMessage];
     }
 
     // 聊天场景：添加用户消息并获取历史
@@ -168,14 +229,16 @@ class ChatStreamService {
     const refreshed = await Chat.getThread(thread.id);
     const historyMessages = refreshed?.messages ?? [];
 
-    const messages = historyMessages.map((msg) => ({
-      role: msg.role as "user" | "assistant" | "system",
-      content:
-        msg.parts
-          .filter((p: any) => p.type === "text")
-          .map((p: any) => p.text)
-          .join("") || "",
-    }));
+    const messages: ModelMessage[] = historyMessages.map((msg) => {
+      const textContent = msg.parts
+        .filter((p): p is TextPart => p.type === "text")
+        .map((p) => p.text)
+        .join("");
+      return {
+        role: msg.role as "user" | "assistant" | "system",
+        content: textContent || "",
+      };
+    });
 
     return [systemMessage, ...messages];
   }
@@ -197,7 +260,7 @@ class ChatStreamService {
   async handleStreamResponse(
     requestId: string,
     threadId: string | undefined,
-    messages: any[],
+    messages: ModelMessage[],
     channel: string,
     webContents: WebContents,
     hero: Hero
@@ -211,6 +274,7 @@ class ChatStreamService {
       parts: [],
       currentText: "",
       currentReasoning: "",
+      startTime: Date.now(),
     };
     this.activeStreams.set(requestId, state);
 
@@ -293,7 +357,9 @@ class ChatStreamService {
             // 工具结果日志（绿色）
             const resultStr = JSON.stringify(toolResult, null, 2);
             const truncatedResult =
-              resultStr.length > 500 ? resultStr.slice(0, 500) + "..." : resultStr;
+              resultStr.length > 500
+                ? resultStr.slice(0, 500) + "..."
+                : resultStr;
             console.log(`\x1b[32m✓ Tool Result: ${toolName}\x1b[0m`);
             console.log(
               `\x1b[90m   ${truncatedResult.split("\n").join("\n   ")}\x1b[0m`
@@ -326,10 +392,11 @@ class ChatStreamService {
           console.log(`\n\x1b[36m✓ Stream completed\x1b[0m`);
           await this.saveMessage(threadId, state.parts);
           webContents.send(channel, { type: "end" });
-        } catch (error: any) {
+        } catch (err) {
+          const error = err instanceof Error ? err : new Error(String(err));
           webContents.send(channel, {
             type: "error",
-            message: error?.message || "保存消息失败",
+            message: error.message || "保存消息失败",
           });
         } finally {
           this.activeStreams.delete(requestId);
@@ -410,6 +477,7 @@ class ChatStreamService {
       parts: [],
       currentText: "",
       currentReasoning: "",
+      startTime: Date.now(),
     };
     this.activeStreams.set(payload.id, state);
 

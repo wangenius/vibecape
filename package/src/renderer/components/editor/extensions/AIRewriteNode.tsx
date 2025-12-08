@@ -3,7 +3,7 @@
  * 提供行内 AI 改写功能：输入提示词 → 流式生成 → 应用到正式内容
  */
 
-import { Node, Mark, mergeAttributes, Editor } from "@tiptap/core";
+import { Node, Mark, mergeAttributes } from "@tiptap/core";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { ReactNodeViewRenderer, NodeViewWrapper } from "@tiptap/react";
 import { useState, useCallback, useRef, useEffect, KeyboardEvent } from "react";
@@ -626,27 +626,6 @@ export const AIPolishMark = Mark.create({
     };
   },
 });
-
-// 辅助函数：从编辑器中获取带有指定 markId 的原文
-function getMarkedText(editor: Editor, markId: string): string {
-  const { state } = editor;
-  const markType = state.schema.marks.aiPolishMark;
-  if (!markType) return "";
-
-  let text = "";
-  state.doc.descendants((node) => {
-    if (node.isText) {
-      const mark = node.marks.find(
-        (m) => m.type === markType && m.attrs.id === markId
-      );
-      if (mark) {
-        text += node.text || "";
-      }
-    }
-    return true;
-  });
-  return text;
-}
 
 function AIRewriteComponent(props: any) {
   const { t } = useTranslation();

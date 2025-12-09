@@ -186,6 +186,7 @@ export const DocEditor = ({ doc, onChange, onSave }: Props) => {
       attributes: {
         class:
           "text-base overflow-x-hidden focus:outline-none prose prose-sm dark:prose-invert max-w-none",
+        spellcheck: "false",
       },
       // Markdown 粘贴处理 - 在所有插件之前执行
       handlePaste: (view, event) => {

@@ -413,10 +413,10 @@
 [class*="prose"] table {
   all: unset !important;
   display: table !important;
-  border-collapse: collapse !important;
+  border-collapse: separate !important;
   border-spacing: 0 !important;
   width: 100% !important;
-  margin: 1rem 0 !important;
+  margin: 1.5rem 0 !important;
   table-layout: fixed !important;
   border: 1px solid var(--border) !important;
   border-radius: 0.5rem !important;
@@ -428,7 +428,7 @@
 .tiptap .tableWrapper,
 .ProseMirror .tableWrapper {
   overflow-x: auto !important;
-  margin: 1rem 0 !important;
+  margin: 1.5rem 0 !important;
   padding: 0 !important;
 }
 
@@ -476,8 +476,10 @@
 [class*="prose"] table th {
   all: unset !important;
   display: table-cell !important;
-  border: 1px solid var(--border) !important;
-  padding: 0.5rem 0.75rem !important;
+  border: none !important;
+  border-right: 1px solid var(--border) !important;
+  border-bottom: 1px solid var(--border) !important;
+  padding: 0.75rem 1rem !important;
   vertical-align: top !important;
   box-sizing: border-box !important;
   position: relative !important;
@@ -485,7 +487,24 @@
   background: var(--background) !important;
   color: var(--foreground) !important;
   font-size: 0.875rem !important;
-  line-height: 1.5 !important;
+  line-height: 1.6 !important;
+}
+
+/* Remove right border from last column to avoid double border with table */
+.tiptap table tr td:last-child,
+.tiptap table tr th:last-child,
+.ProseMirror table tr td:last-child,
+.ProseMirror table tr th:last-child,
+.prose table tr td:last-child,
+.prose table tr th:last-child {
+  border-right: none !important;
+}
+
+/* Remove bottom border from last row to avoid double border with table */
+.tiptap table tbody tr:last-child td,
+.ProseMirror table tbody tr:last-child td,
+.prose table tbody tr:last-child td {
+  border-bottom: none !important;
 }
 
 /* 表头样式 */
@@ -496,6 +515,7 @@
   background-color: var(--muted) !important;
   font-weight: 600 !important;
   text-align: left !important;
+  color: var(--foreground) !important;
 }
 
 /* 单元格内容 - 移除段落边距 */
@@ -509,13 +529,13 @@
 .ProseMirror table th p {
   margin: 0 !important;
   padding: 0 !important;
-  line-height: 1.5 !important;
+  line-height: 1.6 !important;
 }
 
 /* 单元格选中样式 */
 .tiptap table .selectedCell,
 .ProseMirror table .selectedCell {
-  background-color: rgba(59, 130, 246, 0.15) !important;
+  background-color: rgba(59, 130, 246, 0.1) !important;
 }
 
 .tiptap table .selectedCell::after,
@@ -526,6 +546,44 @@
   pointer-events: none !important;
   border: 2px solid rgb(59, 130, 246) !important;
   z-index: 1 !important;
+  border-radius: inherit !important;
+}
+
+/* Rounded corners for corner cells */
+/* Top Left - Header */
+.tiptap table thead tr:first-child > :first-child,
+.ProseMirror table thead tr:first-child > :first-child {
+  border-top-left-radius: 0.5rem !important;
+}
+
+/* Top Right - Header */
+.tiptap table thead tr:first-child > :last-child,
+.ProseMirror table thead tr:first-child > :last-child {
+  border-top-right-radius: 0.5rem !important;
+}
+
+/* Top Left - Body (when no header) */
+.tiptap table:not(:has(thead)) tbody tr:first-child > :first-child,
+.ProseMirror table:not(:has(thead)) tbody tr:first-child > :first-child {
+  border-top-left-radius: 0.5rem !important;
+}
+
+/* Top Right - Body (when no header) */
+.tiptap table:not(:has(thead)) tbody tr:first-child > :last-child,
+.ProseMirror table:not(:has(thead)) tbody tr:first-child > :last-child {
+  border-top-right-radius: 0.5rem !important;
+}
+
+/* Bottom Left */
+.tiptap table tbody tr:last-child > :first-child,
+.ProseMirror table tbody tr:last-child > :first-child {
+  border-bottom-left-radius: 0.5rem !important;
+}
+
+/* Bottom Right */
+.tiptap table tbody tr:last-child > :last-child,
+.ProseMirror table tbody tr:last-child > :last-child {
+  border-bottom-right-radius: 0.5rem !important;
 }
 
 /* 列宽度调整拉柄 */
@@ -556,14 +614,15 @@
 .dark .ProseMirror table td,
 .dark .ProseMirror table th {
   background: var(--background) !important;
+  border-color: var(--border) !important;
 }
 
 .dark .tiptap table th,
 .dark .ProseMirror table th {
-  background-color: var(--muted) !important;
+  background-color: rgba(255, 255, 255, 0.03) !important;
 }
 
 .dark .tiptap table .selectedCell,
 .dark .ProseMirror table .selectedCell {
-  background-color: rgba(59, 130, 246, 0.2) !important;
+  background-color: rgba(59, 130, 246, 0.15) !important;
 }

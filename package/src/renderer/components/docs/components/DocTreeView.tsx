@@ -253,15 +253,13 @@ export const DocTreeWithDnd = () => {
             active.id as string,
             over.id as string
           );
-          toast.success(t("common.settings.movedToFolder"));
         } else {
           await window.api.vibecape.reorderDoc(
             active.id as string,
             over.id as string
           );
-          toast.success(t("common.settings.reordered"));
         }
-        void refreshTree();
+        await refreshTree(true);
       } catch (error: any) {
         toast.error(error?.message ?? t("common.settings.operationFailed"));
       }

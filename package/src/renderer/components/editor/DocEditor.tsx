@@ -32,6 +32,7 @@ import { TableExtension } from "@/components/editor/extensions/TableExtension";
 import { useTranslation } from "react-i18next";
 import { useRemoteTools } from "@/hooks/editor/useRemoteTools";
 import { useExpandRegion } from "@/hooks/shortcuts/useExpandRegion";
+import { useEditorStore } from "@/hooks/stores/useEditorStore";
 import { markdownToJSON } from "@common/lib/content-converter";
 import { Slice, Fragment } from "@tiptap/pm/model";
 
@@ -46,6 +47,10 @@ export const DocEditor = ({ doc, onChange, onSave }: Props) => {
   // 用 ref 存储 save 函数，解决循环引用问题
   const handleSaveRef = useRef<() => void>(() => {});
   const containerRef = useRef<HTMLDivElement>(null);
+  
+  // 用于跟踪文档切换和外部更新的 refs（必须在 useEditor 之前定义）
+  const prevDocIdRef = useRef<string | null>(null);
+  const prevContentRef = useRef<string | null>(null);
 
   // 创建 Slash Menu 配置
   const slashMenuConfig = useMemo(() => createSlashMenuPlugin(t), [t]);
@@ -251,7 +256,10 @@ export const DocEditor = ({ doc, onChange, onSave }: Props) => {
       },
     },
     onUpdate: ({ editor }) => {
-      onChange?.(editor.getJSON());
+      const content = editor.getJSON();
+      // 同步更新 prevContentRef，防止 useEffect 误判为外部更新
+      prevContentRef.current = JSON.stringify(content);
+      onChange?.(content);
     },
   });
 
@@ -261,9 +269,16 @@ export const DocEditor = ({ doc, onChange, onSave }: Props) => {
   // 启用 Cmd+W 扩展选区快捷键
   useExpandRegion(editor);
 
+  // 注册 editor 到 store，供全局快捷键等使用
+  const setEditor = useEditorStore((state) => state.setEditor);
+  useEffect(() => {
+    setEditor(editor);
+    return () => {
+      setEditor(null);
+    };
+  }, [editor, setEditor]);
+
   // 当切换文档或文档内容外部更新时同步编辑器
-  const prevDocIdRef = useRef<string | null>(null);
-  const prevContentRef = useRef<string | null>(null);
   useEffect(() => {
     if (!editor) return;
 

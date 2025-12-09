@@ -15,7 +15,7 @@ type DocumentState = {
 };
 
 type DocumentActions = {
-  refreshTree: () => Promise<void>;
+  refreshTree: (silent?: boolean) => Promise<void>;
   openDoc: (id: string) => Promise<void>;
   saveDoc: (
     docId: string,
@@ -41,18 +41,24 @@ export const useDocumentStore = create<DocumentState & DocumentActions>()(
       activeDocId: null,
       activeDoc: null,
 
-      refreshTree: async () => {
+      refreshTree: async (silent = false) => {
         const uiStore = useUIStore.getState();
-        uiStore.setLoading(true);
-        uiStore.clearError();
+        if (!silent) {
+          uiStore.setLoading(true);
+          uiStore.clearError();
+        }
 
         try {
           const tree = await window.api.vibecape.getTree();
           set({ tree });
         } catch (error) {
-          uiStore.setError((error as Error).message);
+          if (!silent) {
+            uiStore.setError((error as Error).message);
+          }
         } finally {
-          uiStore.setLoading(false);
+          if (!silent) {
+            uiStore.setLoading(false);
+          }
         }
       },
 
@@ -86,7 +92,26 @@ export const useDocumentStore = create<DocumentState & DocumentActions>()(
           if (updated) {
             // 再次检查：确保在保存完成后，当前文档仍然是被保存的文档
             if (get().activeDocId === docId) {
-              set({ activeDoc: updated });
+              // 只更新元数据（title, metadata），不更新 content
+              // content 的变化由编辑器内部管理，不需要从后端同步回来
+              // 这样可以避免触发 DocEditor 的 useEffect 误判为外部更新
+              const currentDoc = get().activeDoc;
+              if (currentDoc) {
+                const needsUpdate = 
+                  updated.title !== currentDoc.title ||
+                  JSON.stringify(updated.metadata) !== JSON.stringify(currentDoc.metadata);
+                
+                if (needsUpdate) {
+                  set({ 
+                    activeDoc: {
+                      ...currentDoc,
+                      title: updated.title,
+                      metadata: updated.metadata,
+                      // 保留当前的 content 引用，避免触发编辑器重新同步
+                    }
+                  });
+                }
+              }
             }
             if (data.title !== undefined && data.title !== activeDoc?.title) {
               const tree = await window.api.vibecape.getTree();

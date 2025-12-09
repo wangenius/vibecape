@@ -15,11 +15,15 @@ function isPunctuation(char: string): boolean {
   return PUNCTUATION_CHARS.includes(char);
 }
 
-// 记录上次选中的段落范围
-let lastParagraphRange: { from: number; to: number } | null = null;
-
 export const CustomKeyboardExtension = Extension.create({
   name: "customKeyboard",
+
+  addStorage() {
+    return {
+      // 记录上次选中的段落范围（使用 storage 而非模块级变量，确保每个编辑器实例独立）
+      lastParagraphRange: null as { from: number; to: number } | null,
+    };
+  },
 
   addKeyboardShortcuts() {
     return {
@@ -37,16 +41,17 @@ export const CustomKeyboardExtension = Extension.create({
         const isCurrentParagraphSelected =
           selection.from === paragraphStart && selection.to === paragraphEnd;
 
+        const lastParagraphRange = this.storage.lastParagraphRange;
         const wasLastSelectParagraph =
           lastParagraphRange?.from === paragraphStart &&
           lastParagraphRange?.to === paragraphEnd;
 
         if (isCurrentParagraphSelected || wasLastSelectParagraph) {
           editor.chain().focus().setTextSelection({ from: docStart, to: docEnd }).run();
-          lastParagraphRange = null;
+          this.storage.lastParagraphRange = null;
         } else {
           editor.chain().focus().setTextSelection({ from: paragraphStart, to: paragraphEnd }).run();
-          lastParagraphRange = { from: paragraphStart, to: paragraphEnd };
+          this.storage.lastParagraphRange = { from: paragraphStart, to: paragraphEnd };
         }
 
         return true;

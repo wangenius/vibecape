@@ -179,7 +179,8 @@ export class DocsService {
   // ==================== 排序 ====================
 
   /**
-   * 重新排序文档（同级）- 使用 Repository 批量更新
+   * 重新排序文档 - 支持同级和跨级排序
+   * 如果 activeDoc 和 overDoc 不在同一父级，会先将 activeDoc 移动到 overDoc 的父级
    */
   static async reorderDoc(activeId: string, overId: string): Promise<void> {
     const repo = await this.getRepository();
@@ -193,11 +194,15 @@ export class DocsService {
       throw new Error("文档不存在");
     }
 
-    if (activeDoc.parent_id !== overDoc.parent_id) {
-      throw new Error("只能在同级之间排序");
+    const targetParentId = overDoc.parent_id;
+
+    // 如果不在同一父级，先移动到目标父级
+    if (activeDoc.parent_id !== targetParentId) {
+      await repo.update(activeId, { parent_id: targetParentId });
     }
 
-    const siblings = await repo.findByParent(activeDoc.parent_id);
+    // 获取目标父级下的所有兄弟节点（包含刚移动过来的 activeDoc）
+    const siblings = await repo.findByParent(targetParentId);
 
     const activeIndex = siblings.findIndex((d) => d.id === activeId);
     const overIndex = siblings.findIndex((d) => d.id === overId);

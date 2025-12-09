@@ -3,25 +3,15 @@
  * 管理当前编辑器中的润色请求和结果展示
  */
 
-import { memo, useState, useCallback } from "react";
+import { memo, useCallback, useEffect } from "react";
 import { Editor } from "@tiptap/react";
 import { PolishDiffView } from "./PolishDiffView";
 import { Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-
-interface PolishRequest {
-  id: string;
-  originalText: string;
-  requirement: string;
-  position: { top: number; left: number };
-  selectionRange: { from: number; to: number };
-}
-
-interface PolishResult extends PolishRequest {
-  polishedText: string;
-  status: "loading" | "success" | "error";
-  error?: string;
-}
+import { 
+  usePolishStore, 
+  type PolishRequest 
+} from "@/hooks/stores/usePolishStore";
 
 interface PolishManagerProps {
   editor: Editor | null;
@@ -29,7 +19,10 @@ interface PolishManagerProps {
 
 export const PolishManager = memo(({ editor }: PolishManagerProps) => {
   const { t } = useTranslation();
-  const [activePolish, setActivePolish] = useState<PolishResult | null>(null);
+  const activePolish = usePolishStore((state) => state.activePolish);
+  const setActivePolish = usePolishStore((state) => state.setActivePolish);
+  const updatePolish = usePolishStore((state) => state.updatePolish);
+  const registerStartPolish = usePolishStore((state) => state.registerStartPolish);
 
   // 开始润色请求
   const startPolish = useCallback(
@@ -63,7 +56,7 @@ export const PolishManager = memo(({ editor }: PolishManagerProps) => {
             const handler = (_e: unknown, payload: any) => {
               if (payload?.type === "text-delta") {
                 polishedText += payload.text || "";
-                setActivePolish((prev) =>
+                updatePolish((prev) =>
                   prev
                     ? {
                         ...prev,
@@ -76,7 +69,7 @@ export const PolishManager = memo(({ editor }: PolishManagerProps) => {
                 window.electron?.ipcRenderer.removeAllListeners(
                   result.channel!
                 );
-                setActivePolish((prev) =>
+                updatePolish((prev) =>
                   prev
                     ? {
                         ...prev,
@@ -90,7 +83,7 @@ export const PolishManager = memo(({ editor }: PolishManagerProps) => {
                 window.electron?.ipcRenderer.removeAllListeners(
                   result.channel!
                 );
-                setActivePolish((prev) =>
+                updatePolish((prev) =>
                   prev
                     ? {
                         ...prev,
@@ -107,7 +100,7 @@ export const PolishManager = memo(({ editor }: PolishManagerProps) => {
         }
       } catch (error) {
         console.error("润色失败:", error);
-        setActivePolish((prev) =>
+        updatePolish((prev) =>
           prev
             ? {
                 ...prev,
@@ -121,8 +114,17 @@ export const PolishManager = memo(({ editor }: PolishManagerProps) => {
         );
       }
     },
-    [editor]
+    [editor, setActivePolish, updatePolish, t]
   );
+
+  // 注册 startPolish 到 store，供外部调用；组件卸载时清除
+  useEffect(() => {
+    registerStartPolish(startPolish);
+    return () => {
+      registerStartPolish(null);
+      setActivePolish(null);
+    };
+  }, [startPolish, registerStartPolish, setActivePolish]);
 
   // 应用润色结果
   const handleAccept = useCallback(() => {
@@ -141,17 +143,12 @@ export const PolishManager = memo(({ editor }: PolishManagerProps) => {
 
     // 清除润色结果
     setActivePolish(null);
-  }, [editor, activePolish]);
+  }, [editor, activePolish, setActivePolish]);
 
   // 拒绝润色结果
   const handleReject = useCallback(() => {
     setActivePolish(null);
-  }, []);
-
-  // 对外暴露方法
-  (window as any).__polishManager = {
-    startPolish,
-  };
+  }, [setActivePolish]);
 
   if (!activePolish) return null;
 
@@ -196,9 +193,5 @@ export const PolishManager = memo(({ editor }: PolishManagerProps) => {
 
 PolishManager.displayName = "PolishManager";
 
-// 导出启动润色的辅助函数
-export const startPolishRequest = (request: PolishRequest) => {
-  if ((window as any).__polishManager?.startPolish) {
-    (window as any).__polishManager.startPolish(request);
-  }
-};
+// 导出类型
+export type { PolishRequest };

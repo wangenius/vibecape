@@ -23,6 +23,8 @@ export interface ChatInputProps {
   onStop?: () => void;
   placeholder?: string;
   enableQuote?: boolean;
+  /** 队列中等待处理的消息数 */
+  queueLength?: number;
 }
 
 export const ChatInputEditor = ({
@@ -31,6 +33,7 @@ export const ChatInputEditor = ({
   placeholder,
   onStop,
   enableQuote = true,
+  queueLength = 0,
 }: ChatInputProps) => {
   const { t } = useTranslation();
   const isStreaming = status === "streaming" || status === "submitted";
@@ -121,6 +124,13 @@ export const ChatInputEditor = ({
 
   return (
     <div className="chat-input-wrapper">
+      {/* 队列状态提示 */}
+      {queueLength > 0 && (
+        <div className="flex items-center gap-1.5 px-3 py-1 text-[10px] text-muted-foreground">
+          <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
+          <span>{t("chat.input.queuePending", { count: queueLength })}</span>
+        </div>
+      )}
       <div className="chat-input-container">
         <EditorContent editor={editor} />
         <div className="chat-input-actions">

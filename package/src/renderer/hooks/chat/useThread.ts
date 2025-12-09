@@ -123,6 +123,15 @@ export const useThreadStore = create<ThreadState>((set, get) => ({
       const loadHistoryMessages = useChatStore.getState().loadHistoryMessages;
       await loadHistoryMessages(targetThreadId);
     } else {
+      // 检查当前线程是否已经是空的新线程
+      const currentId = get().activeChatId;
+      if (currentId) {
+        const currentChat = useChatStore.getState().chats.get(currentId);
+        if (!currentChat || currentChat.messages.length === 0) {
+          console.log("[useThread] 当前已是新线程，无需创建");
+          return;
+        }
+      }
       // 创建新对话
       await get().createNewThread();
     }

@@ -1,5 +1,9 @@
 import { Button } from "@/components/ui/button";
-import { useWorkspaceStore, useDocumentStore, useUIStore } from "@/hooks/stores";
+import {
+  useWorkspaceStore,
+  useDocumentStore,
+  useUIStore,
+} from "@/hooks/stores";
 import {
   Loader2,
   X,
@@ -72,7 +76,7 @@ export const SidebarHeader = ({ onCreateDoc }: SidebarHeaderProps) => {
   const workspaceName = workspace?.config?.name || "";
 
   return (
-    <div className="px-1 w-full shrink-0">
+    <div className="p-1 w-full shrink-0">
       <div className="flex items-center gap-1 whitespace-nowrap">
         {/* 左侧：工作区名称 */}
         <span className="text-sm font-medium text-foreground truncate flex-1 px-1">

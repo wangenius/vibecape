@@ -5,9 +5,17 @@
 
 import { Node, Mark, mergeAttributes } from "@tiptap/core";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
-import { ReactNodeViewRenderer, NodeViewWrapper } from "@tiptap/react";
-import { useState, useCallback, useRef, useEffect, KeyboardEvent } from "react";
-import { Loader2, Sparkles, X } from "lucide-react";
+import {
+  ReactNodeViewRenderer,
+  NodeViewWrapper,
+  useEditor,
+  EditorContent,
+  Extension,
+} from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import Placeholder from "@tiptap/extension-placeholder";
+import { useState, useCallback, useRef, useEffect } from "react";
+import { Loader2, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
 import { gen } from "@common/lib/generator";
@@ -640,25 +648,34 @@ function AIRewriteComponent(props: any) {
     "idle"
   );
   const [error, setError] = useState("");
-  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const promptRef = useRef("");
   const abortControllerRef = useRef<AbortController | null>(null);
+  const handleSubmitRef = useRef<() => void>(() => {});
+  const handleAcceptRef = useRef<() => void>(() => {});
+  const handleCancelRef = useRef<() => void>(() => {});
+  const statusRef = useRef(status);
+  const errorRef = useRef(error);
+  const nodeRef = useRef(node);
+  const miniEditorRef = useRef<ReturnType<typeof useEditor> | null>(null);
 
   const isPolishMode = mode === "polish";
 
-  // 自动聚焦
+  // 同步 refs
   useEffect(() => {
-    const timer = setTimeout(() => {
-      inputRef.current?.focus();
-    }, 0);
-    return () => clearTimeout(timer);
-  }, []);
+    promptRef.current = prompt;
+  }, [prompt]);
 
-  // 当节点被选中时，自动聚焦到输入框
   useEffect(() => {
-    if (selected && status === "idle") {
-      inputRef.current?.focus();
-    }
-  }, [selected, status]);
+    statusRef.current = status;
+  }, [status]);
+
+  useEffect(() => {
+    errorRef.current = error;
+  }, [error]);
+
+  useEffect(() => {
+    nodeRef.current = node;
+  }, [node]);
 
   // 发送请求：立即开始流式更新原文位置的 diff
   const handleSubmit = useCallback(async () => {
@@ -758,7 +775,7 @@ function AIRewriteComponent(props: any) {
     setError("");
 
     // 保持输入框聚焦
-    setTimeout(() => inputRef.current?.focus(), 0);
+    setTimeout(() => miniEditorRef.current?.commands.focus(), 0);
 
     const requestId = `rewrite-${Date.now()}`;
     const channel = `docs:ai:stream:${requestId}`;
@@ -1017,58 +1034,106 @@ ${savedOriginalText}
     }, 0);
   }, [editor, deleteNode, props, node]);
 
-  // 键盘事件
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent<HTMLTextAreaElement>) => {
-      // Shift+Enter: 允许换行（不处理，让 textarea 默认行为）
-      if (e.key === "Enter" && e.shiftKey) {
-        // 不阻止默认行为，允许换行
-        return;
-      }
+  // 同步 refs
+  useEffect(() => {
+    handleSubmitRef.current = handleSubmit;
+  }, [handleSubmit]);
 
-      // Cmd/Ctrl + Enter: 发送/重新生成
-      if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
-        e.stopPropagation();
-        if (status !== "loading" && prompt.trim()) {
-          handleSubmit();
-        }
-        return;
-      }
+  useEffect(() => {
+    handleAcceptRef.current = handleAccept;
+  }, [handleAccept]);
 
-      // Enter: 确认（有 diff 内容则接受，无任何内容则不响应）
-      if (e.key === "Enter") {
-        e.preventDefault();
-        e.stopPropagation();
+  useEffect(() => {
+    handleCancelRef.current = handleCancel;
+  }, [handleCancel]);
 
-        const currentDiffId = node.attrs.diffId;
+  // Mini TipTap Editor 用于输入提示词
+  const placeholderText = isPolishMode
+    ? t("common.aiRewrite.polishPlaceholder", "输入润色指令...")
+    : t("common.aiRewrite.generatePlaceholder", "输入生成指令...");
 
-        // 有 diff 内容且不在生成中则接受（status 可能是 idle 因为 undo/redo 会重置状态）
-        if (currentDiffId && status !== "loading" && !error) {
-          handleAccept();
-          return;
-        }
-
-        // 没有 input 内容且没有 diff 内容 → 不响应
-        if (!prompt.trim() && !currentDiffId) {
-          return;
-        }
-
-        // 有 input 但没有 diff（或有错误）→ 关闭节点
-        deleteNode();
-        return;
-      }
-
-      // Escape: 取消并关闭
-      if (e.key === "Escape") {
-        e.preventDefault();
-        e.stopPropagation();
-        handleCancel();
-        return;
-      }
+  const miniEditor = useEditor(
+    {
+      extensions: [
+        StarterKit.configure({
+          heading: false,
+          codeBlock: false,
+          blockquote: false,
+          bulletList: false,
+          orderedList: false,
+          horizontalRule: false,
+        }),
+        Placeholder.configure({
+          placeholder: placeholderText,
+          emptyEditorClass: "is-editor-empty",
+        }),
+        Extension.create({
+          name: "aiRewriteInputKeymap",
+          addKeyboardShortcuts() {
+            return {
+              // Cmd/Ctrl + Enter: 发送/重新生成
+              "Mod-Enter": () => {
+                const currentPrompt = promptRef.current;
+                if (statusRef.current !== "loading" && currentPrompt.trim()) {
+                  handleSubmitRef.current();
+                }
+                return true;
+              },
+              // Shift + Enter: 接受应用
+              "Shift-Enter": () => {
+                handleAcceptRef.current();
+                return true;
+              },
+              // Shift + Backspace: 没有内容时关闭
+              "Shift-Backspace": () => {
+                const currentPrompt = promptRef.current;
+                if (!currentPrompt.trim()) {
+                  handleCancelRef.current();
+                  return true;
+                }
+                return false;
+              },
+              // Enter: 不定义，使用默认行为（新段落/换行）
+              // Escape: 取消并关闭
+              Escape: () => {
+                handleCancelRef.current();
+                return true;
+              },
+            };
+          },
+        }),
+      ],
+      editorProps: {
+        attributes: {
+          class: "ai-rewrite-input-editor",
+        },
+      },
+      onUpdate: ({ editor: e }) => {
+        setPrompt(e.getText());
+      },
     },
-    [handleSubmit, handleAccept, handleCancel, status, prompt, error, node]
+    [placeholderText]
   );
+
+  // 同步 miniEditor ref
+  useEffect(() => {
+    miniEditorRef.current = miniEditor;
+  }, [miniEditor]);
+
+  // 自动聚焦
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      miniEditor?.commands.focus();
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [miniEditor]);
+
+  // 当节点被选中时，自动聚焦到输入框
+  useEffect(() => {
+    if (selected && status === "idle") {
+      miniEditor?.commands.focus();
+    }
+  }, [selected, status, miniEditor]);
 
   return (
     <NodeViewWrapper
@@ -1078,68 +1143,36 @@ ${savedOriginalText}
     >
       <div className="rounded-md bg-muted-foreground/10 p-3 space-y-2">
         {/* 输入区域 */}
-        <div className="flex items-start gap-2">
+        <div className="flex items-center gap-2">
           <Sparkles className="size-4 text-muted-foreground shrink-0 mt-0.5" />
           <div className="flex-1 min-w-0">
-            <textarea
-              ref={inputRef}
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder={
-                isPolishMode
-                  ? t("common.aiRewrite.polishPlaceholder", "输入润色指令...")
-                  : t("common.aiRewrite.generatePlaceholder", "输入生成指令...")
-              }
+            <EditorContent
+              editor={miniEditor}
               className={cn(
-                "w-full bg-transparent text-sm resize-none outline-none text-foreground",
-                "placeholder:text-muted-foreground/50",
-                "min-h-5 max-h-[100px]"
+                "w-full bg-transparent text-sm text-foreground",
+                "[&_.ProseMirror]:outline-none [&_.ProseMirror]:max-h-[9em] [&_.ProseMirror]:overflow-y-auto [&_.ProseMirror]:min-h-0!",
+                "[&_.ProseMirror_p]:m-0 [&_.ProseMirror_p]:leading-normal",
+                "[&_.is-editor-empty]:before:content-[attr(data-placeholder)] [&_.is-editor-empty]:before:text-muted-foreground/50 [&_.is-editor-empty]:before:float-left [&_.is-editor-empty]:before:h-0 [&_.is-editor-empty]:before:pointer-events-none"
               )}
-              rows={1}
             />
-            {/* 提示文字 */}
-            <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground/70">
-              {status === "idle" && (
-                <span>
-                  {t(
-                    "common.aiRewrite.idleHint",
-                    "⌘+Enter 发送 · Enter/Esc 关闭"
-                  )}
-                </span>
-              )}
-              {status === "loading" && (
-                <span className="flex items-center gap-1.5">
-                  <Loader2 className="size-3 animate-spin" />
-                  {t("common.aiRewrite.loadingHint", "生成中...")}
-                </span>
-              )}
-              {status === "completed" && !error && (
-                <span>
-                  {t(
-                    "common.aiRewrite.completedHint",
-                    "Enter 确认 · ⌘+Enter 重新生成 · Esc 取消"
-                  )}
-                </span>
-              )}
-              {error && (
-                <span className="text-destructive">
-                  {error} ·{" "}
-                  {t(
-                    "common.aiRewrite.errorHint",
-                    "⌘+Enter 重试 · Enter/Esc 关闭"
-                  )}
-                </span>
-              )}
-            </div>
           </div>
-          <button
-            onClick={handleCancel}
-            className="p-1 text-muted-foreground hover:text-foreground hover:bg-background/80 rounded-full transition-colors shrink-0"
-            title={t("common.cancel", "取消 (Esc)")}
-          >
-            <X className="size-4" />
-          </button>
+          {/* 提示文字 */}
+          <div className="text-xs text-muted-foreground/50 shrink-0">
+            {status === "idle" && t("common.aiRewrite.idleHint", "⌘↵ 发送")}
+            {status === "loading" && (
+              <span className="flex items-center gap-1">
+                <Loader2 className="size-3 animate-spin" />
+              </span>
+            )}
+            {status === "completed" &&
+              !error &&
+              t("common.aiRewrite.completedHint", "⇧↵ 应用")}
+            {error && (
+              <span className="text-destructive">
+                {t("common.aiRewrite.errorHint", "⌘↵ 重试")}
+              </span>
+            )}
+          </div>
         </div>
 
         {/* 错误提示 */}

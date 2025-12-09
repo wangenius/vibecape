@@ -13,6 +13,73 @@ import { lang } from "@/lib/locales/i18n";
 const STREAM_CHANNEL_PREFIX = "llm:stream:";
 const getStreamChannel = (id: string) => `${STREAM_CHANNEL_PREFIX}${id}`;
 
+// 消息队列项
+interface QueuedMessage {
+  text: string;
+  heroId?: string;
+  resolve: () => void;
+  reject: (error: Error) => void;
+}
+
+// 消息队列管理器
+class MessageQueue {
+  private queues = new Map<string, QueuedMessage[]>();
+  private processing = new Map<string, boolean>();
+
+  // 添加消息到队列
+  enqueue(chatId: string, message: Omit<QueuedMessage, 'resolve' | 'reject'>): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const queue = this.queues.get(chatId) || [];
+      queue.push({ ...message, resolve, reject });
+      this.queues.set(chatId, queue);
+      console.log(`[MessageQueue] Enqueued message for ${chatId}, queue length: ${queue.length}`);
+    });
+  }
+
+  // 获取下一条消息
+  dequeue(chatId: string): QueuedMessage | undefined {
+    const queue = this.queues.get(chatId);
+    if (!queue || queue.length === 0) return undefined;
+    return queue.shift();
+  }
+
+  // 检查是否正在处理
+  isProcessing(chatId: string): boolean {
+    return this.processing.get(chatId) || false;
+  }
+
+  // 设置处理状态
+  setProcessing(chatId: string, value: boolean): void {
+    this.processing.set(chatId, value);
+  }
+
+  // 获取队列长度
+  getQueueLength(chatId: string): number {
+    return this.queues.get(chatId)?.length || 0;
+  }
+
+  // 清空队列
+  clear(chatId: string): void {
+    const queue = this.queues.get(chatId);
+    if (queue) {
+      // 拒绝所有等待中的消息
+      queue.forEach(msg => msg.reject(new Error('Queue cleared')));
+      this.queues.delete(chatId);
+    }
+    this.processing.delete(chatId);
+  }
+
+  // 获取待处理消息数（队列长度 + 正在处理的）
+  getPendingCount(chatId: string): number {
+    const queueLength = this.queues.get(chatId)?.length || 0;
+    const processing = this.processing.get(chatId) ? 1 : 0;
+    return queueLength + processing;
+  }
+}
+
+// 全局消息队列实例
+const messageQueue = new MessageQueue();
+
 // 每个对话的状态
 interface ChatState {
   messages: UIMessage[];
@@ -65,6 +132,250 @@ const activeRequests = new Map<
   string,
   { requestId: string; abort: () => void }
 >();
+
+// 内部发送消息的实现（实际执行流式请求）
+const sendMessageInternal = async (
+  chatId: string,
+  text: string,
+  heroId: string | undefined,
+  store: ChatStore
+): Promise<void> => {
+  const { addMessage, setStatus, setError } = store;
+
+  console.log(
+    "[useChat] sendMessageInternal called - chatId:",
+    chatId,
+    "text:",
+    text.substring(0, 50)
+  );
+
+  setStatus(chatId, "submitted");
+  setError(chatId, null);
+
+  const ipc = window.electron?.ipcRenderer;
+  console.log("[useChat] ipcRenderer available:", !!ipc);
+  if (!ipc) {
+    console.error("[useChat] ipcRenderer not available!");
+    setError(chatId, new Error(lang("common.chat.channelUnavailable")));
+    setStatus(chatId, "error");
+    throw new Error(lang("common.chat.channelUnavailable"));
+  }
+
+  return new Promise((resolve, reject) => {
+    // 添加用户消息
+    const userMessage: UIMessage = {
+      id: gen.id(),
+      role: "user",
+      parts: [{ type: "text", text }],
+    };
+    addMessage(chatId, userMessage);
+    console.log("[useChat] User message added");
+
+    // 创建一个占位的助手消息
+    const assistantMessage: UIMessage = {
+      id: gen.id(),
+      role: "assistant",
+      parts: [{ type: "text", text: "" }],
+    };
+    addMessage(chatId, assistantMessage);
+    console.log("[useChat] Assistant placeholder added");
+
+    const requestId = gen.id();
+
+    console.log(
+      "[useChat] Starting stream with threadId:",
+      chatId,
+      "heroId:",
+      heroId,
+      "requestId:",
+      requestId
+    );
+
+    const channel = getStreamChannel(requestId);
+    console.log("[useChat] Will listen on channel:", channel);
+
+    // 先注册监听器，再发送请求
+    const cleanup = () => {
+      console.log(
+        "[useChat] Cleanup - removing listeners for channel:",
+        channel
+      );
+      ipc.removeAllListeners(channel);
+      activeRequests.delete(chatId);
+    };
+
+    // 按原始顺序累积 parts (v5 格式)
+    const parts: MessagePart[] = [];
+    let currentText = "";
+    let currentReasoning = "";
+
+    // flush 当前累积的内容到 parts
+    const flush = () => {
+      if (currentReasoning) {
+        parts.push({
+          type: "reasoning",
+          text: currentReasoning,
+        } as ReasoningPart);
+        currentReasoning = "";
+      }
+      if (currentText) {
+        parts.push({ type: "text", text: currentText } as TextPart);
+        currentText = "";
+      }
+    };
+
+    // 构建显示用的 parts
+    const buildDisplayParts = (): UIMessage["parts"] => {
+      const display: MessagePart[] = [...parts];
+      if (currentReasoning)
+        display.push({
+          type: "reasoning",
+          text: currentReasoning,
+        } as ReasoningPart);
+      if (currentText)
+        display.push({ type: "text", text: currentText } as TextPart);
+      return (
+        display.length > 0 ? display : [{ type: "text", text: "" }]
+      ) as UIMessage["parts"];
+    };
+
+    const updateMessage = () => {
+      store.updateLastMessage(chatId, { parts: buildDisplayParts() });
+    };
+
+    // 监听流式数据
+    const handler = (
+      _event: unknown,
+      chunk: {
+        type: string;
+        text?: string;
+        toolCallId?: string;
+        toolName?: string;
+        args?: unknown;
+        input?: unknown;
+        result?: unknown;
+        output?: unknown;
+        message?: string;
+      }
+    ) => {
+      if (!chunk || typeof chunk !== "object") return;
+      console.log("[useChat] Received chunk:", chunk.type);
+
+      if (chunk.type === "text-delta") {
+        if (currentReasoning) flush();
+        currentText += chunk.text || "";
+        updateMessage();
+      } else if (chunk.type === "reasoning-delta") {
+        if (currentText) flush();
+        currentReasoning += chunk.text || "";
+        updateMessage();
+      } else if (chunk.type === "tool-call") {
+        flush();
+        const toolName = chunk.toolName || "unknown";
+        const toolPart: ToolPart = {
+          type: `tool-${toolName}`,
+          toolCallId: chunk.toolCallId || gen.id(),
+          state: "input-available",
+          input: chunk.input ?? chunk.args ?? {},
+        };
+        parts.push(toolPart);
+        updateMessage();
+      } else if (chunk.type === "tool-result") {
+        const tc = parts.find(
+          (p): p is ToolPart =>
+            p.type.startsWith("tool-") &&
+            (p as ToolPart).toolCallId === chunk.toolCallId
+        );
+        if (tc) {
+          tc.state = "output-available";
+          tc.output = chunk.output ?? chunk.result;
+        }
+        updateMessage();
+      } else if (chunk.type === "end") {
+        console.log("[useChat] Stream finished");
+        cleanup();
+        setStatus(chatId, "idle");
+        resolve();
+      } else if (chunk.type === "error") {
+        console.error("[useChat] Stream error:", chunk.message);
+        cleanup();
+        const error = new Error(chunk.message || lang("common.chat.generationFailed"));
+        setError(chatId, error);
+        setStatus(chatId, "error");
+        reject(error);
+      }
+    };
+
+    // 注册监听器
+    console.log("[useChat] Registering listener on channel:", channel);
+    ipc.on(channel, handler);
+
+    // 保存请求信息，用于取消
+    activeRequests.set(chatId, {
+      requestId,
+      abort: () => {
+        cleanup();
+        window.api.chat.cancel(requestId).catch(console.warn);
+        resolve(); // 取消时也 resolve，让队列继续
+      },
+    });
+
+    // 发送请求
+    console.log("[useChat] Sending stream request...");
+    window.api.chat.stream({
+      id: requestId,
+      thread: chatId,
+      prompt: text,
+      heroId,
+    }).then(response => {
+      console.log("[useChat] Stream request response:", response);
+      if (!response?.success) {
+        cleanup();
+        const error = new Error(lang("common.chat.startStreamFailed"));
+        setError(chatId, error);
+        setStatus(chatId, "error");
+        reject(error);
+      } else {
+        setStatus(chatId, "streaming");
+      }
+    }).catch(error => {
+      console.error("[useChat] Send message error:", error);
+      cleanup();
+      setError(chatId, error);
+      setStatus(chatId, "error");
+      reject(error);
+    });
+  });
+};
+
+// 处理消息队列
+const processQueue = async (chatId: string, store: ChatStore): Promise<void> => {
+  if (messageQueue.isProcessing(chatId)) {
+    console.log(`[MessageQueue] Already processing ${chatId}, skipping`);
+    return;
+  }
+
+  messageQueue.setProcessing(chatId, true);
+  console.log(`[MessageQueue] Start processing queue for ${chatId}`);
+
+  try {
+    let message: QueuedMessage | undefined;
+    while ((message = messageQueue.dequeue(chatId))) {
+      console.log(`[MessageQueue] Processing message for ${chatId}, remaining: ${messageQueue.getQueueLength(chatId)}`);
+      try {
+        await sendMessageInternal(chatId, message.text, message.heroId, store);
+        message.resolve();
+      } catch (error) {
+        console.error(`[MessageQueue] Message failed for ${chatId}:`, error);
+        message.reject(error as Error);
+        // 继续处理队列中的下一条消息
+      }
+    }
+  } finally {
+    messageQueue.setProcessing(chatId, false);
+    console.log(`[MessageQueue] Finished processing queue for ${chatId}`);
+  }
+};
 
 export const useChatStore = create<ChatStore>((set, get) => ({
   chats: new Map(),
@@ -222,206 +533,23 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   },
 
   sendMessage: async (chatId, text, heroId) => {
-    const { addMessage, setStatus, setError } = get();
-
     console.log(
       "[useChat] sendMessage called - chatId:",
       chatId,
       "text:",
-      text.substring(0, 50)
+      text.substring(0, 50),
+      "queue length:",
+      messageQueue.getQueueLength(chatId)
     );
 
-    setStatus(chatId, "submitted");
-    setError(chatId, null);
+    // 将消息加入队列
+    const messagePromise = messageQueue.enqueue(chatId, { text, heroId });
 
-    const ipc = window.electron?.ipcRenderer;
-    console.log("[useChat] ipcRenderer available:", !!ipc);
-    if (!ipc) {
-      console.error("[useChat] ipcRenderer not available!");
-      setError(chatId, new Error(lang("common.chat.channelUnavailable")));
-      setStatus(chatId, "error");
-      return;
-    }
+    // 触发队列处理（如果尚未处理）
+    void processQueue(chatId, get());
 
-    try {
-      // 添加用户消息
-      const userMessage: UIMessage = {
-        id: gen.id(),
-        role: "user",
-        parts: [{ type: "text", text }],
-      };
-      addMessage(chatId, userMessage);
-      console.log("[useChat] User message added");
-
-      // 创建一个占位的助手消息
-      const assistantMessage: UIMessage = {
-        id: gen.id(),
-        role: "assistant",
-        parts: [{ type: "text", text: "" }],
-      };
-      addMessage(chatId, assistantMessage);
-      console.log("[useChat] Assistant placeholder added");
-
-      const requestId = gen.id();
-
-      console.log(
-        "[useChat] Starting stream with threadId:",
-        chatId,
-        "heroId:",
-        heroId,
-        "requestId:",
-        requestId
-      );
-
-      const channel = getStreamChannel(requestId);
-      console.log("[useChat] Will listen on channel:", channel);
-
-      // 先注册监听器，再发送请求
-      const cleanup = () => {
-        console.log(
-          "[useChat] Cleanup - removing listeners for channel:",
-          channel
-        );
-        ipc.removeAllListeners(channel);
-        activeRequests.delete(chatId);
-      };
-
-      // 按原始顺序累积 parts (v5 格式)
-      const parts: MessagePart[] = [];
-      let currentText = "";
-      let currentReasoning = "";
-
-      // flush 当前累积的内容到 parts
-      const flush = () => {
-        if (currentReasoning) {
-          parts.push({
-            type: "reasoning",
-            text: currentReasoning,
-          } as ReasoningPart);
-          currentReasoning = "";
-        }
-        if (currentText) {
-          parts.push({ type: "text", text: currentText } as TextPart);
-          currentText = "";
-        }
-      };
-
-      // 构建显示用的 parts
-      const buildDisplayParts = (): UIMessage["parts"] => {
-        const display: MessagePart[] = [...parts];
-        if (currentReasoning)
-          display.push({
-            type: "reasoning",
-            text: currentReasoning,
-          } as ReasoningPart);
-        if (currentText)
-          display.push({ type: "text", text: currentText } as TextPart);
-        return (
-          display.length > 0 ? display : [{ type: "text", text: "" }]
-        ) as UIMessage["parts"];
-      };
-
-      const updateMessage = () => {
-        get().updateLastMessage(chatId, { parts: buildDisplayParts() });
-      };
-
-      // 监听流式数据
-      const handler = (
-        _event: unknown,
-        chunk: {
-          type: string;
-          text?: string;
-          toolCallId?: string;
-          toolName?: string;
-          args?: unknown;
-          input?: unknown;
-          result?: unknown;
-          output?: unknown;
-          message?: string;
-        }
-      ) => {
-        if (!chunk || typeof chunk !== "object") return;
-        console.log("[useChat] Received chunk:", chunk.type);
-
-        if (chunk.type === "text-delta") {
-          if (currentReasoning) flush();
-          currentText += chunk.text || "";
-          updateMessage();
-        } else if (chunk.type === "reasoning-delta") {
-          if (currentText) flush();
-          currentReasoning += chunk.text || "";
-          updateMessage();
-        } else if (chunk.type === "tool-call") {
-          flush();
-          const toolName = chunk.toolName || "unknown";
-          const toolPart: ToolPart = {
-            type: `tool-${toolName}`,
-            toolCallId: chunk.toolCallId || gen.id(),
-            state: "input-available",
-            input: chunk.input ?? chunk.args ?? {},
-          };
-          parts.push(toolPart);
-          updateMessage();
-        } else if (chunk.type === "tool-result") {
-          const tc = parts.find(
-            (p): p is ToolPart =>
-              p.type.startsWith("tool-") &&
-              (p as ToolPart).toolCallId === chunk.toolCallId
-          );
-          if (tc) {
-            tc.state = "output-available";
-            tc.output = chunk.output ?? chunk.result;
-          }
-          updateMessage();
-        } else if (chunk.type === "end") {
-          console.log("[useChat] Stream finished");
-          cleanup();
-          setStatus(chatId, "idle");
-        } else if (chunk.type === "error") {
-          console.error("[useChat] Stream error:", chunk.message);
-          cleanup();
-          setError(
-            chatId,
-            new Error(chunk.message || lang("common.chat.generationFailed"))
-          );
-          setStatus(chatId, "error");
-        }
-      };
-
-      // 注册监听器
-      console.log("[useChat] Registering listener on channel:", channel);
-      ipc.on(channel, handler);
-
-      // 保存请求信息，用于取消
-      activeRequests.set(chatId, {
-        requestId,
-        abort: () => {
-          cleanup();
-          window.api.chat.cancel(requestId).catch(console.warn);
-        },
-      });
-
-      // 发送请求
-      console.log("[useChat] Sending stream request...");
-      const response = await window.api.chat.stream({
-        id: requestId,
-        thread: chatId,
-        prompt: text,
-        heroId,
-      });
-      console.log("[useChat] Stream request response:", response);
-
-      if (!response?.success) {
-        cleanup();
-        throw new Error(lang("common.chat.startStreamFailed"));
-      }
-
-      setStatus(chatId, "streaming");
-    } catch (error: any) {
-      console.error("[useChat] Send message error:", error);
-      setError(chatId, error);
-      setStatus(chatId, "error");
-    }
+    // 等待消息处理完成
+    return messagePromise;
   },
 
   stop: (chatId) => {
@@ -430,6 +558,8 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       request.abort();
       get().setStatus(chatId, "idle");
     }
+    // 清空该 chat 的消息队列
+    messageQueue.clear(chatId);
   },
 
   regenerate: async (chatId) => {
@@ -498,5 +628,7 @@ export function useChat(chatId: string) {
     stop: () => stop(chatId),
     regenerate: () => regenerate(chatId),
     clearError: () => setError(chatId, null),
+    // 获取队列中待处理的消息数
+    getQueueLength: () => messageQueue.getQueueLength(chatId),
   };
 }

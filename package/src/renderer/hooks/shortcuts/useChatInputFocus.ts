@@ -30,8 +30,8 @@ export const useChatInputFocus = (
 
         const isBayBarOpen = getCurrentViewManager().isBayBarOpen;
 
-        // 创建新对话
-        await useThreadStore.getState().createNewThread();
+        // 创建新对话（如果当前已是空的新线程则跳过）
+        await useThreadStore.getState().selectThread();
 
         // 如果 Baybar 未打开，先打开
         if (!isBayBarOpen) {
@@ -60,8 +60,8 @@ export const useChatInputFocus = (
 
         const isBayBarOpen = getCurrentViewManager().isBayBarOpen;
 
-        // 创建新对话
-        await useThreadStore.getState().createNewThread();
+        // 创建新对话（如果当前已是空的新线程则跳过）
+        await useThreadStore.getState().selectThread();
 
         // 如果 Baybar 未打开，先打开
         if (!isBayBarOpen) {

@@ -1,7 +1,9 @@
 import { useEffect } from "react";
+import { useEditorStore } from "@/hooks/stores/useEditorStore";
 
 /**
  * 处理 Command+I 聚焦到 DocEditor 末尾的逻辑
+ * 使用 Tiptap editor 实例的 commands.focus("end") 而非 DOM 操作
  *
  * @param enabled - 是否启用该快捷键（默认 true）
  */
@@ -29,8 +31,8 @@ export const useDocEditorFocus = (enabled: boolean = true) => {
 
       event.preventDefault();
 
-      // 聚焦到 DocEditor 末尾
-      focusDocEditorEnd();
+      // 使用 store 中的 editor 实例聚焦到末尾
+      useEditorStore.getState().focusEnd();
     };
 
     window.addEventListener("keydown", handleFocusShortcut);
@@ -38,30 +40,4 @@ export const useDocEditorFocus = (enabled: boolean = true) => {
       window.removeEventListener("keydown", handleFocusShortcut);
     };
   }, [enabled]);
-};
-
-/**
- * 聚焦到 DocEditor 的末尾
- */
-const focusDocEditorEnd = () => {
-  // 查找 ProseMirror 编辑器实例
-  const proseMirrorElement = document.querySelector<HTMLElement>(
-    ".ProseMirror[contenteditable='true']"
-  );
-
-  if (proseMirrorElement) {
-    // 聚焦到编辑器
-    proseMirrorElement.focus();
-
-    // 将光标移动到末尾
-    const selection = window.getSelection();
-    if (selection) {
-      // 获取最后一个可编辑节点
-      const range = document.createRange();
-      range.selectNodeContents(proseMirrorElement);
-      range.collapse(false); // false 表示折叠到末尾
-      selection.removeAllRanges();
-      selection.addRange(range);
-    }
-  }
 };

@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { TbSparkles } from "react-icons/tb";
 import {
   Conversation,
@@ -46,7 +46,18 @@ interface ChatCoreProps {
 }
 
 export const ChatCore: React.FC<ChatCoreProps> = ({ chatId }) => {
-  const { messages, status, error, sendMessage, stop } = useChat(chatId);
+  const { messages, status, error, sendMessage, stop, getQueueLength } = useChat(chatId);
+  const [queueLength, setQueueLength] = useState(0);
+
+  // 定期检查队列长度
+  useEffect(() => {
+    const updateQueueLength = () => {
+      setQueueLength(getQueueLength());
+    };
+    updateQueueLength();
+    const interval = setInterval(updateQueueLength, 200);
+    return () => clearInterval(interval);
+  }, [getQueueLength]);
 
   const isStreaming = status === "streaming" || status === "submitted";
 
@@ -130,6 +141,7 @@ export const ChatCore: React.FC<ChatCoreProps> = ({ chatId }) => {
           onSubmit={handleInputSubmit}
           onStop={stop}
           enableQuote
+          queueLength={queueLength}
         />
       </div>
     </>

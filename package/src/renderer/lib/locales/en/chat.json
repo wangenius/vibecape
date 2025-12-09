@@ -9,7 +9,8 @@
   },
   "input": {
     "placeholder": "Type your message...",
-    "stopGeneration": "Stop generation"
+    "stopGeneration": "Stop generation",
+    "queuePending": "{{count}} message(s) pending"
   },
   "thread": {
     "newChat": "New Chat",

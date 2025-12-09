@@ -10,6 +10,11 @@ export const useExpandRegion = (editor: Editor | null) => {
   // 选区历史栈
   const selectionHistory = useRef<Array<{ from: number; to: number }>>([]);
 
+  // 当 editor 实例变化时（文档切换），清空选区历史
+  useEffect(() => {
+    selectionHistory.current = [];
+  }, [editor]);
+
   useEffect(() => {
     if (!editor) return;
 

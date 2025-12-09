@@ -57,7 +57,9 @@ export const Sidebar = () => {
         <SettingsSidebar />
       ) : (
         <div className="h-full w-[360px] flex flex-col border-r border-border overflow-hidden">
-          <SidebarHeader onCreateDoc={handleCreateDoc} />
+          {sidebarViewMode === "tree" && (
+            <SidebarHeader onCreateDoc={handleCreateDoc} />
+          )}
           {renderContent()}
         </div>
       )}

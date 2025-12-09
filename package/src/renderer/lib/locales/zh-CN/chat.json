@@ -9,7 +9,8 @@
   },
   "input": {
     "placeholder": "输入消息...",
-    "stopGeneration": "停止生成"
+    "stopGeneration": "停止生成",
+    "queuePending": "{{count}} 条消息等待处理"
   },
   "thread": {
     "newChat": "新建对话",

@@ -4,15 +4,15 @@ import { Button } from "@/components/ui/button";
 import { useThread } from "@/hooks/chat/useThread";
 import { useHero } from "@/hooks/chat/useHero";
 import { ChatCore } from "./ChatCore";
-import { HeroSelector } from "./HeroSelector";
-import { HistoryPopover } from "./HistoryPopover";
+import { HeroSelector } from "../../components/chat/components/HeroSelector";
+import { HistoryPopover } from "../../components/chat/components/HistoryPopover";
 import { useTranslation } from "react-i18next";
 
 export const ChatPanel = () => {
   const { t } = useTranslation();
   const [historyOpen, setHistoryOpen] = useState(false);
   const [agentOpen, setAgentOpen] = useState(false);
-  
+
   const {
     activeChatId,
     historyLoading,
@@ -66,11 +66,10 @@ export const ChatPanel = () => {
           <Button
             variant="ghost"
             size="icon"
-            className="h-6 w-6"
             onClick={() => void handleSelectThread(undefined)}
             title={t("chat.thread.newChat")}
           >
-            <TbPlus className="h-3.5 w-3.5" />
+            <TbPlus />
           </Button>
 
           <HistoryPopover
@@ -88,7 +87,9 @@ export const ChatPanel = () => {
       {/* 聊天核心组件 */}
       {isInitializing ? (
         <div className="flex flex-1 items-center justify-center">
-          <div className="text-sm text-muted-foreground">{t("chat.thread.initializing")}</div>
+          <div className="text-sm text-muted-foreground">
+            {t("chat.thread.initializing")}
+          </div>
         </div>
       ) : activeChatId ? (
         <ChatCore key={activeChatId} chatId={activeChatId} />
@@ -99,7 +100,6 @@ export const ChatPanel = () => {
           </div>
         </div>
       )}
-
     </div>
   );
 };

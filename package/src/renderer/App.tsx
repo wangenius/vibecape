@@ -32,15 +32,12 @@ const App = () => {
         <div className="w-full h-8 z-50 pointer-events-auto">
           <Header />
         </div>
-
         <div className="w-full h-full flex overflow-hidden">
           <Sidebar />
           <MainView />
           <Baybar />
         </div>
-
         <CommandPalette />
-
         <DocSearchPalette />
       </div>
     </TooltipProvider>

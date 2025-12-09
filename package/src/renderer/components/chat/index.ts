@@ -4,8 +4,8 @@
 import "./styles/index.css";
 
 // Components
-export * from "./components/ChatPanel";
-export * from "./components/ChatCore";
+export * from "../../layouts/baybar/ChatPanel";
+export * from "../../layouts/baybar/ChatCore";
 export * from "./components/ChatInputEditor";
 export * from "./components/MessageRenderer";
 export * from "./components/HistoryPopover";

@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import {
   useViewManager,
   setViewManager,
@@ -59,19 +58,10 @@ export function Header() {
           variant="ghost"
           size="icon"
           onClick={toggleSidebar}
-          className={cn(
-            "size-7 hover:bg-muted-foreground/10",
-            isSidebarCollapsed
-              ? "bg-transparent hover:bg-muted-foreground/10"
-              : "bg-muted-foreground/10"
-          )}
+          actived={isSidebarCollapsed}
           title={isSidebarCollapsed ? "展开侧边栏" : "折叠侧边栏"}
         >
-          {isSidebarCollapsed ? (
-            <BsLayoutSidebar className="size-4" />
-          ) : (
-            <BsLayoutSidebarInset className="size-4" />
-          )}
+          {isSidebarCollapsed ? <BsLayoutSidebar /> : <BsLayoutSidebarInset />}
         </Button>
       </div>
 
@@ -86,45 +76,28 @@ export function Header() {
         {workspaceName && (
           <Popover open={isRepoPopoverOpen} onOpenChange={setIsRepoPopoverOpen}>
             <PopoverTrigger asChild>
-              <button
-                className={cn(
-                  "flex items-center gap-1 px-2 py-0.5 rounded-md",
-                  "text-xs text-muted-foreground/60 hover:text-muted-foreground",
-                  "hover:bg-muted transition-colors cursor-pointer",
-                  "max-w-[200px] truncate"
-                )}
-              >
+              <Button>
                 <span className="truncate">{workspaceName}</span>
                 <TbChevronDown className="size-3 shrink-0" />
-              </button>
+              </Button>
             </PopoverTrigger>
             <PopoverContent className="w-60 p-1" align="center" sideOffset={8}>
-              <div className="max-h-[300px] overflow-y-auto">
+              <div className="max-h-[300px] overflow-y-auto space-y-1">
                 {workspaceList.length === 0 ? (
                   <div className="py-4 text-center text-sm text-muted-foreground">
                     暂无其他工作区
                   </div>
                 ) : (
                   workspaceList.map((item) => (
-                    <button
+                    <Button
                       key={item.id}
-                      className={cn(
-                        "w-full flex items-center gap-2 px-3 py-2 rounded-md text-left",
-                        "hover:bg-muted transition-colors cursor-pointer",
-                        workspace?.id === item.id && "bg-muted"
-                      )}
+                      size="full"
+                      actived={workspace?.id === item.id}
                       onClick={() => void handleSwitchWorkspace(item.id)}
                     >
                       <TbFolder className="size-4 text-muted-foreground shrink-0" />
-                      <span className="text-sm truncate flex-1">
-                        {item.name}
-                      </span>
-                      {workspace?.id === item.id && (
-                        <span className="text-xs text-muted-foreground">
-                          当前
-                        </span>
-                      )}
-                    </button>
+                      <span className="text-sm truncate">{item.name}</span>
+                    </Button>
                   ))
                 )}
               </div>
@@ -144,29 +117,23 @@ export function Header() {
         <Button
           variant="ghost"
           size="icon"
-          aria-label="AI 对话"
-          onClick={() => toggleBayBar()}
-          className={cn(
-            "size-7 hover:bg-muted-foreground/10",
-            isBayBarOpen
-              ? "bg-muted-foreground/10"
-              : "bg-transparent hover:bg-muted-foreground/10"
-          )}
+          onClick={() => openSettingsDialog()}
+          title="设置"
         >
-          {isBayBarOpen ? (
-            <BsLayoutSidebarInsetReverse className="size-4" />
-          ) : (
-            <BsLayoutSidebarReverse className="size-4" />
-          )}
+          <TbSettings />
         </Button>
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => openSettingsDialog()}
-          className="size-7 hover:bg-muted-foreground/10"
-          title="设置"
+          aria-label="AI 对话"
+          onClick={() => toggleBayBar()}
+          actived={isBayBarOpen}
         >
-          <TbSettings className="size-4" />
+          {isBayBarOpen ? (
+            <BsLayoutSidebarInsetReverse />
+          ) : (
+            <BsLayoutSidebarReverse />
+          )}
         </Button>
       </div>
     </header>

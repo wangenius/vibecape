@@ -15,7 +15,7 @@ const DropdownMenuTrigger = React.forwardRef<
   <DropdownMenuPrimitive.Trigger
     ref={ref}
     className={cn(
-      "outline-none ring-0 focus:ring-0 focus-visible:ring-0 focus:outline-none focus-visible:outline-none active:outline-none data-[state=open]:outline-none border-none hover:bg-muted select-none data-[state=closed]:outline-none data-[state=closed]:ring-0 focus:shadow-none active:ring-0 ring-offset-0 focus:ring-offset-0 focus-visible:ring-offset-0 data-[state=open]:bg-muted rounded-md h-7 text-muted-foreground",
+      "outline-none ring-0 focus:ring-0 focus-visible:ring-0 focus:outline-none focus-visible:outline-none active:outline-none data-[state=open]:outline-none border-none hover:bg-muted select-none data-[state=closed]:outline-none data-[state=closed]:ring-0 focus:shadow-none active:ring-0 ring-offset-0 focus:ring-offset-0 focus-visible:ring-offset-0 data-[state=open]:bg-muted rounded-md h-7 text-muted-foreground flex-none!",
       className
     )}
     {...props}

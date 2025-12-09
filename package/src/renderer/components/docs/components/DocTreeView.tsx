@@ -147,7 +147,7 @@ export const DocTreeView = () => {
           variant="outline"
           onClick={() => handleCreateDoc(null)}
         >
-          <FilePlus className="h-4 w-4 mr-2" />
+          <FilePlus  />
           {t("common.settings.newDoc")}
         </Button>
       </div>

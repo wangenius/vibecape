@@ -79,7 +79,7 @@ export const SidebarEmptyState = () => {
       footer: (close) => (
         <div className="flex justify-end gap-2">
           <Button variant="ghost" size="sm" onClick={close}>
-            <TbX className="w-4 h-4" />
+            <TbX />
             {t("common.cancel")}
           </Button>
           <Button
@@ -97,7 +97,7 @@ export const SidebarEmptyState = () => {
               }
             }}
           >
-            <TbCheck className="w-4 h-4" />
+            <TbCheck />
             {t("common.create")}
           </Button>
         </div>
@@ -115,15 +115,10 @@ export const SidebarEmptyState = () => {
         <Button
           variant="outline"
           size="sm"
-          className="h-7 gap-1"
           onClick={handleCreateWorkspace}
           disabled={loading}
         >
-          {loading ? (
-            <Loader2 className="h-3.5 w-3.5 animate-spin" />
-          ) : (
-            <Plus className="h-3.5 w-3.5" />
-          )}
+          {loading ? <Loader2 className="animate-spin" /> : <Plus />}
           {t("common.workspace.createWorkspace")}
         </Button>
       </div>
@@ -132,11 +127,11 @@ export const SidebarEmptyState = () => {
       <div className="flex-1 overflow-y-auto space-y-1">
         {listLoading ? (
           <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+            <Loader2 className="animate-spin" />
           </div>
         ) : workspaceList.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
-            <FolderOpen className="h-10 w-10 text-muted-foreground/40 mb-3" />
+            <FolderOpen className="mb-3" />
             <p className="text-sm text-muted-foreground">
               {t("common.workspace.noHistory")}
             </p>
@@ -158,13 +153,13 @@ export const SidebarEmptyState = () => {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
                 onClick={(e) => {
                   e.stopPropagation();
                   void handleDeleteWorkspace(item.id, item.name);
                 }}
               >
-                <Trash2 className="h-3.5 w-3.5 text-muted-foreground hover:text-destructive" />
+                <Trash2 />
               </Button>
             </div>
           ))

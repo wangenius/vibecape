@@ -1,6 +1,6 @@
 import { List, FolderTree } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
+import { Button } from "@/components/ui/button";
 
 type ViewMode = "tree" | "toc";
 
@@ -24,17 +24,15 @@ export const ViewModeSwitch = ({ mode, onModeChange }: ViewModeSwitchProps) => {
         const Icon = tab.icon;
 
         return (
-          <button
+          <Button
             key={tab.id}
+            size={"icon"}
             onClick={() => onModeChange(tab.id)}
-            className={cn(
-              "size-7 flex items-center justify-center rounded-md transition-colors hover:bg-muted-foreground/10",
-              isActive && "bg-muted-foreground/10"
-            )}
+            actived={isActive}
             title={t(tab.titleKey)}
           >
-            <Icon className="size-4" />
-          </button>
+            <Icon />
+          </Button>
         );
       })}
     </div>

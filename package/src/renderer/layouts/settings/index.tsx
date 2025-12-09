@@ -2,7 +2,6 @@ import { create } from "zustand";
 import { dialog } from "@/components/custom/DialogModal";
 import { useViewManager, setViewManager } from "@/hooks/app/useViewManager";
 import { useWorkspaceStore } from "@/hooks/stores";
-import { cn } from "@/lib/utils";
 import {
   SETTINGS_NAV_ITEMS,
   WORKSPACE_NAV_ITEMS,
@@ -10,6 +9,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { AppSettingsPanel } from "./app";
 import { WorkspaceSettingsPanel } from "./repo";
+import { Button } from "@/components/ui/button";
 
 // Repo Settings 的 key 列表
 const REPO_SETTINGS_KEYS = ["basic", "asset", "link", "llmtxt", "trash"];
@@ -33,21 +33,17 @@ const SettingsSidebar = () => {
               const Icon = item.icon;
               const isActive = currentSection === item.key;
               return (
-                <button
+                <Button
                   key={item.key}
                   onClick={() => {
                     setViewManager({ previewCosmosId: item.key });
                   }}
-                  className={cn(
-                    "w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors",
-                    isActive
-                      ? "bg-primary/10 text-primary"
-                      : "text-muted-foreground hover:bg-muted-foreground/10 hover:text-foreground"
-                  )}
+                  size="full"
+                  actived={isActive}
                 >
-                  <Icon className="size-4" />
+                  <Icon />
                   <span>{t(item.labelKey)}</span>
-                </button>
+                </Button>
               );
             })}
             <div className="my-5 w-full" />
@@ -68,21 +64,17 @@ const SettingsSidebar = () => {
                 ? "aiLabel"
                 : item.key;
           return (
-            <button
+            <Button
               key={item.key}
               onClick={() => {
                 setViewManager({ previewCosmosId: item.key });
               }}
-              className={cn(
-                "w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors",
-                isActive
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:bg-muted-foreground/10 hover:text-foreground"
-              )}
+              size={"full"}
+              actived={isActive}
             >
-              <Icon className="size-4" />
+              <Icon />
               <span>{t(`common.settings.${labelKey}`)}</span>
-            </button>
+            </Button>
           );
         })}
       </div>

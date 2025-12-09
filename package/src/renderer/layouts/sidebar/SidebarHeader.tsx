@@ -18,7 +18,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
@@ -93,63 +92,51 @@ export const SidebarHeader = ({ onCreateDoc }: SidebarHeaderProps) => {
         <Button
           variant="ghost"
           size="icon"
-          className="size-7 hover:bg-muted-foreground/10"
           onClick={() => onCreateDoc(null)}
           title={t("common.settings.newDoc")}
         >
-          <Plus className="size-3.5" />
+          <Plus />
         </Button>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7 hover:bg-muted-foreground/10"
-              disabled={loading}
-            >
-              {loading ? (
-                <Loader2 className="size-3.5 animate-spin" />
-              ) : (
-                <TbDots className="size-3.5" />
-              )}
+            <Button variant="ghost" size="icon" disabled={loading}>
+              {loading ? <Loader2 className="animate-spin" /> : <TbDots />}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             {/* 导入子菜单 */}
             <DropdownMenuSub>
               <DropdownMenuSubTrigger>
-                <FolderInput className="size-3.5" />
+                <FolderInput />
                 {t("common.workspace.import")}
               </DropdownMenuSubTrigger>
               <DropdownMenuSubContent>
                 <DropdownMenuItem onClick={handleImportDirectory}>
-                  <FolderOpen className="size-3.5" />
+                  <FolderOpen />
                   {t("common.workspace.importDirectory")}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleImportMarkdown}>
-                  <FileText className="size-3.5" />
+                  <FileText />
                   {t("common.workspace.importMarkdown")}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleImportVibecapeDb}>
-                  <Database className="size-3.5" />
+                  <Database />
                   {t("common.workspace.importVibecape")}
                 </DropdownMenuItem>
               </DropdownMenuSubContent>
             </DropdownMenuSub>
-            <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => void window.api.vibecape.openInFinder()}
             >
-              <FolderOpen className="size-3.5" />
+              <FolderOpen />
               {t("common.settings.openInFinder")}
             </DropdownMenuItem>
-            <DropdownMenuSeparator />
             <DropdownMenuItem
-              className="text-destructive focus:text-destructive"
+              variant="destructive"
               onClick={() => void closeWorkspace()}
             >
-              <X className="size-3.5 stroke-destructive" />
+              <X />
               {t("common.settings.closeWorkspace")}
             </DropdownMenuItem>
           </DropdownMenuContent>

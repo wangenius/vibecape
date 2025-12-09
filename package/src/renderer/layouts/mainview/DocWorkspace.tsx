@@ -7,6 +7,7 @@ import { DocEditor } from "@/components/editor";
 import { Textarea } from "@/components/ui/textarea";
 import { useTranslation } from "react-i18next";
 import { TitleInput } from "@/components/docs/TitleInput";
+import { Button } from "@/components/ui/button";
 
 type Props = {
   doc: DocData;
@@ -151,22 +152,18 @@ export const DocWorkspace = ({ doc, onSave }: Props) => {
                 onChange={(e) => setTitle(e.target.value)}
               />
             </div>
-            <button
+            <Button
               type="button"
               onClick={() => setDescExpanded(!descExpanded)}
-              className="shrink-0 p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              size="icon"
               title={
                 descExpanded
                   ? t("common.settings.collapseDesc")
                   : t("common.settings.expandDesc")
               }
             >
-              {descExpanded ? (
-                <ChevronUp className="h-4 w-4" />
-              ) : (
-                <Text className="h-4 w-4" />
-              )}
-            </button>
+              {descExpanded ? <ChevronUp /> : <Text />}
+            </Button>
           </div>
 
           {/* 描述 */}

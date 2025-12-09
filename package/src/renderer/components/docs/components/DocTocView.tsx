@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { List } from "lucide-react";
 import type { JSONContent } from "@tiptap/core";
+import { Button } from "@/components/ui/button";
 
 interface TocItem {
   id: string;
@@ -106,7 +107,7 @@ export const DocTocView = () => {
     <div className="flex-1 overflow-auto py-2">
       <div className="space-y-0.5 px-2">
         {headings.map((heading, index) => (
-          <button
+          <Button
             key={heading.id}
             onClick={() => scrollToHeading(index)}
             className={cn(
@@ -120,7 +121,7 @@ export const DocTocView = () => {
             title={heading.text}
           >
             {heading.text}
-          </button>
+          </Button>
         ))}
       </div>
     </div>

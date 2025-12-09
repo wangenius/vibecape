@@ -36,16 +36,7 @@ export const MainView = () => {
   }, [openDoc]);
 
   // 未打开工作区 - 显示欢迎页面
-  if (!workspace) {
-    return (
-      <MainContainer>
-        <EmptyDocState />
-      </MainContainer>
-    );
-  }
-
-  // 未选择文档
-  if (!activeDoc) {
+  if (!workspace || !activeDoc) {
     return (
       <MainContainer>
         <EmptyDocState />

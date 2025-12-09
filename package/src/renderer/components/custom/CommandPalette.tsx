@@ -19,11 +19,12 @@ import {
     openStatsTab,
     toggleLeftSidebar,
     toggleBayBar,
-    toggleSettingsPanel,
 } from "@/hooks/app/useViewManager";
+import { openSettingsDialog } from "@/layouts/settings";
 import { useSettings, updateSettings } from "@/hooks/app/useSettings";
 import { createShape } from "@common/lib/shape";
 import { DEFAULT_APP_CONFIG } from "@common/schema/config";
+import { usePaletteStore } from "@/hooks/shortcuts/usePalette";
 
 const appConfigShape = createShape(DEFAULT_APP_CONFIG);
 
@@ -38,26 +39,24 @@ export interface CommandItem {
 }
 
 interface CommandPaletteProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
   extraCommands?: CommandItem[];
 }
 
 export const CommandPalette = ({
-  open,
-  onOpenChange,
   extraCommands = [],
 }: CommandPaletteProps) => {
   const { t } = useTranslation();
   const mode = useSettings((state) => state.ui.mode);
+  const open = usePaletteStore((state) => state.activePalette === "command");
+  const closePalette = usePaletteStore((state) => state.closePalette);
 
   // 执行命令并关闭面板
   const runCommand = useCallback(
     (action: () => void) => {
-      onOpenChange(false);
+      closePalette();
       action();
     },
-    [onOpenChange]
+    [closePalette]
   );
 
   // 切换主题
@@ -74,7 +73,7 @@ export const CommandPalette = ({
       label: t("command.toggleSettings", "切换设置面板"),
       icon: <Settings className="h-4 w-4" />,
       shortcut: "⌘,",
-      action: () => toggleSettingsPanel(),
+      action: () => openSettingsDialog(),
       group: "navigation",
       keywords: ["settings", "preferences", "设置", "偏好"],
     },
@@ -151,7 +150,7 @@ export const CommandPalette = ({
   return (
     <Palette
       open={open}
-      onOpenChange={onOpenChange}
+      onOpenChange={(open) => !open && closePalette()}
       placeholder={t("command.searchPlaceholder", "输入命令...")}
     >
       <CommandEmpty>

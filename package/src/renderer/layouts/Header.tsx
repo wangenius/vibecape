@@ -5,7 +5,6 @@ import {
   useViewManager,
   setViewManager,
   toggleBayBar,
-  setSidebarViewMode,
 } from "@/hooks/app/useViewManager";
 import { useWorkspaceStore } from "@/hooks/stores";
 import {
@@ -16,13 +15,13 @@ import {
 } from "react-icons/bs";
 import { TbSettings, TbChevronDown, TbFolder } from "react-icons/tb";
 import { ModelSelector } from "../components/custom/ModelSelector";
-import { ViewModeSwitch } from "./sidebar/ViewModeSwitch";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { toast } from "sonner";
+import { openSettingsDialog } from "./settings";
 
 export function Header() {
   const [isRepoPopoverOpen, setIsRepoPopoverOpen] = useState(false);
@@ -30,17 +29,11 @@ export function Header() {
     (selector) => selector.isSidebarCollapsed
   );
   const isBayBarOpen = useViewManager((selector) => selector.isBayBarOpen);
-  const activeSidebarPanel = useViewManager(
-    (selector) => selector.activeSidebarPanel
-  );
-  const sidebarViewMode = useViewManager(
-    (selector) => selector.sidebarViewMode
-  );
+
   const workspace = useWorkspaceStore((state) => state.workspace);
   const workspaceList = useWorkspaceStore((state) => state.workspaceList);
   const openWorkspace = useWorkspaceStore((state) => state.openWorkspace);
 
-  const isSettingsMode = activeSidebarPanel === "settings";
   const workspaceName = workspace?.config?.name || "";
 
   const handleSwitchWorkspace = async (id: string) => {
@@ -54,17 +47,6 @@ export function Header() {
 
   const toggleSidebar = () => {
     setViewManager({ isSidebarCollapsed: !isSidebarCollapsed });
-  };
-
-  const toggleSettings = () => {
-    if (isSettingsMode) {
-      setViewManager({ activeSidebarPanel: "story" });
-    } else {
-      setViewManager({
-        activeSidebarPanel: "settings",
-        isSidebarCollapsed: false,
-      });
-    }
   };
 
   return (
@@ -91,13 +73,6 @@ export function Header() {
             <BsLayoutSidebarInset className="size-4" />
           )}
         </Button>
-        {/* 视图模式切换（仅在有 workspace 且非设置模式时显示） */}
-        {workspace && !isSettingsMode && (
-          <ViewModeSwitch
-            mode={sidebarViewMode}
-            onModeChange={setSidebarViewMode}
-          />
-        )}
       </div>
 
       {/* 中间：工作区名称 + 拖拽区域 */}
@@ -187,11 +162,8 @@ export function Header() {
         <Button
           variant="ghost"
           size="icon"
-          onClick={toggleSettings}
-          className={cn(
-            "size-7 hover:bg-muted-foreground/10",
-            isSettingsMode && "bg-muted-foreground/10"
-          )}
+          onClick={() => openSettingsDialog()}
+          className="size-7 hover:bg-muted-foreground/10"
           title="设置"
         >
           <TbSettings className="size-4" />

@@ -26,6 +26,8 @@ import {
 } from "@/components/ui/dropdown";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { ViewModeSwitch } from "./ViewModeSwitch";
+import { setSidebarViewMode, useViewManager } from "@/hooks/app/useViewManager";
 
 interface SidebarHeaderProps {
   onCreateDoc: (parentId: string | null) => void;
@@ -73,15 +75,20 @@ export const SidebarHeader = ({ onCreateDoc }: SidebarHeaderProps) => {
     }
   };
 
-  const workspaceName = workspace?.config?.name || "";
-
+  const sidebarViewMode = useViewManager(
+    (selector) => selector.sidebarViewMode
+  );
   return (
     <div className="p-1 w-full shrink-0">
       <div className="flex items-center gap-1 whitespace-nowrap">
-        {/* 左侧：工作区名称 */}
-        <span className="text-sm font-medium text-foreground truncate flex-1 px-1">
-          {workspaceName}
-        </span>
+        {/* 视图模式切换（仅在有 workspace 时显示） */}
+        {workspace && (
+          <ViewModeSwitch
+            mode={sidebarViewMode}
+            onModeChange={setSidebarViewMode}
+          />
+        )}
+        <div className="flex-1"></div>
         {/* 右侧：新建 + 更多操作 */}
         <Button
           variant="ghost"

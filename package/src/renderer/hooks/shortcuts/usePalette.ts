@@ -1,6 +1,23 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect } from "react";
+import { create } from "zustand";
 
 export type PaletteType = "command" | "docSearch" | null;
+
+interface PaletteState {
+  activePalette: PaletteType;
+  setActivePalette: (palette: PaletteType) => void;
+  closePalette: () => void;
+  openCommandPalette: () => void;
+  openDocSearch: () => void;
+}
+
+export const usePaletteStore = create<PaletteState>((set) => ({
+  activePalette: null,
+  setActivePalette: (palette) => set({ activePalette: palette }),
+  closePalette: () => set({ activePalette: null }),
+  openCommandPalette: () => set({ activePalette: "command" }),
+  openDocSearch: () => set({ activePalette: "docSearch" }),
+}));
 
 /**
  * 统一管理命令面板和文档搜索面板的开合状态
@@ -9,8 +26,6 @@ export type PaletteType = "command" | "docSearch" | null;
  * - 两者互斥，不会同时打开
  */
 export const usePalette = () => {
-  const [activePalette, setActivePalette] = useState<PaletteType>(null);
-
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       const key = event.key?.toLowerCase();
@@ -33,12 +48,14 @@ export const usePalette = () => {
 
       event.preventDefault();
 
+      const { activePalette, setActivePalette } = usePaletteStore.getState();
+
       if (isShift) {
         // Command+Shift+P 或 Ctrl+Shift+P -> 命令面板
-        setActivePalette((prev) => (prev === "command" ? null : "command"));
+        setActivePalette(activePalette === "command" ? null : "command");
       } else {
         // Command+P 或 Ctrl+P -> 文档搜索
-        setActivePalette((prev) => (prev === "docSearch" ? null : "docSearch"));
+        setActivePalette(activePalette === "docSearch" ? null : "docSearch");
       }
     };
 
@@ -47,26 +64,4 @@ export const usePalette = () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
-
-  const closePalette = useCallback(() => {
-    setActivePalette(null);
-  }, []);
-
-  const openCommandPalette = useCallback(() => {
-    setActivePalette("command");
-  }, []);
-
-  const openDocSearch = useCallback(() => {
-    setActivePalette("docSearch");
-  }, []);
-
-  return {
-    activePalette,
-    setActivePalette,
-    closePalette,
-    openCommandPalette,
-    openDocSearch,
-    isCommandPaletteOpen: activePalette === "command",
-    isDocSearchOpen: activePalette === "docSearch",
-  };
 };

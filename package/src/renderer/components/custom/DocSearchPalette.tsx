@@ -7,12 +7,9 @@ import {
 } from "@/components/ui/command";
 import { Palette } from "@/components/custom/Palette";
 import { useDocumentStore } from "@/hooks/stores/useDocumentStore";
+import { usePaletteStore } from "@/hooks/shortcuts/usePalette";
 import type { DocTreeNode } from "@common/schema/docs";
 
-interface DocSearchPaletteProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}
 
 interface FlatDoc {
   id: string;
@@ -45,12 +42,11 @@ function flattenTree(
   return result;
 }
 
-export const DocSearchPalette = ({
-  open,
-  onOpenChange,
-}: DocSearchPaletteProps) => {
+export const DocSearchPalette = () => {
   const tree = useDocumentStore((state) => state.tree);
   const openDoc = useDocumentStore((state) => state.openDoc);
+  const open = usePaletteStore((state) => state.activePalette === "docSearch");
+  const closePalette = usePaletteStore((state) => state.closePalette);
 
   // 扁平化文档列表
   const flatDocs = useMemo(() => flattenTree(tree), [tree]);
@@ -58,16 +54,16 @@ export const DocSearchPalette = ({
   // 打开文档
   const handleOpenDoc = useCallback(
     (docId: string) => {
-      onOpenChange(false);
+      closePalette();
       void openDoc(docId);
     },
-    [onOpenChange, openDoc]
+    [closePalette, openDoc]
   );
 
   return (
     <Palette
       open={open}
-      onOpenChange={onOpenChange}
+      onOpenChange={(open) => !open && closePalette()}
       placeholder="搜索文档..."
     >
       <CommandEmpty>没有找到相关文档</CommandEmpty>

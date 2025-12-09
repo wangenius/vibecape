@@ -15,7 +15,7 @@ import {
 import * as React from "react";
 import { BsStars } from "react-icons/bs";
 import { TbSettings } from "react-icons/tb";
-import { setViewManager } from "@/hooks/app/useViewManager";
+import { openSettingsDialog } from "@/layouts/settings";
 
 export function ModelSelector() {
   const [open, setOpen] = React.useState(false);
@@ -111,10 +111,7 @@ export function ModelSelector() {
           className="w-full justify-start gap-2 h-6 text-xs"
           onClick={() => {
             setOpen(false);
-            setViewManager({
-              activeSidebarPanel: "settings",
-              isSidebarCollapsed: false,
-            });
+            openSettingsDialog("models");
           }}
         >
           <TbSettings className="h-3 w-3" />

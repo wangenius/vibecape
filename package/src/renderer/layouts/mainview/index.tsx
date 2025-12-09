@@ -1,9 +1,7 @@
 import { ReactNode, useEffect } from "react";
 import { useWorkspaceStore, useDocumentStore, bootstrap } from "@/hooks/stores";
-import { useViewManager } from "@/hooks/app/useViewManager";
 import { EmptyDocState } from "../../components/custom/EmptyState";
-import { DocWorkspace } from "./docs/DocWorkspace";
-import { SettingsPanel } from "./settings";
+import { DocWorkspace } from "./DocWorkspace";
 
 const MainContainer = ({ children }: { children: ReactNode }) => {
   return (
@@ -18,9 +16,6 @@ export const MainView = () => {
   const activeDoc = useDocumentStore((state) => state.activeDoc);
   const saveDoc = useDocumentStore((state) => state.saveDoc);
   const openDoc = useDocumentStore((state) => state.openDoc);
-  const activeSidebarPanel = useViewManager(
-    (state) => state.activeSidebarPanel
-  );
 
   useEffect(() => {
     bootstrap();
@@ -39,15 +34,6 @@ export const MainView = () => {
       );
     };
   }, [openDoc]);
-
-  // 设置模式 - 显示设置页面
-  if (activeSidebarPanel === "settings") {
-    return (
-      <MainContainer>
-        <SettingsPanel />
-      </MainContainer>
-    );
-  }
 
   // 未打开工作区 - 显示欢迎页面
   if (!workspace) {

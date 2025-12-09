@@ -40,8 +40,8 @@ export const WorkspaceSettingsPanel = () => {
   };
 
   return (
-    <div className="h-full overflow-auto p-6">
-      <div className="max-w-2xl mx-auto">{renderContent()}</div>
+    <div className="h-full overflow-auto">
+      <div className="mx-auto">{renderContent()}</div>
     </div>
   );
 };

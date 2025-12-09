@@ -1,8 +1,8 @@
 import { useEffect } from "react";
-import { Sidebar } from "@/layouts/sidebar/Sidebar";
+import { Sidebar } from "@/layouts/sidebar";
 import { MainView } from "@/layouts/mainview";
 import { Header } from "@/layouts/Header";
-import { Baybar } from "@/layouts/Baybar";
+import { Baybar } from "@/layouts/baybar";
 import { bootstrap } from "@/hooks/stores";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useTheme } from "@/hooks/app/useTheme";
@@ -20,7 +20,7 @@ const App = () => {
   useChatInputFocus(true, true);
   useDocEditorFocus();
   useSettingsToggle();
-  const { isCommandPaletteOpen, isDocSearchOpen, closePalette } = usePalette();
+  usePalette();
 
   useEffect(() => {
     void bootstrap();
@@ -29,26 +29,19 @@ const App = () => {
   return (
     <TooltipProvider>
       <div className="w-screen h-screen relative flex bg-background overflow-hidden flex-col">
-        {/* Header Layer - Fixed Top */}
         <div className="w-full h-8 z-50 pointer-events-auto">
           <Header />
         </div>
 
-        {/* Content Layer - Full Height */}
         <div className="w-full h-full flex overflow-hidden">
           <Sidebar />
           <MainView />
           <Baybar />
         </div>
 
-        {/* Command Palette */}
-        <CommandPalette
-          open={isCommandPaletteOpen}
-          onOpenChange={closePalette}
-        />
+        <CommandPalette />
 
-        {/* Doc Search Palette */}
-        <DocSearchPalette open={isDocSearchOpen} onOpenChange={closePalette} />
+        <DocSearchPalette />
       </div>
     </TooltipProvider>
   );

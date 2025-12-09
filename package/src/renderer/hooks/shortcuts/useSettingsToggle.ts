@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { toggleSettingsPanel } from "@/hooks/app/useViewManager";
+import { openSettingsDialog } from "@/layouts/settings";
 
 /**
  * 处理 Command+, 切换设置面板的逻辑
@@ -30,8 +30,8 @@ export const useSettingsToggle = (enabled: boolean = true) => {
 
       event.preventDefault();
 
-      // 切换设置面板
-      toggleSettingsPanel();
+      // 打开设置对话框
+      openSettingsDialog();
     };
 
     window.addEventListener("keydown", handleToggleShortcut);

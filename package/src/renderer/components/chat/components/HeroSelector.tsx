@@ -8,30 +8,28 @@ import {
 } from "@/components/ui/popover";
 import { dialog } from "@/components/custom/DialogModal";
 import { CachedAvatar } from "@/hooks/util/useAvatarCache";
-import type { Agent } from "@common/api/chat";
+import type { HeroInfo } from "@common/api/chat";
 import { getPrompt, type LocaleLike } from "@common/types/hero";
 import { useTranslation } from "react-i18next";
 
-interface AgentSelectorProps {
+interface HeroSelectorProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  agents: Agent[];
-  currentAgent: Agent | undefined;
+  heroes: HeroInfo[];
+  currentHero: HeroInfo | undefined;
   onSelect: (agentId: string) => void;
 }
 
-export const AgentSelector: React.FC<AgentSelectorProps> = ({
+export const HeroSelector: React.FC<HeroSelectorProps> = ({
   open,
   onOpenChange,
-  agents,
-  currentAgent,
+  heroes,
+  currentHero,
   onSelect,
 }) => {
   const { t, i18n } = useTranslation();
-  const locale: LocaleLike = i18n.language?.startsWith("zh")
-    ? "zh"
-    : "en";
-  
+  const locale: LocaleLike = i18n.language?.startsWith("zh") ? "zh" : "en";
+
   const handleSelectAgent = useCallback(
     (agentId: string) => {
       console.log("[AgentSelector] handleSelectAgent:", agentId);
@@ -51,12 +49,15 @@ export const AgentSelector: React.FC<AgentSelectorProps> = ({
           title={t("chat.agent.switchAgent")}
         >
           <CachedAvatar
-            src={currentAgent?.avatar || "https://avatar.iran.liara.run/public/girl?username=Maria"}
+            src={
+              currentHero?.avatar ||
+              "https://avatar.iran.liara.run/public/girl?username=Maria"
+            }
             alt=""
             className="size-5 rounded-full"
           />
           <span className="max-w-20 truncate">
-            {currentAgent?.name || t("chat.agent.defaultName")}
+            {currentHero?.name || t("chat.agent.defaultName")}
           </span>
         </Button>
       </PopoverTrigger>
@@ -76,12 +77,12 @@ export const AgentSelector: React.FC<AgentSelectorProps> = ({
             </p>
           </div>
           <div className="max-h-[50vh] space-y-0.5 overflow-y-auto">
-            {agents.map((agent) => (
+            {heroes.map((agent) => (
               <div
                 key={agent.id}
                 className={cn(
                   "w-full rounded-md px-2 py-2 text-left transition flex items-start gap-2 cursor-pointer",
-                  agent.id === currentAgent?.id
+                  agent.id === currentHero?.id
                     ? "bg-primary/10 text-primary"
                     : "hover:bg-muted"
                 )}

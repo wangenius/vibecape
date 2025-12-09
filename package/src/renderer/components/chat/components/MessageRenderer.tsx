@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { type UIMessage } from "ai";
 import { Check, FileText, Quote, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Response } from "@/components/ai/response";
+import { Response } from "@/components/chat/ai/response";
 import type {
   TextPart,
   ReasoningPart,

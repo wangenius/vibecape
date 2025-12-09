@@ -15,7 +15,7 @@ import {
   addQuoteListener,
   type QuoteEventDetail,
 } from "@/lib/events/quoteEvent";
-import "@/@styles/chatinput.css";
+// Styles are imported via chat/index.ts
 
 export interface ChatInputProps {
   onSubmit: (message: { text: string }) => void | Promise<void>;

@@ -2,8 +2,8 @@ import { useCallback, useRef } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import type { JSONContent } from "@tiptap/core";
 import type { DocData } from "@common/schema/docs";
-import { EditorBubbleMenu } from "@/components/editor/menus/EditorBubbleMenu";
-import { TableBubbleMenu } from "@/components/editor/menus/TableBubbleMenu";
+import { EditorBubbleMenu } from "./menus/EditorBubbleMenu";
+import { TableBubbleMenu } from "./menus/TableBubbleMenu";
 import { useTranslation } from "react-i18next";
 import {
   useDocEditorExtensions,

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useThread } from "@/hooks/chat/useThread";
 import { useHero } from "@/hooks/chat/useHero";
 import { ChatCore } from "./ChatCore";
-import { AgentSelector } from "./AgentSelector";
+import { HeroSelector } from "./HeroSelector";
 import { HistoryPopover } from "./HistoryPopover";
 import { useTranslation } from "react-i18next";
 
@@ -53,11 +53,11 @@ export const ChatPanel = () => {
       {/* 顶部固定栏 */}
       <div className="flex h-10 flex-none items-center justify-between px-2">
         {/* 左侧：Agent 切换 */}
-        <AgentSelector
+        <HeroSelector
           open={agentOpen}
           onOpenChange={setAgentOpen}
-          agents={heroes}
-          currentAgent={currentHero}
+          heroes={heroes}
+          currentHero={currentHero}
           onSelect={handleSelectHero}
         />
 

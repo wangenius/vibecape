@@ -7,23 +7,23 @@ import Highlight from "@tiptap/extension-highlight";
 import Link from "@tiptap/extension-link";
 import TaskList from "@tiptap/extension-task-list";
 import TaskItem from "@tiptap/extension-task-item";
-import { SlashCommand } from "@/components/editor/extensions/SlashCommand";
-import { createSlashMenuPlugin } from "@/components/editor/menus/SlashMenu";
+import { SlashCommand } from "../extensions/SlashCommand";
+import { createSlashMenuPlugin } from "../menus/SlashMenu";
 import {
   DocAIPromptNode,
   DocAIPolishMark,
-} from "@/components/editor/extensions/AIRewriteNode";
-import { AIDiffMark } from "@/components/editor/extensions/AIDiffMark";
-import { AIDiffNode } from "@/components/editor/extensions/AIDiffNode";
-import { CodeBlockNode } from "@/components/editor/extensions/CodeBlockNode";
-import { InlineCode } from "@/components/editor/extensions/InlineCode";
-import { Blockquote } from "@/components/editor/extensions/Blockquote";
-import { Admonition } from "@/components/editor/extensions/Admonition";
-import { Mention } from "@/components/editor/extensions/Mention";
-import { ImageNode } from "@/components/editor/extensions/ImageNode";
-import { LinkNode } from "@/components/editor/extensions/LinkNode";
-import { CustomKeyboardExtension } from "@/components/editor/extensions/CustomKeyboardExtension";
-import { TableExtension } from "@/components/editor/extensions/TableExtension";
+} from "../extensions/DocAIPromptNode";
+import { AIDiffMark } from "../extensions/AIDiffMark";
+import { AIDiffNode } from "../extensions/AIDiffNode";
+import { CodeBlockNode } from "../extensions/CodeBlockNode";
+import { InlineCode } from "../extensions/InlineCode";
+import { Blockquote } from "../extensions/Blockquote";
+import { Admonition } from "../extensions/Admonition";
+import { Mention } from "../extensions/Mention";
+import { ImageNode } from "../extensions/ImageNode";
+import { LinkNode } from "../extensions/LinkNode";
+import { CustomKeyboardExtension } from "../extensions/CustomKeyboardExtension";
+import { TableExtension } from "../extensions/TableExtension";
 import { TFunction } from "i18next";
 
 type UseDocEditorExtensionsOptions = {

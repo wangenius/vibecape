@@ -956,16 +956,13 @@ ${
       let targetPos =
         originalTextEndPos !== -1
           ? originalTextEndPos
-          : Math.max(
-              0,
-              Math.min(currentNodePos || 0, state.doc.content.size)
-            );
+          : Math.max(0, Math.min(currentNodePos || 0, state.doc.content.size));
 
       // 确保不超出文档范围
       targetPos = Math.max(0, Math.min(targetPos, state.doc.content.size));
 
       editor.commands.focus();
-      
+
       // 使用 TextSelection.near 找到最近的有效文本位置
       try {
         const $pos = state.doc.resolve(targetPos);
@@ -1054,7 +1051,7 @@ ${
     } else {
       editor.commands.acceptAIDiff(currentDiffId);
     }
-    
+
     // 确保焦点回到主编辑器
     editor.commands.focus();
   }, [editor, deleteNode, props, node]);

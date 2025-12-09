@@ -4,7 +4,7 @@ import {
   Conversation,
   ConversationContent,
   ConversationScrollButton,
-} from "@/components/ai/conversation";
+} from "@/components/chat/ai/conversation";
 import { useChat } from "@/hooks/chat/useChat";
 import type { UIMessage } from "ai";
 import { MessageRenderer, ErrorMessage } from "./MessageRenderer";

@@ -159,6 +159,8 @@
   font-family: 'Fira Code', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace !important;
   font-feature-settings: "liga" 1, "calt" 1 !important;
   font-variant-ligatures: common-ligatures !important;
+  font-size: 0.98em !important;
+  line-height: 1.4 !important;
 }
 
 /* ========== Inline Code 样式 ========== */
@@ -428,7 +430,7 @@
 .tiptap .tableWrapper,
 .ProseMirror .tableWrapper {
   overflow-x: auto !important;
-  margin: 1.5rem 0 !important;
+  margin: 0.5rem 0 !important;
   padding: 0 !important;
 }
 
@@ -479,14 +481,14 @@
   border: none !important;
   border-right: 1px solid var(--border) !important;
   border-bottom: 1px solid var(--border) !important;
-  padding: 0.75rem 1rem !important;
+  padding: 0.5rem 0.75rem !important;
   vertical-align: top !important;
   box-sizing: border-box !important;
   position: relative !important;
   min-width: 80px !important;
   background: var(--background) !important;
   color: var(--foreground) !important;
-  font-size: 0.875rem !important;
+  font-size: 0.81rem !important;
   line-height: 1.6 !important;
 }
 

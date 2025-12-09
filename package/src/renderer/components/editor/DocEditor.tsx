@@ -332,7 +332,7 @@ export const DocEditor = ({ doc, onChange, onSave }: Props) => {
   return (
     <div
       ref={containerRef}
-      className="flex-1 min-h-0 pb-[80vh] cursor-text flex flex-col w-full"
+      className="relative flex-1 min-h-0 pb-[80vh] cursor-text flex flex-col w-full"
       onClick={handleContainerClick}
     >
       <div className="flex-1">
@@ -342,7 +342,7 @@ export const DocEditor = ({ doc, onChange, onSave }: Props) => {
         />
       </div>
       <EditorBubbleMenu editor={editor} />
-      <TableBubbleMenu editor={editor} />
+      <TableBubbleMenu editor={editor} containerRef={containerRef} />
       <PolishManager editor={editor} />
     </div>
   );

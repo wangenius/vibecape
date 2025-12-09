@@ -802,6 +802,10 @@ function AIRewriteComponent(props: any) {
         throw new Error("Failed to start stream edit");
       }
 
+      // 获取当前的 node 状态以判断是否支持 Markdown (AIDiffNode 支持 Markdown，AIDiffMark 不支持)
+      const currentNode = editor.state.doc.nodeAt(props.getPos());
+      const isCrossNode = currentNode?.attrs.isCrossNode;
+
       // 构建系统消息
       const systemMessage = isPolishMode
         ? {
@@ -815,7 +819,11 @@ ${savedOriginalText}
 1. 直接输出润色后的内容，不要有任何前缀或解释
 2. 保持原文的核心意思
 3. 保持与上下文一致的风格和语气
-4. 纯文本输出，不使用 Markdown 格式`,
+${
+  !isCrossNode
+    ? "4. 纯文本输出，不使用 Markdown 格式"
+    : "4. 使用 Markdown 格式输出"
+}`,
           }
         : {
             role: "system",
@@ -824,7 +832,7 @@ ${savedOriginalText}
 要求：
 1. 直接输出生成的内容，不要有任何前缀或解释
 2. 保持与上下文一致的风格和语气
-3. 纯文本输出，不使用 Markdown 格式`,
+3. 使用 Markdown 格式输出`,
           };
 
       let fullResponse = "";

@@ -9,6 +9,7 @@ import {
   TbLink,
   TbPlug,
   TbSparkles,
+  TbTrash,
 } from "react-icons/tb";
 
 export const DRAG_HOVER_DELAY = 800;
@@ -43,4 +44,5 @@ export const WORKSPACE_NAV_ITEMS = [
   { key: "asset", labelKey: "common.workspace.assetSettings", icon: TbUpload },
   { key: "link", labelKey: "common.workspace.linkSettings", icon: TbLink },
   { key: "llmtxt", labelKey: "common.workspace.aiContext", icon: TbFileText },
+  { key: "trash", labelKey: "common.workspace.trash", icon: TbTrash },
 ];

@@ -11,6 +11,7 @@
 import { Node, mergeAttributes } from "@tiptap/core";
 import { NodeViewWrapper, ReactNodeViewRenderer } from "@tiptap/react";
 import { Slice } from "@tiptap/pm/model";
+import { TextSelection } from "@tiptap/pm/state";
 import { markdownToJSON } from "@common/lib/content-converter";
 import { Check, X } from "lucide-react";
 
@@ -116,7 +117,7 @@ export const AIDiffNode = Node.create<AIDiffNodeOptions>({
           if (!nodeType) return false;
 
           // 找到插入位置
-          const polishMarkType = state.schema.marks.aiPolishMark;
+          const polishMarkType = state.schema.marks.docAIPolishMark;
           let insertPos = -1;
           let lastMarkPos = -1;
 
@@ -144,7 +145,7 @@ export const AIDiffNode = Node.create<AIDiffNodeOptions>({
             }
           } else {
             // Generate 模式：在 AIRewriteNode 的位置插入
-            const rewriteNodeType = state.schema.nodes.aiRewrite;
+            const rewriteNodeType = state.schema.nodes.docAIPrompt;
             state.doc.descendants((node, pos) => {
               if (node.type === rewriteNodeType && node.attrs.diffId === diffId) {
                 insertPos = pos;
@@ -269,8 +270,8 @@ export const AIDiffNode = Node.create<AIDiffNodeOptions>({
         (diffId: string) =>
         ({ state, tr, dispatch }) => {
           const nodeType = state.schema.nodes.aiDiffNode;
-          const polishMarkType = state.schema.marks.aiPolishMark;
-          const rewriteNodeType = state.schema.nodes.aiRewrite;
+          const polishMarkType = state.schema.marks.docAIPolishMark;
+          const rewriteNodeType = state.schema.nodes.docAIPrompt;
           if (!nodeType) return false;
 
           // 1. 找到 diff node
@@ -386,7 +387,23 @@ export const AIDiffNode = Node.create<AIDiffNodeOptions>({
               // 使用 Slice 来确保所有子节点都被正确保留
               // openStart 和 openEnd 都是 0，表示完整的块级内容
               const slice = new Slice(diffNode.content, 0, 0);
+              const contentSize = diffNode.content.size;
               tr.replace(newNodePos, newNodePos + newNodeSize, slice);
+
+              // 设置光标到插入内容的末尾
+              try {
+                // 新内容的结束位置是 newNodePos + contentSize
+                // 但由于 block 节点有开闭标签，实际文本末尾需要 -1
+                // 例如：<p>text</p> 的 contentSize 包含了 <p> 和 </p>
+                // 我们要把光标放在 text 后面，即 </p> 之前
+                const endOfContent = newNodePos + contentSize;
+                const $end = tr.doc.resolve(Math.min(endOfContent - 1, tr.doc.content.size));
+                // 获取当前深度的末尾位置（block 内部的末尾）
+                const targetPos = $end.end($end.depth);
+                tr.setSelection(TextSelection.create(tr.doc, targetPos));
+              } catch (e) {
+                console.warn("Failed to set selection after acceptAIDiffNode", e);
+              }
             }
           }
 
@@ -410,8 +427,8 @@ export const AIDiffNode = Node.create<AIDiffNodeOptions>({
         (diffId: string) =>
         ({ state, tr, dispatch }) => {
           const nodeType = state.schema.nodes.aiDiffNode;
-          const polishMarkType = state.schema.marks.aiPolishMark;
-          const rewriteNodeType = state.schema.nodes.aiRewrite;
+          const polishMarkType = state.schema.marks.docAIPolishMark;
+          const rewriteNodeType = state.schema.nodes.docAIPrompt;
           if (!nodeType) return false;
 
           // 1. 找到并删除 diff node

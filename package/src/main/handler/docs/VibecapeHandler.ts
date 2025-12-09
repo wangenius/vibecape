@@ -109,6 +109,22 @@ ipcMain.handle("vibecape:deleteDoc", (_event, id: string) =>
   DocsService.deleteDoc(id)
 );
 
+ipcMain.handle("vibecape:getTrash", () =>
+  DocsService.getTrash()
+);
+
+ipcMain.handle("vibecape:restoreDoc", (_event, id: string) =>
+  DocsService.restoreDoc(id)
+);
+
+ipcMain.handle("vibecape:deletePermanently", (_event, id: string) =>
+  DocsService.deletePermanently(id)
+);
+
+ipcMain.handle("vibecape:emptyTrash", () =>
+  DocsService.emptyTrash()
+);
+
 ipcMain.handle(
   "vibecape:reorderDoc",
   (_event, activeId: string, overId: string) =>

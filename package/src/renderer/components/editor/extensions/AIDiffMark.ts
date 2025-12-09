@@ -9,7 +9,7 @@
  */
 
 import { Mark, mergeAttributes } from "@tiptap/core";
-import { Plugin, PluginKey } from "@tiptap/pm/state";
+import { Plugin, PluginKey, TextSelection } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 import { Slice, Fragment } from "@tiptap/pm/model";
 import { markdownToJSON } from "@common/lib/content-converter";
@@ -117,8 +117,8 @@ export const AIDiffMark = Mark.create<AIDiffMarkOptions>({
         (diffId: string) =>
         ({ state, tr, dispatch, editor }) => {
           const diffMarkType = state.schema.marks.aiDiff;
-          const polishMarkType = state.schema.marks.aiPolishMark;
-          const rewriteNodeType = state.schema.nodes.aiRewrite;
+          const polishMarkType = state.schema.marks.docAIPolishMark;
+          const rewriteNodeType = state.schema.nodes.docAIPrompt;
           if (!diffMarkType) return false;
 
           // 1. 找到 diff mark 范围和内容
@@ -294,9 +294,20 @@ export const AIDiffMark = Mark.create<AIDiffMarkOptions>({
                 if (newNodes.length > 0) {
                   // 用新段落替换整个原段落
                   const slice = new Slice(Fragment.from(newNodes), 0, 0);
+                  const contentSize = slice.size;
                   tr.replace(blockStart, blockEnd, slice);
+                  
+                  try {
+                    const newPos = Math.min(blockStart + contentSize, tr.doc.content.size);
+                    tr.setSelection(TextSelection.create(tr.doc, newPos));
+                  } catch (e) {
+                    console.warn("Failed to set selection after acceptAIDiff block replace", e);
+                  }
                 } else {
                   tr.removeMark(diffFrom, diffTo, diffMarkType);
+                  try {
+                    tr.setSelection(TextSelection.create(tr.doc, diffTo));
+                  } catch (e) {}
                 }
               } else {
                 tr.removeMark(diffFrom, diffTo, diffMarkType);
@@ -312,9 +323,20 @@ export const AIDiffMark = Mark.create<AIDiffMarkOptions>({
                 }).content.firstChild?.content;
 
                 if (fragment) {
+                  const contentSize = fragment.size;
                   tr.replaceWith(diffFrom, diffTo, fragment);
+                  
+                  try {
+                    const newPos = Math.min(diffFrom + contentSize, tr.doc.content.size);
+                    tr.setSelection(TextSelection.create(tr.doc, newPos));
+                  } catch (e) {
+                    console.warn("Failed to set selection after acceptAIDiff inline replace", e);
+                  }
                 } else {
                   tr.removeMark(diffFrom, diffTo, diffMarkType);
+                  try {
+                    tr.setSelection(TextSelection.create(tr.doc, diffTo));
+                  } catch (e) {}
                 }
               } else {
                 tr.removeMark(diffFrom, diffTo, diffMarkType);
@@ -323,6 +345,9 @@ export const AIDiffMark = Mark.create<AIDiffMarkOptions>({
           } else {
             // 降级：直接移除 mark
             tr.removeMark(diffFrom, diffTo, diffMarkType);
+            try {
+              tr.setSelection(TextSelection.create(tr.doc, diffTo));
+            } catch (e) {}
           }
 
           // 4. 删除关联的 AIRewriteNode
@@ -344,8 +369,8 @@ export const AIDiffMark = Mark.create<AIDiffMarkOptions>({
         (diffId: string) =>
         ({ state, tr, dispatch }) => {
           const diffMarkType = state.schema.marks.aiDiff;
-          const polishMarkType = state.schema.marks.aiPolishMark;
-          const rewriteNodeType = state.schema.nodes.aiRewrite;
+          const polishMarkType = state.schema.marks.docAIPolishMark;
+          const rewriteNodeType = state.schema.nodes.docAIPrompt;
           if (!diffMarkType) return false;
 
           // 1. 找到并删除 diff 内容

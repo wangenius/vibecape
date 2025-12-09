@@ -20,16 +20,16 @@ import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
 import { gen } from "@common/lib/generator";
 
-export interface AIRewriteOptions {
+export interface DocAIPromptOptions {
   HTMLAttributes: Record<string, any>;
 }
 
 declare module "@tiptap/core" {
   interface Commands<ReturnType> {
-    aiRewrite: {
-      insertAIRewrite: () => ReturnType;
-      insertAIPolish: () => ReturnType;
-      removeAIRewrite: (id: string) => ReturnType;
+    docAIPrompt: {
+      insertDocAIPrompt: () => ReturnType;
+      insertDocAIPolish: () => ReturnType;
+      removeDocAIPrompt: (id: string) => ReturnType;
       /** 开始 Generate 模式流式编辑 */
       startAIGenerateStream: (nodeId: string) => ReturnType;
       /** 开始流式编辑：删除原文，创建 AIDiffMark，更新节点属性 */
@@ -48,8 +48,8 @@ declare module "@tiptap/core" {
   }
 }
 
-export const AIRewriteNode = Node.create<AIRewriteOptions>({
-  name: "aiRewrite",
+export const DocAIPromptNode = Node.create<DocAIPromptOptions>({
+  name: "docAIPrompt",
 
   group: "block",
 
@@ -101,6 +101,9 @@ export const AIRewriteNode = Node.create<AIRewriteOptions>({
   parseHTML() {
     return [
       {
+        tag: 'div[data-type="doc-ai-prompt"]',
+      },
+      {
         tag: 'div[data-type="ai-rewrite"]',
       },
     ];
@@ -110,7 +113,7 @@ export const AIRewriteNode = Node.create<AIRewriteOptions>({
     return [
       "div",
       mergeAttributes(
-        { "data-type": "ai-rewrite" },
+        { "data-type": "doc-ai-prompt" },
         this.options.HTMLAttributes,
         HTMLAttributes
       ),
@@ -119,7 +122,7 @@ export const AIRewriteNode = Node.create<AIRewriteOptions>({
 
   addCommands() {
     return {
-      insertAIRewrite:
+      insertDocAIPrompt:
         () =>
         ({ commands }) => {
           const id = `ai-rewrite-${Date.now()}`;
@@ -129,7 +132,7 @@ export const AIRewriteNode = Node.create<AIRewriteOptions>({
           });
         },
 
-      insertAIPolish:
+      insertDocAIPolish:
         () =>
         ({ state, tr, dispatch }) => {
           const { from, to } = state.selection;
@@ -139,7 +142,7 @@ export const AIRewriteNode = Node.create<AIRewriteOptions>({
           const nodeId = `ai-polish-${Date.now()}`;
 
           // 1. 给选中文字添加 mark
-          const markType = state.schema.marks.aiPolishMark;
+          const markType = state.schema.marks.docAIPolishMark;
           if (markType) {
             tr.addMark(from, to, markType.create({ id: markId }));
           }
@@ -154,7 +157,7 @@ export const AIRewriteNode = Node.create<AIRewriteOptions>({
             insertPos = state.doc.content.size;
           }
 
-          const nodeType = state.schema.nodes.aiRewrite;
+          const nodeType = state.schema.nodes.docAIPrompt;
           const newNode = nodeType.create({
             id: nodeId,
             mode: "polish",
@@ -166,7 +169,7 @@ export const AIRewriteNode = Node.create<AIRewriteOptions>({
           return true;
         },
 
-      removeAIRewrite:
+      removeDocAIPrompt:
         (id: string) =>
         ({ state, tr }) => {
           let found = false;
@@ -174,7 +177,7 @@ export const AIRewriteNode = Node.create<AIRewriteOptions>({
 
           // 找到并删除 node
           state.doc.descendants((node, pos) => {
-            if (node.type.name === "aiRewrite" && node.attrs.id === id) {
+            if (node.type.name === "docAIPrompt" && node.attrs.id === id) {
               markId = node.attrs.markId;
               tr.delete(pos, pos + node.nodeSize);
               found = true;
@@ -212,7 +215,7 @@ export const AIRewriteNode = Node.create<AIRewriteOptions>({
           let nodeAttrs: any = null;
 
           state.doc.descendants((node, pos) => {
-            if (node.type.name === "aiRewrite" && node.attrs.id === nodeId) {
+            if (node.type.name === "docAIPrompt" && node.attrs.id === nodeId) {
               targetPos = pos;
               nodeAttrs = node.attrs;
               return false;
@@ -228,7 +231,7 @@ export const AIRewriteNode = Node.create<AIRewriteOptions>({
           const diffId = gen.id({ prefix: "diff-", length: 12 });
 
           // 更新节点属性
-          const nodeType = state.schema.nodes.aiRewrite;
+          const nodeType = state.schema.nodes.docAIPrompt;
           tr.setNodeMarkup(targetPos, nodeType, {
             ...nodeAttrs,
             diffId,
@@ -249,7 +252,7 @@ export const AIRewriteNode = Node.create<AIRewriteOptions>({
           let nodeAttrs: any = null;
 
           state.doc.descendants((node, pos) => {
-            if (node.type.name === "aiRewrite" && node.attrs.id === nodeId) {
+            if (node.type.name === "docAIPrompt" && node.attrs.id === nodeId) {
               targetPos = pos;
               nodeAttrs = node.attrs;
               return false;
@@ -262,7 +265,7 @@ export const AIRewriteNode = Node.create<AIRewriteOptions>({
           }
 
           const markId = nodeAttrs.markId;
-          const polishMarkType = state.schema.marks.aiPolishMark;
+          const polishMarkType = state.schema.marks.docAIPolishMark;
 
           if (!polishMarkType) return false;
 
@@ -316,7 +319,7 @@ export const AIRewriteNode = Node.create<AIRewriteOptions>({
           }
 
           // 2. 更新节点属性
-          const nodeType = state.schema.nodes.aiRewrite;
+          const nodeType = state.schema.nodes.docAIPrompt;
           if (targetPos !== null) {
             tr.setNodeMarkup(targetPos, nodeType, {
               ...nodeAttrs,
@@ -337,7 +340,7 @@ export const AIRewriteNode = Node.create<AIRewriteOptions>({
         ({ state, tr, dispatch, editor }) => {
           if (!content) return false;
 
-          // 从 aiRewrite 节点获取信息
+          // 从 docAIPrompt 节点获取信息
           let originalText = "";
           let polishMarkId = "";
           let insertPos = -1;
@@ -345,7 +348,7 @@ export const AIRewriteNode = Node.create<AIRewriteOptions>({
 
           state.doc.descendants((node) => {
             if (
-              node.type.name === "aiRewrite" &&
+              node.type.name === "docAIPrompt" &&
               node.attrs.diffId === diffId
             ) {
               originalText = node.attrs.originalText;
@@ -433,23 +436,23 @@ export const AIRewriteNode = Node.create<AIRewriteOptions>({
     return {
       "Mod-k": () => {
         // Cmd+K 触发润色模式（选中文本后插入输入节点）
-        return this.editor.commands.insertAIPolish();
+        return this.editor.commands.insertDocAIPolish();
       },
       "Mod-j": () => {
         // Cmd+J 与 Cmd+K 相同，触发润色模式
-        return this.editor.commands.insertAIPolish();
+        return this.editor.commands.insertDocAIPolish();
       },
     };
   },
 
   addNodeView() {
-    return ReactNodeViewRenderer(AIRewriteComponent);
+    return ReactNodeViewRenderer(DocAIPromptComponent);
   },
 
   addProseMirrorPlugins() {
     return [
       new Plugin({
-        key: new PluginKey("aiRewriteFocus"),
+        key: new PluginKey("docAIPromptFocus"),
         props: {
           handleKeyDown(view, event) {
             const { state } = view;
@@ -499,7 +502,7 @@ export const AIRewriteNode = Node.create<AIRewriteOptions>({
               targetNode = parentNode.child(blockIndex + 1);
             }
 
-            if (targetNode?.type?.name === "aiRewrite") {
+            if (targetNode?.type?.name === "docAIPrompt") {
               // 找到 AI 节点，聚焦其内部输入框
               event.preventDefault();
 
@@ -523,11 +526,11 @@ export const AIRewriteNode = Node.create<AIRewriteOptions>({
 });
 
 /**
- * AI Polish Mark 扩展
+ * DocAIPolish Mark 扩展
  * 用于标记正在被润色的原文
  */
-export const AIPolishMark = Mark.create({
-  name: "aiPolishMark",
+export const DocAIPolishMark = Mark.create({
+  name: "docAIPolishMark",
 
   addOptions() {
     return {
@@ -559,7 +562,7 @@ export const AIPolishMark = Mark.create({
   },
 
   parseHTML() {
-    return [{ tag: 'span[data-type="ai-polish-mark"]' }];
+    return [{ tag: 'span[data-type="docAIPolish-mark"]' }];
   },
 
   renderHTML({ HTMLAttributes }) {
@@ -568,7 +571,7 @@ export const AIPolishMark = Mark.create({
       "span",
       mergeAttributes(
         {
-          "data-type": "ai-polish-mark",
+          "data-type": "docAIPolish-mark",
           class: isStreaming
             ? "ai-diff-deleted" // 流式生成时显示删除线
             : "relative underline decoration-primary/50 decoration-wavy decoration-from-font underline-offset-2",
@@ -606,8 +609,8 @@ export const AIPolishMark = Mark.create({
             return true;
           });
 
-          // 删除关联的 aiRewrite 节点
-          const nodeType = state.schema.nodes.aiRewrite;
+          // 删除关联的 docAIPrompt 节点
+          const nodeType = state.schema.nodes.docAIPrompt;
           if (nodeType) {
             const nodesToDelete: { pos: number; size: number }[] = [];
             tr.doc.descendants((node, pos) => {
@@ -635,7 +638,7 @@ export const AIPolishMark = Mark.create({
   },
 });
 
-function AIRewriteComponent(props: any) {
+function DocAIPromptComponent(props: any) {
   const { t } = useTranslation();
   const { node, editor, deleteNode, selected } = props;
   const nodeId = node.attrs.id as string;
@@ -685,12 +688,12 @@ function AIRewriteComponent(props: any) {
     const currentDiffId = node.attrs.diffId;
     const nodeAttrs = editor.state.doc.nodeAt(props.getPos())?.attrs;
 
-    // 如果已经有 diff，只清除 diff 内容，不删除 AIRewriteNode
+    // 如果已经有 diff，只清除 diff 内容，不删除 DocAIPromptNode
     if (currentDiffId) {
       if (nodeAttrs?.isCrossNode) {
         // 跨节点：删除 AIDiffNode，保留原文
-        const diffNodeType = editor.state.schema.nodes.aiDiffNode;
-        const polishMarkType = editor.state.schema.marks.aiPolishMark;
+        const diffNodeType = editor.state.schema.nodes.docAIPromptffNode;
+        const polishMarkType = editor.state.schema.marks.docAIPolishMark;
         const { tr } = editor.state;
 
         // 删除 diff node
@@ -726,7 +729,7 @@ function AIRewriteComponent(props: any) {
       } else {
         // 单节点：删除 AIDiffMark 内容，保留原文
         const diffMarkType = editor.state.schema.marks.aiDiff;
-        const polishMarkType = editor.state.schema.marks.aiPolishMark;
+        const polishMarkType = editor.state.schema.marks.docAIPolishMark;
         const { tr } = editor.state;
 
         // 删除 diff 内容
@@ -775,7 +778,9 @@ function AIRewriteComponent(props: any) {
     setError("");
 
     // 保持输入框聚焦
-    setTimeout(() => miniEditorRef.current?.commands.focus(), 0);
+    setTimeout(() => {
+      miniEditorRef.current?.commands.focus();
+    }, 0);
 
     const requestId = `rewrite-${Date.now()}`;
     const channel = `docs:ai:stream:${requestId}`;
@@ -900,9 +905,12 @@ ${
     const currentDiffId = node.attrs.diffId;
     const currentMarkId = node.attrs.markId;
 
+    // 记录当前节点位置，用于删除后定位
+    const currentNodePos = props.getPos();
+
     // 找到原文的位置（用于定位光标）
     let originalTextEndPos = -1;
-    const polishMarkType = editor.state.schema.marks.aiPolishMark;
+    const polishMarkType = editor.state.schema.marks.docAIPolishMark;
 
     if (polishMarkType && currentMarkId) {
       editor.state.doc.descendants((n, pos) => {
@@ -929,7 +937,7 @@ ${
     } else {
       // 没有 diff，直接移除节点
       if (isPolishMode && markId) {
-        editor.commands.removeAIRewrite(nodeId);
+        editor.commands.removeDocAIPrompt(nodeId);
       } else {
         deleteNode();
       }
@@ -938,15 +946,20 @@ ${
     // 将光标移动到原文末尾
     setTimeout(() => {
       const { state } = editor;
-      // 找到最近的有效位置
-      let targetPos = originalTextEndPos;
-      if (targetPos === -1 || targetPos > state.doc.content.size) {
-        // 找不到原文位置，尝试定位到 AIRewriteNode 原来的位置附近
-        targetPos = Math.max(
-          0,
-          Math.min(props.getPos() || 0, state.doc.content.size)
-        );
-      }
+      // 找不到原文位置，定位到 DocAIPromptNode 之前的位置
+      // 如果我们删除了节点，之前的位置现在应该是空位或者下一个内容的位置，
+      // 但我们想要 "before this node"，所以使用删除前的 pos
+      let targetPos =
+        originalTextEndPos !== -1
+          ? originalTextEndPos
+          : Math.max(
+              0,
+              Math.min(currentNodePos || 0, state.doc.content.size)
+            );
+
+      // 确保不超出文档范围
+      targetPos = Math.max(0, Math.min(targetPos, state.doc.content.size));
+
       editor.commands.focus();
       editor.commands.setTextSelection(targetPos);
     }, 0);
@@ -975,8 +988,8 @@ ${
       editor.state.doc.descendants((n, pos) => {
         if (n.type === diffNodeType && n.attrs.diffId === currentDiffId) {
           diffStartPos = pos;
-          // 获取节点内容的文本长度
-          diffTextLength = n.textContent.length;
+          // 获取节点内容的实际大小（包含标记）
+          diffTextLength = n.content.size;
           return false;
         }
         return true;
@@ -1016,30 +1029,15 @@ ${
       });
     }
 
-    // 接受 diff（命令内部会删除 AIRewriteNode）
+    // 接受 diff（命令内部会删除 DocAIPromptNode 并设置光标位置）
     if (isCrossNode) {
       editor.commands.acceptAIDiffNode(currentDiffId);
     } else {
       editor.commands.acceptAIDiff(currentDiffId);
     }
-
-    // 将光标移动到新内容的末尾
-    setTimeout(() => {
-      const { state } = editor;
-      // 接受后，新内容会在原文的位置，所以光标应该在 原文起始位置 + diff内容长度
-      let targetPos =
-        originalTextStartPos !== -1
-          ? originalTextStartPos + diffTextLength
-          : diffStartPos !== -1
-            ? diffStartPos + diffTextLength
-            : state.doc.content.size;
-
-      // 确保不超出文档范围
-      targetPos = Math.max(0, Math.min(targetPos, state.doc.content.size));
-
-      editor.commands.focus();
-      editor.commands.setTextSelection(targetPos);
-    }, 0);
+    
+    // 确保焦点回到主编辑器
+    editor.commands.focus();
   }, [editor, deleteNode, props, node]);
 
   // 同步 refs
@@ -1076,7 +1074,7 @@ ${
           emptyEditorClass: "is-editor-empty",
         }),
         Extension.create({
-          name: "aiRewriteInputKeymap",
+          name: "docAIPromptInputKeymap",
           addKeyboardShortcuts() {
             return {
               // Cmd/Ctrl + Enter: 发送/重新生成

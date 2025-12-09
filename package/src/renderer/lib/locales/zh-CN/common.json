@@ -170,7 +170,15 @@
     "importDirectory": "导入目录",
     "importMarkdown": "导入 Markdown 文件",
     "importVibecape": "导入 Vibecape 工作空间",
-    "importSuccess": "成功导入 {{count}} 个文档"
+    "importSuccess": "成功导入 {{count}} 个文档",
+    "trash": "回收站",
+    "trashDesc": "查看和恢复已删除的文档",
+    "emptyTrash": "清空回收站",
+    "emptyTrashConfirm": "确定要清空回收站吗？所有文档将被永久删除，不可恢复。",
+    "restore": "恢复",
+    "deletePermanently": "永久删除",
+    "deletePermanentlyConfirm": "确定要永久删除此文档吗？此操作不可撤销。",
+    "noTrashItems": "回收站为空"
   },
   "sidebar": {
     "docs": "文档",

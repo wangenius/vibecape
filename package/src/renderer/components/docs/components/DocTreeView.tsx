@@ -12,7 +12,6 @@ import {
   useSensors,
   type DragEndEvent,
 } from "@dnd-kit/core";
-import { dialog } from "@/components/custom/DialogModal";
 import { toast } from "sonner";
 import { TreeNode } from "./TreeNode";
 import { DRAG_HOVER_DELAY } from "../constants";
@@ -67,30 +66,15 @@ export const DocTreeView = () => {
 
   // 删除文档
   const handleDelete = useCallback(
-    (node: DocTreeNode) => {
-      const hasChildren = (node.children?.length ?? 0) > 0;
-      dialog.confirm({
-        title: t("common.settings.confirmDelete"),
-        content: (
-          <p>
-            {t("common.settings.deleteDocConfirm", { title: node.title })}
-            {hasChildren && t("common.settings.deleteDocChildrenWarning")}
-          </p>
-        ),
-        okText: t("common.settings.delete"),
-        cancelText: t("common.actions.cancel"),
-        variants: "destructive",
-        onOk: async () => {
-          try {
-            await deleteDoc(node.id);
-            toast.success(t("common.settings.deleted"));
-          } catch (error: any) {
-            toast.error(error?.message ?? t("common.settings.deleteFailed"));
-          }
-        },
-      });
+    async (node: DocTreeNode) => {
+      try {
+        await deleteDoc(node.id);
+        toast.success(t("common.settings.deleted"));
+      } catch (error: any) {
+        toast.error(error?.message ?? t("common.settings.deleteFailed"));
+      }
     },
-    [deleteDoc]
+    [deleteDoc, t]
   );
 
   // 导出为 Markdown

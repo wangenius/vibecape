@@ -107,6 +107,7 @@ export class DocsService {
       content: doc.content,
       metadata: doc.metadata,
       order: doc.order,
+      deleted_at: doc.deleted_at,
     };
   }
 
@@ -137,6 +138,7 @@ export class DocsService {
       content: doc.content,
       metadata: doc.metadata,
       order: doc.order,
+      deleted_at: doc.deleted_at,
     };
   }
 
@@ -165,15 +167,57 @@ export class DocsService {
       content: doc.content,
       metadata: doc.metadata,
       order: doc.order,
+      deleted_at: doc.deleted_at,
     };
   }
 
   /**
-   * 删除文档 (使用 Repository 的递归删除)
+   * 删除文档 (软删除)
    */
   static async deleteDoc(id: string): Promise<void> {
     const repo = await this.getRepository();
-    await repo.deleteWithDescendants(id);
+    await repo.softDeleteWithDescendants(id);
+  }
+
+  /**
+   * 获取回收站文档
+   */
+  static async getTrash(): Promise<DocData[]> {
+    const repo = await this.getRepository();
+    const trashDocs = await repo.findTrash();
+    return trashDocs.map((doc) => ({
+      id: doc.id,
+      parent_id: doc.parent_id,
+      title: doc.title,
+      content: doc.content,
+      metadata: doc.metadata,
+      order: doc.order,
+      deleted_at: doc.deleted_at,
+    }));
+  }
+
+  /**
+   * 恢复文档
+   */
+  static async restoreDoc(id: string): Promise<void> {
+    const repo = await this.getRepository();
+    await repo.restoreWithDescendants(id);
+  }
+
+  /**
+   * 永久删除文档
+   */
+  static async deletePermanently(id: string): Promise<void> {
+    const repo = await this.getRepository();
+    await repo.hardDeleteWithDescendants(id);
+  }
+
+  /**
+   * 清空回收站
+   */
+  static async emptyTrash(): Promise<void> {
+    const repo = await this.getRepository();
+    await repo.emptyTrash();
   }
 
   // ==================== 排序 ====================

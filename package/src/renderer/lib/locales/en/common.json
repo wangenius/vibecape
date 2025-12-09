@@ -170,7 +170,15 @@
     "importDirectory": "Import Directory",
     "importMarkdown": "Import Markdown Files",
     "importVibecape": "Import Vibecape Workspace",
-    "importSuccess": "Successfully imported {{count}} documents"
+    "importSuccess": "Successfully imported {{count}} documents",
+    "trash": "Trash",
+    "trashDesc": "View and restore deleted documents",
+    "emptyTrash": "Empty Trash",
+    "emptyTrashConfirm": "Are you sure you want to empty the trash? All documents will be permanently deleted and cannot be restored.",
+    "restore": "Restore",
+    "deletePermanently": "Delete Permanently",
+    "deletePermanentlyConfirm": "Are you sure you want to permanently delete this document? This action cannot be undone.",
+    "noTrashItems": "Trash is empty"
   },
   "sidebar": {
     "docs": "Docs",

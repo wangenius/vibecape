@@ -7,7 +7,7 @@ import {
   DocTocView,
   useCreateDocDialog,
 } from "@/components/docs";
-import { WorkspaceSettingsSidebar } from "./WorkspaceSettings";
+import { RepoSettingsSidebar } from "./RepoSettingsSidebar";
 import { SettingsSidebar } from "./SettingsSidebar";
 import { SidebarEmptyState } from "./SidebarEmptyState";
 
@@ -34,10 +34,15 @@ export const Sidebar = () => {
       case "toc":
         return <DocTocView />;
       case "workspace":
-        return <WorkspaceSettingsSidebar />;
+        return <RepoSettingsSidebar />;
       case "tree":
       default:
-        return <DocTreeWithDnd />;
+        return (
+          <>
+            <SidebarHeader onCreateDoc={handleCreateDoc} />
+            <DocTreeWithDnd />
+          </>
+        );
     }
   };
 
@@ -57,9 +62,6 @@ export const Sidebar = () => {
         <SettingsSidebar />
       ) : (
         <div className="h-full w-[360px] flex flex-col border-r border-border overflow-hidden">
-          {sidebarViewMode === "tree" && (
-            <SidebarHeader onCreateDoc={handleCreateDoc} />
-          )}
           {renderContent()}
         </div>
       )}

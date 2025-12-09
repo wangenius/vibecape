@@ -31,6 +31,8 @@ export const docs = sqliteTable(
     created_at: timestamp("created_at"),
     /** 更新时间 */
     updated_at: timestamp("updated_at"),
+    /** 删除时间 (软删除) */
+    deleted_at: integer("deleted_at", { mode: "number" }),
   },
   (table) => [
     index("docs_parent_idx").on(table.parent_id),

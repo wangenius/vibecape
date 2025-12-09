@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import { WORKSPACE_NAV_ITEMS } from "@/components/docs/constants";
 import { useTranslation } from "react-i18next";
 
-export const WorkspaceSettingsSidebar = () => {
+export const RepoSettingsSidebar = () => {
   const { t } = useTranslation();
   const currentSection =
     useViewManager((state) => state.previewCosmosId) || "basic";

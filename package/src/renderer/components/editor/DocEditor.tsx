@@ -14,8 +14,8 @@ import { createSlashMenuPlugin } from "@/components/editor/menus/SlashMenu";
 import { EditorBubbleMenu } from "@/components/editor/menus/EditorBubbleMenu";
 import { TableBubbleMenu } from "@/components/editor/menus/TableBubbleMenu";
 import {
-  AIRewriteNode,
-  AIPolishMark,
+  DocAIPromptNode,
+  DocAIPolishMark,
 } from "@/components/editor/extensions/AIRewriteNode";
 import { AIDiffMark } from "@/components/editor/extensions/AIDiffMark";
 import { AIDiffNode } from "@/components/editor/extensions/AIDiffNode";
@@ -92,8 +92,8 @@ export const DocEditor = ({ doc, onChange, onSave }: Props) => {
         nested: true,
       }),
       ...TableExtension,
-      AIRewriteNode,
-      AIPolishMark,
+      DocAIPromptNode,
+      DocAIPolishMark,
       AIDiffMark,
       AIDiffNode,
       SlashCommand.configure({

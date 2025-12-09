@@ -40,6 +40,13 @@ async function ensureDocsSchema(client: Client): Promise<void> {
   for (const sql of sqls) {
     await client.execute(sql);
   }
+
+  // 尝试添加 deleted_at 列 (如果是旧数据库)
+  try {
+    await client.execute(`ALTER TABLE docs ADD COLUMN deleted_at INTEGER;`);
+  } catch (e) {
+    // 忽略错误 (列已存在)
+  }
 }
 
 /**

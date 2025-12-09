@@ -77,8 +77,20 @@ export interface VibecapeAPI {
     }>
   ) => Promise<DocData | null>;
 
-  /** 删除文档 */
+  /** 删除文档 (软删除) */
   deleteDoc: (id: string) => Promise<void>;
+
+  /** 获取回收站文档 */
+  getTrash: () => Promise<DocData[]>;
+
+  /** 恢复文档 */
+  restoreDoc: (id: string) => Promise<void>;
+
+  /** 永久删除文档 */
+  deletePermanently: (id: string) => Promise<void>;
+
+  /** 清空回收站 */
+  emptyTrash: () => Promise<void>;
 
   /** 重新排序文档 */
   reorderDoc: (activeId: string, overId: string) => Promise<void>;

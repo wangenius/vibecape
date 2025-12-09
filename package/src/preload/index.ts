@@ -139,6 +139,11 @@ const api = {
     updateDoc: (id: string, data: any) =>
       ipcRenderer.invoke("vibecape:updateDoc", { id, data }),
     deleteDoc: (id: string) => ipcRenderer.invoke("vibecape:deleteDoc", id),
+    getTrash: () => ipcRenderer.invoke("vibecape:getTrash"),
+    restoreDoc: (id: string) => ipcRenderer.invoke("vibecape:restoreDoc", id),
+    deletePermanently: (id: string) =>
+      ipcRenderer.invoke("vibecape:deletePermanently", id),
+    emptyTrash: () => ipcRenderer.invoke("vibecape:emptyTrash"),
     reorderDoc: (activeId: string, overId: string) =>
       ipcRenderer.invoke("vibecape:reorderDoc", activeId, overId),
     moveDoc: (docId: string, newParentId: string | null) =>

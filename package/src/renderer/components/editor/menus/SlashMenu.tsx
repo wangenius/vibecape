@@ -81,7 +81,7 @@ export const getSlashMenuItems = (t: any): SlashMenuItem[] => [
     icon: <Wand2 className="size-4" />,
     category: "ai",
     command: ({ editor }) => {
-      editor.chain().focus().insertAIRewrite().run();
+      editor.chain().focus().insertDocAIPrompt().run();
     },
   },
   {

@@ -139,8 +139,20 @@ export const DocAIPromptNode = Node.create<DocAIPromptOptions>({
       insertDocAIPolish:
         () =>
         ({ state, tr, dispatch }) => {
-          const { from, to } = state.selection;
+          let { from, to } = state.selection;
           if (from === to) return false; // 需要选中文字
+
+          // 调整选区范围，去除末尾的换行符/空白字符
+          // 这样可以避免选区包含不可见的换行符导致插入位置错误
+          const selectedText = state.doc.textBetween(from, to, "\n");
+          const trimmedEnd = selectedText.replace(/[\s\n]+$/, "");
+          if (!trimmedEnd) return false; // 选区只有空白字符
+          
+          // 计算实际的 to 位置（去除末尾空白后）
+          const trimLength = selectedText.length - trimmedEnd.length;
+          if (trimLength > 0) {
+            to = to - trimLength;
+          }
 
           const markId = `ai-polish-mark-${Date.now()}`;
           const nodeId = `ai-polish-${Date.now()}`;
@@ -154,7 +166,15 @@ export const DocAIPromptNode = Node.create<DocAIPromptOptions>({
           // 2. 找到选区所在块节点的结束位置，在其后插入润色节点
           const $to = state.doc.resolve(to);
           // 获取包含选区的最近的顶层 block 节点的结束位置
-          let insertPos = $to.after($to.depth);
+          // 使用 depth >= 1 确保不会尝试获取顶层文档节点之后的位置
+          const depth = Math.max(1, $to.depth);
+          let insertPos: number;
+          try {
+            insertPos = $to.after(depth);
+          } catch {
+            // 如果获取失败，使用文档末尾
+            insertPos = state.doc.content.size;
+          }
 
           // 确保不超出文档范围
           if (insertPos > state.doc.content.size) {
@@ -190,9 +210,9 @@ export const DocAIPromptNode = Node.create<DocAIPromptOptions>({
             return true;
           });
 
-          // 如果有关联的 mark，移除它
+          // 如果有关联的 mark，移除它（波浪线）
           if (markId && found) {
-            const markType = state.schema.marks.aiPolishMark;
+            const markType = state.schema.marks.docAIPolishMark;
             if (markType) {
               tr.doc.descendants((node, pos) => {
                 if (node.isText) {

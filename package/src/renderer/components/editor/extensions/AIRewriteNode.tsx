@@ -14,11 +14,15 @@ import {
 } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { Loader2, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
 import { gen } from "@common/lib/generator";
+import { PromptCommand } from "./PromptCommand";
+import { PromptNode } from "./PromptNode";
+import { createPromptPlugin } from "../menus/PromptMenu";
+import { usePromptStore } from "@/hooks/stores/usePromptStore";
 
 export interface DocAIPromptOptions {
   HTMLAttributes: Record<string, any>;
@@ -1058,6 +1062,9 @@ ${
     ? t("common.aiRewrite.polishPlaceholder", "输入润色指令...")
     : t("common.aiRewrite.generatePlaceholder", "输入生成指令...");
 
+  // 创建 Prompt 插件配置
+  const promptSuggestion = useMemo(() => createPromptPlugin(t), [t]);
+
   const miniEditor = useEditor(
     {
       extensions: [
@@ -1072,6 +1079,10 @@ ${
         Placeholder.configure({
           placeholder: placeholderText,
           emptyEditorClass: "is-editor-empty",
+        }),
+        PromptNode,
+        PromptCommand.configure({
+          suggestion: promptSuggestion,
         }),
         Extension.create({
           name: "docAIPromptInputKeymap",
@@ -1115,10 +1126,29 @@ ${
         },
       },
       onUpdate: ({ editor: e }) => {
-        setPrompt(e.getText());
+        // 遍历文档，将 PromptNode 转换为实际的 prompt 文本
+        const extractPromptText = () => {
+          let text = "";
+          e.state.doc.descendants((node) => {
+            if (node.type.name === "promptNode") {
+              // 获取 prompt 的实际文本内容
+              const promptText = usePromptStore
+                .getState()
+                .getPromptText(node.attrs.id);
+              text += promptText || "";
+            } else if (node.isText) {
+              text += node.text || "";
+            } else if (node.type.name === "paragraph" && text.length > 0) {
+              text += "\n";
+            }
+            return true;
+          });
+          return text.trim();
+        };
+        setPrompt(extractPromptText());
       },
     },
-    [placeholderText]
+    [placeholderText, promptSuggestion]
   );
 
   // 同步 miniEditor ref

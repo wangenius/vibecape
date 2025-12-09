@@ -5,6 +5,7 @@ export { useWorkspaceStore } from "./useWorkspaceStore";
 export { useDocumentStore } from "./useDocumentStore";
 export { useUIStore } from "./useUIStore";
 export { useMentionHistoryStore } from "./useMentionHistoryStore";
+export { usePromptStore } from "./usePromptStore";
 
 // Bootstrap 函数 - 初始化应用
 import { initModels, initDefaultModels } from "@/hooks/model/useModel";

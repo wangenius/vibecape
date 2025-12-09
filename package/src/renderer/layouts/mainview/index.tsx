@@ -8,6 +8,7 @@ import {
   AboutSettings,
   MCPSettings,
   AISettings,
+  PromptSettings,
 } from "@/components/settings";
 import { EmptyDocState } from "./EmptyDocState";
 import { DocWorkspace } from "./DocWorkspace";
@@ -58,6 +59,8 @@ export const MainView = () => {
           return <ModelSettings />;
         case "ai":
           return <AISettings />;
+        case "prompts":
+          return <PromptSettings />;
         case "mcp":
           return <MCPSettings />;
         case "storage":

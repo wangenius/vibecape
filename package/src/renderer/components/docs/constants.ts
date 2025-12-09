@@ -10,6 +10,7 @@ import {
   TbPlug,
   TbSparkles,
   TbTrash,
+  TbPrompt,
 } from "react-icons/tb";
 
 export const DRAG_HOVER_DELAY = 800;
@@ -33,6 +34,7 @@ export const SETTINGS_NAV_ITEMS = [
   { key: "general", label: "通用", icon: TbSettings },
   { key: "models", label: "模型", icon: TbBox },
   { key: "ai", label: "AI", icon: TbSparkles },
+  { key: "prompts", label: "Prompts", icon: TbPrompt },
   { key: "mcp", label: "MCP", icon: TbPlug },
   { key: "storage", label: "云存储", icon: TbCloud },
   { key: "about", label: "关于", icon: TbInfoCircle },

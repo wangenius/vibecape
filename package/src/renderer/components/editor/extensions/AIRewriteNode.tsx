@@ -1096,9 +1096,11 @@ ${
                 }
                 return true;
               },
-              // Shift + Enter: 接受应用
+              // Shift + Enter: 接受应用（仅在有生成内容时）
               "Shift-Enter": () => {
-                handleAcceptRef.current();
+                if (statusRef.current === "completed") {
+                  handleAcceptRef.current();
+                }
                 return true;
               },
               // Shift + Backspace: 没有内容时关闭

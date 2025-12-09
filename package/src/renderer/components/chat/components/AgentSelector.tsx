@@ -29,8 +29,8 @@ export const AgentSelector: React.FC<AgentSelectorProps> = ({
 }) => {
   const { t, i18n } = useTranslation();
   const locale: LocaleLike = i18n.language?.startsWith("zh")
-    ? "zh-CN"
-    : "en-US";
+    ? "zh"
+    : "en";
   
   const handleSelectAgent = useCallback(
     (agentId: string) => {

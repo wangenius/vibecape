@@ -183,7 +183,7 @@ export const EditorBubbleMenu = ({ editor }: EditorBubbleMenuProps) => {
           shortcut="⌘L"
         />
         <ToolbarButton
-          onClick={() => editor.commands.insertAIPolish()}
+          onClick={() => editor.commands.insertDocAIPolish()}
           icon={<Sparkles className="size-4" strokeWidth={2} />}
           title={t("common.bubbleMenu.ai")}
         />

@@ -13,13 +13,13 @@ import enSettings from "./en/settings.json";
 import enEditor from "./en/editor.json";
 
 // Chinese translations
-import zhCommon from "./zh-CN/common.json";
-import zhChat from "./zh-CN/chat.json";
-import zhSettings from "./zh-CN/settings.json";
-import zhEditor from "./zh-CN/editor.json";
+import zhCommon from "./zh/common.json";
+import zhChat from "./zh/chat.json";
+import zhSettings from "./zh/settings.json";
+import zhEditor from "./zh/editor.json";
 
 const resources = {
-  "zh-CN": {
+  "zh": {
     translation: {
       common: {
         ...zhCommon,
@@ -27,9 +27,12 @@ const resources = {
         ...zhEditor,
       },
       chat: zhChat,
+      ...zhCommon,
+      settings: zhSettings,
+      ...zhEditor,
     },
   },
-  "en-US": {
+  "en": {
     translation: {
       common: {
         ...enCommon,
@@ -37,13 +40,16 @@ const resources = {
         ...enEditor,
       },
       chat: enChat,
+      ...enCommon,
+      settings: enSettings,
+      ...enEditor,
     },
   },
 };
 
 i18n.use(initReactI18next).init({
   resources,
-  fallbackLng: "en-US",
+  fallbackLng: "en",
   lng: getCurrentSettings().ui.language,
   interpolation: {
     escapeValue: false,

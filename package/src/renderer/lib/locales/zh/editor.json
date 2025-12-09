@@ -90,7 +90,10 @@
     "thinking": "思考中...",
     "failed": "生成失败",
     "unknownError": "未知错误",
-    "apiNotEnabled": "Docs AI API 未启用"
+    "apiNotEnabled": "Docs AI API 未启用",
+    "idleHint": "⌘↵ 发送",
+    "completedHint": "⇧↵ 应用",
+    "errorHint": "⌘↵ 重试"
   },
   "contextMenu": {
     "copySuccess": "复制成功",

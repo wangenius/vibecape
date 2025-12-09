@@ -4,7 +4,7 @@
  */
 
 import { Node, Mark, mergeAttributes } from "@tiptap/core";
-import { Plugin, PluginKey } from "@tiptap/pm/state";
+import { Plugin, PluginKey, TextSelection } from "@tiptap/pm/state";
 import {
   ReactNodeViewRenderer,
   NodeViewWrapper,
@@ -965,7 +965,22 @@ ${
       targetPos = Math.max(0, Math.min(targetPos, state.doc.content.size));
 
       editor.commands.focus();
-      editor.commands.setTextSelection(targetPos);
+      
+      // 使用 TextSelection.near 找到最近的有效文本位置
+      try {
+        const $pos = state.doc.resolve(targetPos);
+        const selection = TextSelection.near($pos, -1);
+        editor.view.dispatch(state.tr.setSelection(selection));
+      } catch (e) {
+        // 如果失败，尝试选择文档开头
+        try {
+          const $start = state.doc.resolve(1);
+          const selection = TextSelection.near($start, 1);
+          editor.view.dispatch(state.tr.setSelection(selection));
+        } catch (e2) {
+          console.warn("Failed to set selection after cancel", e2);
+        }
+      }
     }, 0);
   }, [deleteNode, editor, isPolishMode, markId, nodeId, props, node]);
 

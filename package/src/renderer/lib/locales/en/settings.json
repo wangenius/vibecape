@@ -181,6 +181,7 @@
   "mcpConnectFailed": "Connection failed",
   "mcpTools": "Available Tools",
   "mcpToolsDesc": "Tools provided by connected MCP servers",
+  "prompts": "Prompts",
   "ai": "AI",
   "aiFeatures": "AI Editing Features",
   "aiFeaturesDesc": "AI-powered editing features available in the editor",

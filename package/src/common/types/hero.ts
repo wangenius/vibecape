@@ -8,10 +8,10 @@ export interface BilingualPrompt {
   zh: string;
 }
 
-export type LocaleLike = "en" | "zh" | "en-US" | "zh-CN";
+export type LocaleLike = "en" | "zh" | "en" | "zh";
 
 export function normalizeLanguage(language: LocaleLike = "en"): "en" | "zh" {
-  if (language === "zh" || language === "zh-CN") return "zh";
+  if (language === "zh" || language === "zh") return "zh";
   return "en";
 }
 
@@ -43,8 +43,8 @@ export function getPrompt(
 
 /** @deprecated 使用 BilingualPrompt */
 export interface BilingualSystem {
-  "en-US": string;
-  "zh-CN": string;
+  "en": string;
+  "zh": string;
 }
 
 /** @deprecated 使用 HeroInfo */
@@ -60,10 +60,10 @@ export interface Agent {
 /** @deprecated 使用 getPrompt */
 export function getSystemPrompt(
   prompt: string | BilingualSystem,
-  language: "en-US" | "zh-CN" = "en-US"
+  language: "en" | "zh" = "en"
 ): string {
   if (typeof prompt === "string") {
     return prompt;
   }
-  return prompt[language] || prompt["en-US"];
+  return prompt[language] || prompt["en"];
 }

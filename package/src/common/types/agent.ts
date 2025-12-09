@@ -4,8 +4,8 @@
 
 /** 多语言系统提示词 */
 export interface BilingualSystem {
-  "en-US": string;
-  "zh-CN": string;
+  "en": string;
+  "zh": string;
 }
 
 export interface Agent {
@@ -20,10 +20,10 @@ export interface Agent {
 /** 根据语言获取系统提示词 */
 export function getSystemPrompt(
   prompt: string | BilingualSystem,
-  language: "en-US" | "zh-CN" = "en-US"
+  language: "en" | "zh" = "en"
 ): string {
   if (typeof prompt === "string") {
     return prompt;
   }
-  return prompt[language] || prompt["en-US"];
+  return prompt[language] || prompt["en"];
 }

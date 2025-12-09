@@ -209,5 +209,41 @@
     "qiniu": "七牛云",
     "tencent": "腾讯云 COS",
     "s3": "Amazon S3"
+  },
+  "prompt": {
+    "management": "Prompt 管理",
+    "managementDesc": "创建和管理常用的 AI Prompt 模板，在编辑器中输入 # 可快速插入",
+    "add": "添加 Prompt",
+    "edit": "编辑",
+    "delete": "删除",
+    "deleteConfirm": "确定要删除这个 Prompt 吗？",
+    "title": "标题",
+    "titlePlaceholder": "输入 Prompt 标题...",
+    "body": "内容",
+    "bodyPlaceholder": "输入 Prompt 内容...",
+    "noContent": "无内容",
+    "empty": "还没有创建任何 Prompt",
+    "emptyHint": "点击上方按钮添加常用的 AI 指令模板",
+    "usage": "使用方法",
+    "usageDesc": "如何在编辑器中使用 Prompt",
+    "usageStep1": "在 AI 编辑输入框中输入 # 触发 Prompt 选择菜单",
+    "usageStep2": "使用方向键选择 Prompt，按 Enter 插入",
+    "usageStep3": "按 Esc 关闭菜单"
+  },
+  "command": {
+    "toggleSettings": "切换设置面板",
+    "openStats": "打开统计",
+    "toggleSidebar": "切换侧边栏",
+    "toggleChat": "切换聊天面板",
+    "darkMode": "切换到深色模式",
+    "lightMode": "切换到浅色模式",
+    "searchPlaceholder": "输入命令...",
+    "noResults": "没有找到相关命令",
+    "group": {
+      "navigation": "导航",
+      "view": "视图",
+      "appearance": "外观",
+      "other": "其他"
+    }
   }
 }

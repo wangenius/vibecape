@@ -10,10 +10,8 @@
 @import "./utilities.css";
 
 /* Existing Imports */
-@import "./code-block.css";
 @import "./base.css";
 @import "./utils.css";
-@import "./editor.css";
 @import "tailwindcss";
 @source "../../plugins";
 @plugin "tailwindcss-animate";

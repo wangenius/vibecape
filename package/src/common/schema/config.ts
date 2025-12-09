@@ -72,8 +72,8 @@ export type AppConfig = {
 export const DEFAULT_UI_CONFIG: UIConfig = {
   theme: "default",
   mode: "light",
-  language: "en-US",
-  prompt_language: "en-US",
+  language: "en",
+  prompt_language: "en",
   show_chapter_list: true,
 };
 

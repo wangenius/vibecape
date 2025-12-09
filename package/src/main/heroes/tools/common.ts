@@ -18,8 +18,8 @@ export const commonTools = {
     execute: async () => {
       const now = new Date();
       return {
-        date: now.toLocaleDateString("zh-CN"),
-        time: now.toLocaleTimeString("zh-CN"),
+        date: now.toLocaleDateString("zh"),
+        time: now.toLocaleTimeString("zh"),
         timestamp: now.toISOString(),
         weekday: ["周日", "周一", "周二", "周三", "周四", "周五", "周六"][
           now.getDay()

@@ -181,6 +181,7 @@
   "mcpConnectFailed": "连接失败",
   "mcpTools": "可用工具",
   "mcpToolsDesc": "已连接的 MCP 服务器提供的工具",
+  "prompts": "Prompts",
   "ai": "AI",
   "aiFeatures": "AI 编辑功能",
   "aiFeaturesDesc": "编辑器支持的 AI 辅助功能列表",

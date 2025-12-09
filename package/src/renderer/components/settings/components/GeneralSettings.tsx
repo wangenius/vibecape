@@ -33,8 +33,8 @@ const THEME_OPTIONS = [
 ];
 
 const LANGUAGE_OPTIONS = [
-  { value: "zh-CN", label: "中文" },
-  { value: "en-US", label: "English" },
+  { value: "zh", label: "中文" },
+  { value: "en", label: "English" },
 ];
 
 export const GeneralSettings = () => {
@@ -112,7 +112,7 @@ export const GeneralSettings = () => {
           >
             <Select
               value={settings.ui.language}
-              onValueChange={(value) => setLang(value as "zh-CN" | "en-US")}
+              onValueChange={(value) => setLang(value as "zh" | "en")}
             >
               <SelectTrigger className="w-40">
                 <SelectValue />

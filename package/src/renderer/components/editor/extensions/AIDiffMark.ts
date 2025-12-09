@@ -299,14 +299,16 @@ export const AIDiffMark = Mark.create<AIDiffMarkOptions>({
                   
                   try {
                     const newPos = Math.min(blockStart + contentSize, tr.doc.content.size);
-                    tr.setSelection(TextSelection.create(tr.doc, newPos));
+                    const $pos = tr.doc.resolve(newPos);
+                    tr.setSelection(TextSelection.near($pos, -1));
                   } catch (e) {
                     console.warn("Failed to set selection after acceptAIDiff block replace", e);
                   }
                 } else {
                   tr.removeMark(diffFrom, diffTo, diffMarkType);
                   try {
-                    tr.setSelection(TextSelection.create(tr.doc, diffTo));
+                    const $pos = tr.doc.resolve(Math.min(diffTo, tr.doc.content.size));
+                    tr.setSelection(TextSelection.near($pos, -1));
                   } catch (e) {}
                 }
               } else {
@@ -328,14 +330,16 @@ export const AIDiffMark = Mark.create<AIDiffMarkOptions>({
                   
                   try {
                     const newPos = Math.min(diffFrom + contentSize, tr.doc.content.size);
-                    tr.setSelection(TextSelection.create(tr.doc, newPos));
+                    const $pos = tr.doc.resolve(newPos);
+                    tr.setSelection(TextSelection.near($pos, -1));
                   } catch (e) {
                     console.warn("Failed to set selection after acceptAIDiff inline replace", e);
                   }
                 } else {
                   tr.removeMark(diffFrom, diffTo, diffMarkType);
                   try {
-                    tr.setSelection(TextSelection.create(tr.doc, diffTo));
+                    const $pos = tr.doc.resolve(Math.min(diffTo, tr.doc.content.size));
+                    tr.setSelection(TextSelection.near($pos, -1));
                   } catch (e) {}
                 }
               } else {
@@ -346,7 +350,8 @@ export const AIDiffMark = Mark.create<AIDiffMarkOptions>({
             // 降级：直接移除 mark
             tr.removeMark(diffFrom, diffTo, diffMarkType);
             try {
-              tr.setSelection(TextSelection.create(tr.doc, diffTo));
+              const $pos = tr.doc.resolve(Math.min(diffTo, tr.doc.content.size));
+              tr.setSelection(TextSelection.near($pos, -1));
             } catch (e) {}
           }
 

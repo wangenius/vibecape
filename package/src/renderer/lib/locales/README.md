@@ -7,7 +7,7 @@ This project uses `react-i18next` for internationalization.
 - `i18n.ts`: Main configuration file.
 - `en/`: English translations.
   - `common.json`: Common translation keys.
-- `zh-CN/`: Chinese translations.
+- `zh/`: Chinese translations.
   - `common.json`: Common translation keys.
 
 ## Usage

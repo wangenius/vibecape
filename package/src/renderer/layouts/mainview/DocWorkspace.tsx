@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ChevronUp, Text } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { TitleInput } from "@/components/editor/TitleInput";
 import type { JSONContent } from "@tiptap/core";
 import type { DocData } from "@common/schema/docs";
-import { DocEditor } from "@/components/editor/DocEditor";
+import { DocEditor } from "@/components/editor";
 import { Textarea } from "@/components/ui/textarea";
 import { useTranslation } from "react-i18next";
+import { TitleInput } from "@/components/docs/TitleInput";
 
 type Props = {
   doc: DocData;

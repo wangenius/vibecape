@@ -208,5 +208,41 @@
     "qiniu": "Qiniu",
     "tencent": "Tencent COS",
     "s3": "Amazon S3"
+  },
+  "prompt": {
+    "management": "Prompt Management",
+    "managementDesc": "Create and manage AI prompt templates. Type # in the editor to quickly insert them",
+    "add": "Add Prompt",
+    "edit": "Edit",
+    "delete": "Delete",
+    "deleteConfirm": "Are you sure you want to delete this prompt?",
+    "title": "Title",
+    "titlePlaceholder": "Enter prompt title...",
+    "body": "Content",
+    "bodyPlaceholder": "Enter prompt content...",
+    "noContent": "No content",
+    "empty": "No prompts created yet",
+    "emptyHint": "Click the button above to add commonly used AI instruction templates",
+    "usage": "Usage",
+    "usageDesc": "How to use prompts in the editor",
+    "usageStep1": "Type # in the AI editing input to trigger the prompt selection menu",
+    "usageStep2": "Use arrow keys to select a prompt, press Enter to insert",
+    "usageStep3": "Press Esc to close the menu"
+  },
+  "command": {
+    "toggleSettings": "Toggle Settings",
+    "openStats": "Open Statistics",
+    "toggleSidebar": "Toggle Sidebar",
+    "toggleChat": "Toggle Chat Panel",
+    "darkMode": "Switch to Dark Mode",
+    "lightMode": "Switch to Light Mode",
+    "searchPlaceholder": "Type a command...",
+    "noResults": "No commands found",
+    "group": {
+      "navigation": "Navigation",
+      "view": "View",
+      "appearance": "Appearance",
+      "other": "Other"
+    }
   }
 }

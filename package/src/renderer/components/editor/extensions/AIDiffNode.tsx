@@ -393,14 +393,9 @@ export const AIDiffNode = Node.create<AIDiffNodeOptions>({
               // 设置光标到插入内容的末尾
               try {
                 // 新内容的结束位置是 newNodePos + contentSize
-                // 但由于 block 节点有开闭标签，实际文本末尾需要 -1
-                // 例如：<p>text</p> 的 contentSize 包含了 <p> 和 </p>
-                // 我们要把光标放在 text 后面，即 </p> 之前
                 const endOfContent = newNodePos + contentSize;
-                const $end = tr.doc.resolve(Math.min(endOfContent - 1, tr.doc.content.size));
-                // 获取当前深度的末尾位置（block 内部的末尾）
-                const targetPos = $end.end($end.depth);
-                tr.setSelection(TextSelection.create(tr.doc, targetPos));
+                const $pos = tr.doc.resolve(Math.min(endOfContent, tr.doc.content.size));
+                tr.setSelection(TextSelection.near($pos, -1));
               } catch (e) {
                 console.warn("Failed to set selection after acceptAIDiffNode", e);
               }

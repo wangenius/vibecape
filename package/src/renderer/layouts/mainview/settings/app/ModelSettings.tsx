@@ -47,7 +47,7 @@ import { BsStars } from "react-icons/bs";
 import { MoreVertical, Plus, Server } from "lucide-react";
 import { RemoteModelsSheet } from "@/components/custom/ProviderModelsSheet";
 import { useTranslation } from "react-i18next";
-import { SettingSection, SettingItem, SettingRow } from "./SettingComponents";
+import { SettingSection, SettingItem, SettingRow } from "@/components/settings/SettingComponents";
 
 // Provider 表单类型
 type ProviderForm = {

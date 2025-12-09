@@ -1,18 +1,9 @@
 import { ReactNode, useEffect } from "react";
 import { useWorkspaceStore, useDocumentStore, bootstrap } from "@/hooks/stores";
 import { useViewManager } from "@/hooks/app/useViewManager";
-import {
-  GeneralSettings,
-  ModelSettings,
-  StorageSettings,
-  AboutSettings,
-  MCPSettings,
-  AISettings,
-  PromptSettings,
-} from "@/components/settings";
-import { EmptyDocState } from "./EmptyDocState";
-import { DocWorkspace } from "./DocWorkspace";
-import { WorkspaceSettingsPanel } from "./WorkspaceSettingsPanel";
+import { EmptyDocState } from "../../components/custom/EmptyState";
+import { DocWorkspace } from "./docs/DocWorkspace";
+import { SettingsPanel } from "./settings";
 
 const MainContainer = ({ children }: { children: ReactNode }) => {
   return (
@@ -30,8 +21,6 @@ export const MainView = () => {
   const activeSidebarPanel = useViewManager(
     (state) => state.activeSidebarPanel
   );
-  const sidebarViewMode = useViewManager((state) => state.sidebarViewMode);
-  const settingsSection = useViewManager((state) => state.previewCosmosId);
 
   useEffect(() => {
     bootstrap();
@@ -53,27 +42,11 @@ export const MainView = () => {
 
   // 设置模式 - 显示设置页面
   if (activeSidebarPanel === "settings") {
-    const renderSettings = () => {
-      switch (settingsSection) {
-        case "models":
-          return <ModelSettings />;
-        case "ai":
-          return <AISettings />;
-        case "prompts":
-          return <PromptSettings />;
-        case "mcp":
-          return <MCPSettings />;
-        case "storage":
-          return <StorageSettings />;
-        case "about":
-          return <AboutSettings />;
-        case "general":
-        default:
-          return <GeneralSettings />;
-      }
-    };
-
-    return <MainContainer>{renderSettings()}</MainContainer>;
+    return (
+      <MainContainer>
+        <SettingsPanel />
+      </MainContainer>
+    );
   }
 
   // 未打开工作区 - 显示欢迎页面
@@ -81,15 +54,6 @@ export const MainView = () => {
     return (
       <MainContainer>
         <EmptyDocState />
-      </MainContainer>
-    );
-  }
-
-  // 工作区设置模式
-  if (sidebarViewMode === "workspace") {
-    return (
-      <MainContainer>
-        <WorkspaceSettingsPanel />
       </MainContainer>
     );
   }

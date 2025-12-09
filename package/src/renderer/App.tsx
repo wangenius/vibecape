@@ -48,10 +48,7 @@ const App = () => {
         />
 
         {/* Doc Search Palette */}
-        <DocSearchPalette
-          open={isDocSearchOpen}
-          onOpenChange={closePalette}
-        />
+        <DocSearchPalette open={isDocSearchOpen} onOpenChange={closePalette} />
       </div>
     </TooltipProvider>
   );

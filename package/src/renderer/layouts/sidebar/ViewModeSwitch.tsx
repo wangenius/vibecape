@@ -1,19 +1,18 @@
-import { List, FolderTree, Settings } from "lucide-react";
+import { List, FolderTree } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { SidebarViewMode } from "@/hooks/app/useViewManager";
 import { useTranslation } from "react-i18next";
 
+type ViewMode = "tree" | "toc";
+
 interface ViewModeSwitchProps {
-  mode: SidebarViewMode;
-  onModeChange: (mode: SidebarViewMode) => void;
+  mode: ViewMode;
+  onModeChange: (mode: ViewMode) => void;
 }
 
-const tabs: { id: SidebarViewMode; icon: typeof FolderTree; titleKey: string }[] =
-  [
-    { id: "tree", icon: FolderTree, titleKey: "common.sidebar.docs" },
-    { id: "toc", icon: List, titleKey: "common.sidebar.toc" },
-    { id: "workspace", icon: Settings, titleKey: "common.sidebar.workspace" },
-  ];
+const tabs: { id: ViewMode; icon: typeof FolderTree; titleKey: string }[] = [
+  { id: "tree", icon: FolderTree, titleKey: "common.sidebar.docs" },
+  { id: "toc", icon: List, titleKey: "common.sidebar.toc" },
+];
 
 export const ViewModeSwitch = ({ mode, onModeChange }: ViewModeSwitchProps) => {
   const { t } = useTranslation();

@@ -5,7 +5,7 @@ import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { SettingSection, SettingCard } from "./SettingComponents";
+import { SettingSection, SettingCard } from "@/components/settings/SettingComponents";
 import { usePromptStore, type PromptItem } from "@/hooks/stores/usePromptStore";
 import { TbPlus, TbTrash, TbEdit, TbCheck, TbX } from "react-icons/tb";
 import { cn } from "@/lib/utils";

@@ -34,9 +34,9 @@ export type SidebarSection =
   | "meta"; // 世界观信息
 
 /**
- * 侧边栏视图模式 - 文档树、目录或工作区设置
+ * 侧边栏视图模式 - 文档树或目录
  */
-export type SidebarViewMode = "tree" | "toc" | "workspace";
+export type SidebarViewMode = "tree" | "toc";
 
 /**
  * 视口接口

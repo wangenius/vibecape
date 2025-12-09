@@ -7,7 +7,6 @@ import {
   DocTocView,
   useCreateDocDialog,
 } from "@/components/docs";
-import { RepoSettingsSidebar } from "./RepoSettingsSidebar";
 import { SettingsSidebar } from "./SettingsSidebar";
 import { SidebarEmptyState } from "./SidebarEmptyState";
 
@@ -33,8 +32,6 @@ export const Sidebar = () => {
     switch (sidebarViewMode) {
       case "toc":
         return <DocTocView />;
-      case "workspace":
-        return <RepoSettingsSidebar />;
       case "tree":
       default:
         return (

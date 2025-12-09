@@ -109,6 +109,8 @@
   "homepage": "Homepage",
   "providerConfigDesc": "Use Provider's API configuration",
   "settingsTitle": "Settings",
+  "repoSettings": "Repo",
+  "appSettings": "App",
   "general": "General",
   "models": "Models",
   "about": "About",
@@ -182,11 +184,35 @@
   "mcpTools": "Available Tools",
   "mcpToolsDesc": "Tools provided by connected MCP servers",
   "prompts": "Prompts",
-  "ai": "AI",
+  "aiLabel": "AI",
   "aiFeatures": "AI Editing Features",
   "aiFeaturesDesc": "AI-powered editing features available in the editor",
   "aiShortcuts": "Shortcuts",
   "aiShortcutsDesc": "Keyboard shortcuts for AI editing",
   "aiTools": "Backend AI Tools",
-  "aiToolsDesc": "Document editing tools available for AI Agents"
+  "aiToolsDesc": "Document editing tools available for AI Agents",
+  "ai": {
+    "inlineEdit": "Inline Edit",
+    "inlineEditDesc": "Press Cmd+K after selecting text to trigger AI editing, streaming replacement of selected content",
+    "chatRef": "Chat Reference Edit",
+    "chatRefDesc": "Press Cmd+L after selecting text to reference in Chat, AI modifies document directly via tools",
+    "searchReplace": "Search & Replace",
+    "searchReplaceDesc": "AI can search and replace text via searchAndReplaceInDoc tool",
+    "appendContent": "Append Content",
+    "appendContentDesc": "AI can append new paragraphs at the end of document, suitable for continuation scenarios",
+    "fullRewrite": "Full Rewrite",
+    "fullRewriteDesc": "AI can replace entire document content via setDocumentContent",
+    "available": "Available",
+    "planned": "Planned",
+    "toolName": "Tool Name",
+    "toolDesc": "Description",
+    "shortcut": {
+      "⌘K": "Trigger AI Edit",
+      "⌘L": "Reference to Chat",
+      "Tab": "Apply AI Suggestion",
+      "Esc": "Cancel AI Edit",
+      "⌘Z": "Undo Changes",
+      "Enter": "Submit Command"
+    }
+  }
 }

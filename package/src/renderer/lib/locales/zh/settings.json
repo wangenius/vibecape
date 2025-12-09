@@ -109,6 +109,8 @@
   "homepage": "主页",
   "providerConfigDesc": "使用 Provider 的 API 配置",
   "settingsTitle": "设置",
+  "repoSettings": "仓库",
+  "appSettings": "应用",
   "general": "通用",
   "models": "模型",
   "about": "关于",
@@ -182,11 +184,35 @@
   "mcpTools": "可用工具",
   "mcpToolsDesc": "已连接的 MCP 服务器提供的工具",
   "prompts": "Prompts",
-  "ai": "AI",
+  "aiLabel": "AI",
   "aiFeatures": "AI 编辑功能",
   "aiFeaturesDesc": "编辑器支持的 AI 辅助功能列表",
   "aiShortcuts": "快捷键",
   "aiShortcutsDesc": "AI 编辑相关的键盘快捷键",
   "aiTools": "后端 AI 工具",
-  "aiToolsDesc": "AI Agent 可调用的文档编辑工具"
+  "aiToolsDesc": "AI Agent 可调用的文档编辑工具",
+  "ai": {
+    "inlineEdit": "内联编辑",
+    "inlineEditDesc": "选中文本后按 Cmd+K 触发 AI 编辑，流式替换选中内容",
+    "chatRef": "Chat 引用编辑",
+    "chatRefDesc": "选中文本按 Cmd+L 引用到 Chat，AI 通过工具直接修改文档",
+    "searchReplace": "搜索替换",
+    "searchReplaceDesc": "AI 可通过 searchAndReplaceInDoc 工具按文本搜索并替换",
+    "appendContent": "追加内容",
+    "appendContentDesc": "AI 可在文档末尾追加新段落，适合续写场景",
+    "fullRewrite": "全文重写",
+    "fullRewriteDesc": "AI 可通过 setDocumentContent 替换整个文档内容",
+    "available": "可用",
+    "planned": "计划中",
+    "toolName": "工具名称",
+    "toolDesc": "功能描述",
+    "shortcut": {
+      "⌘K": "触发 AI 编辑",
+      "⌘L": "引用到 Chat",
+      "Tab": "应用 AI 建议",
+      "Esc": "取消 AI 编辑",
+      "⌘Z": "撤销更改",
+      "Enter": "提交指令"
+    }
+  }
 }

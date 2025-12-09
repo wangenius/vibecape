@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { type MCPConfig, type MCPServerConfig, DEFAULT_MCP_CONFIG } from "@common/schema/config";
 import { type MCPServerStatus, type MCPTool } from "@common/api/app";
 import { useTranslation } from "react-i18next";
-import { SettingSection, SettingItem } from "./SettingComponents";
+import { SettingSection, SettingItem } from "@/components/settings/SettingComponents";
 import { CheckCircle, Loader2, Pencil, Play, Plus, RefreshCw, Terminal, Trash2, XCircle, Wrench } from "lucide-react";
 import i18n from "@/lib/locales/i18n";
 

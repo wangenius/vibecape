@@ -33,6 +33,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
 import { useMentionHistoryStore } from "@/hooks/stores/useMentionHistoryStore";
+import { lockScroll, unlockScroll } from "@/lib/scroll-lock";
 import { useDocumentStore } from "@/hooks/stores/useDocumentStore";
 
 declare module "@tiptap/core" {
@@ -401,6 +402,9 @@ export const Mention = Node.create({
 
           return {
             onStart: (props) => {
+              // 锁定主容器滚动，防止弹出菜单位置偏移
+              lockScroll();
+
               component = new ReactRenderer(MentionMenuComponent, {
                 props: {
                   items: props.items,
@@ -472,6 +476,9 @@ export const Mention = Node.create({
             },
 
             onExit() {
+              // 解锁滚动
+              unlockScroll();
+
               popup?.[0]?.destroy();
               component?.destroy();
               popup = null;

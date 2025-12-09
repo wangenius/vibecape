@@ -14,6 +14,7 @@ import {
   useRef,
 } from "react";
 import { cn } from "@/lib/utils";
+import { lockScroll, unlockScroll } from "@/lib/scroll-lock";
 import { TbScript, TbMoodNeutral, TbSwipe } from "react-icons/tb";
 
 export type MentionType = "story" | "actant" | "lore";
@@ -310,6 +311,9 @@ export const createMentionPlugin = (t: any) => {
 
       return {
         onStart: (props: any) => {
+          // 锁定主容器滚动，防止弹出菜单位置偏移
+          lockScroll();
+
           // 立即创建并显示菜单，带加载状态
           const isLoading = !cachedItems;
 
@@ -390,6 +394,9 @@ export const createMentionPlugin = (t: any) => {
         },
 
         onExit() {
+          // 解锁滚动
+          unlockScroll();
+
           popup?.[0]?.destroy();
           localComponent?.destroy();
           popup = null;

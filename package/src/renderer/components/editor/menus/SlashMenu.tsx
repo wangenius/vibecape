@@ -16,6 +16,7 @@ import {
 import { Editor } from "@tiptap/core";
 import { cn } from "@/lib/utils";
 import PinyinMatch from "pinyin-match";
+import { lockScroll, unlockScroll } from "@/lib/scroll-lock";
 import {
   CheckSquare,
   Heading1,
@@ -468,6 +469,9 @@ export const createSlashMenuPlugin = (t: any) => {
 
       return {
         onStart: (props: any) => {
+          // 锁定主容器滚动，防止弹出菜单位置偏移
+          lockScroll();
+
           localComponent = new ReactRenderer(SlashMenuComponent, {
             props: {
               items: props.items,
@@ -545,6 +549,9 @@ export const createSlashMenuPlugin = (t: any) => {
         },
 
         onExit() {
+          // 解锁滚动
+          unlockScroll();
+
           popup?.[0]?.destroy();
           localComponent?.destroy();
           popup = null;

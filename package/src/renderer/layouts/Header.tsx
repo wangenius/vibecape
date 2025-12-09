@@ -115,7 +115,7 @@ export function Header() {
                 className={cn(
                   "flex items-center gap-1 px-2 py-0.5 rounded-md",
                   "text-xs text-muted-foreground/60 hover:text-muted-foreground",
-                  "hover:bg-muted/50 transition-colors cursor-pointer",
+                  "hover:bg-muted transition-colors cursor-pointer",
                   "max-w-[200px] truncate"
                 )}
               >
@@ -123,11 +123,7 @@ export function Header() {
                 <TbChevronDown className="size-3 shrink-0" />
               </button>
             </PopoverTrigger>
-            <PopoverContent
-              className="w-60 p-1"
-              align="center"
-              sideOffset={8}
-            >
+            <PopoverContent className="w-60 p-1" align="center" sideOffset={8}>
               <div className="max-h-[300px] overflow-y-auto">
                 {workspaceList.length === 0 ? (
                   <div className="py-4 text-center text-sm text-muted-foreground">
@@ -139,15 +135,19 @@ export function Header() {
                       key={item.id}
                       className={cn(
                         "w-full flex items-center gap-2 px-3 py-2 rounded-md text-left",
-                        "hover:bg-muted/60 transition-colors cursor-pointer",
-                        workspace?.id === item.id && "bg-muted/40"
+                        "hover:bg-muted transition-colors cursor-pointer",
+                        workspace?.id === item.id && "bg-muted"
                       )}
                       onClick={() => void handleSwitchWorkspace(item.id)}
                     >
                       <TbFolder className="size-4 text-muted-foreground shrink-0" />
-                      <span className="text-sm truncate flex-1">{item.name}</span>
+                      <span className="text-sm truncate flex-1">
+                        {item.name}
+                      </span>
                       {workspace?.id === item.id && (
-                        <span className="text-xs text-muted-foreground">当前</span>
+                        <span className="text-xs text-muted-foreground">
+                          当前
+                        </span>
                       )}
                     </button>
                   ))

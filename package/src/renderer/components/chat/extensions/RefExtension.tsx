@@ -43,6 +43,7 @@ import type { DocTreeNode } from "@common/schema/docs";
 import PinyinMatch from "pinyin-match";
 import { useMentionHistoryStore } from "@/hooks/stores/useMentionHistoryStore";
 import { useDocumentStore } from "@/hooks/stores/useDocumentStore";
+import { lockScroll, unlockScroll } from "@/lib/scroll-lock";
 
 // =============================================================================
 // 类型定义
@@ -357,6 +358,9 @@ export const RefCommand = Node.create({
 
           return {
             onStart: (props) => {
+              // 锁定主容器滚动，防止弹出菜单位置偏移
+              lockScroll();
+
               component = new ReactRenderer(RefMenuComponent, {
                 props: {
                   items: props.items,
@@ -424,6 +428,9 @@ export const RefCommand = Node.create({
             },
 
             onExit() {
+              // 解锁滚动
+              unlockScroll();
+
               popup?.[0]?.destroy();
               component?.destroy();
               popup = null;

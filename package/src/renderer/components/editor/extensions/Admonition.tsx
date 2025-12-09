@@ -27,6 +27,7 @@ import { forwardRef, useCallback, useImperativeHandle, useState } from "react";
 import PinyinMatch from "pinyin-match";
 import { lang } from "@/lib/locales/i18n";
 import { useTranslation } from "react-i18next";
+import { lockScroll, unlockScroll } from "@/lib/scroll-lock";
 
 declare module "@tiptap/core" {
   interface Commands<ReturnType> {
@@ -405,6 +406,9 @@ export const Admonition = Node.create({
 
           return {
             onStart: (props) => {
+              // 锁定主容器滚动，防止弹出菜单位置偏移
+              lockScroll();
+
               component = new ReactRenderer(AdmonitionMenuComponent, {
                 props: {
                   items: props.items,
@@ -464,6 +468,9 @@ export const Admonition = Node.create({
             },
 
             onExit() {
+              // 解锁滚动
+              unlockScroll();
+
               popup?.[0]?.destroy();
               component?.destroy();
               popup = null;

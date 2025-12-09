@@ -1120,6 +1120,11 @@ ${
           name: "docAIPromptInputKeymap",
           addKeyboardShortcuts() {
             return {
+              // Cmd/Ctrl + A: 全选当前 mini editor 内容，阻止冒泡到主编辑器
+              "Mod-a": ({ editor: e }) => {
+                e.commands.selectAll();
+                return true;
+              },
               // Cmd/Ctrl + Enter: 发送/重新生成
               "Mod-Enter": () => {
                 const currentPrompt = promptRef.current;

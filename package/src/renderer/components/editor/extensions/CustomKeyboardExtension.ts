@@ -42,14 +42,20 @@ export const CustomKeyboardExtension = Extension.create({
           selection.from === paragraphStart && selection.to === paragraphEnd;
 
         const lastParagraphRange = this.storage.lastParagraphRange;
-        const wasLastSelectParagraph =
+        
+        // 只有当上次选中的段落范围与当前段落完全一致，
+        // 且当前选区也是这个段落时，才认为是连续按 Cmd+A
+        const wasLastSelectSameParagraph =
           lastParagraphRange?.from === paragraphStart &&
-          lastParagraphRange?.to === paragraphEnd;
+          lastParagraphRange?.to === paragraphEnd &&
+          isCurrentParagraphSelected;
 
-        if (isCurrentParagraphSelected || wasLastSelectParagraph) {
+        if (wasLastSelectSameParagraph) {
+          // 第二次按 Cmd+A：全选文档
           editor.chain().focus().setTextSelection({ from: docStart, to: docEnd }).run();
           this.storage.lastParagraphRange = null;
         } else {
+          // 第一次按 Cmd+A：选中当前段落
           editor.chain().focus().setTextSelection({ from: paragraphStart, to: paragraphEnd }).run();
           this.storage.lastParagraphRange = { from: paragraphStart, to: paragraphEnd };
         }

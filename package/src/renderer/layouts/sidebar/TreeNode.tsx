@@ -11,8 +11,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown";
-import { nodeBaseStyles, INDENT_WIDTH } from "../../components/docs/constants";
 import { useTranslation } from "react-i18next";
+import { INDENT_WIDTH, nodeBaseStyles } from "../settings";
 
 export interface TreeNodeProps {
   node: DocTreeNode;

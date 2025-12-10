@@ -6,7 +6,7 @@ import type { DocData } from "@common/schema/docs";
 import { DocEditor } from "@/lib/editor";
 import { Textarea } from "@/components/ui/textarea";
 import { useTranslation } from "react-i18next";
-import { TitleInput } from "@/components/docs/TitleInput";
+import { TitleInput } from "@/layouts/mainview/TitleInput";
 import { Button } from "@/components/ui/button";
 
 type Props = {

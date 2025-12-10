@@ -8,10 +8,10 @@ export interface BilingualPrompt {
   zh: string;
 }
 
-export type LocaleLike = "en" | "zh" | "en" | "zh";
+export type LocaleLike = "en" | "zh";
 
 export function normalizeLanguage(language: LocaleLike = "en"): "en" | "zh" {
-  if (language === "zh" || language === "zh") return "zh";
+  if (language === "zh") return "zh";
   return "en";
 }
 
@@ -43,8 +43,8 @@ export function getPrompt(
 
 /** @deprecated 使用 BilingualPrompt */
 export interface BilingualSystem {
-  "en": string;
-  "zh": string;
+  en: string;
+  zh: string;
 }
 
 /** @deprecated 使用 HeroInfo */

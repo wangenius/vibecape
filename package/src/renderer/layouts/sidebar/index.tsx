@@ -2,8 +2,9 @@ import { motion } from "framer-motion";
 import { useViewManager } from "@/hooks/app/useViewManager";
 import { useWorkspaceStore } from "@/hooks/stores";
 import { SidebarHeader } from "./SidebarHeader";
-import { DocTreeWithDnd, DocTocView } from "@/components/docs";
 import { SidebarEmptyState } from "./SidebarEmptyState";
+import { DocTocView } from "./DocTocView";
+import { DocTreeWithDnd } from "./DocTreeView";
 
 const SidebarContainer = ({ children }: { children: React.ReactNode }) => {
   const isSidebarCollapsed = useViewManager(

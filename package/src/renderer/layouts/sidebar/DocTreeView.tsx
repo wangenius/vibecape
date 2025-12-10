@@ -14,8 +14,8 @@ import {
 } from "@dnd-kit/core";
 import { toast } from "sonner";
 import { TreeNode } from "./TreeNode";
-import { DRAG_HOVER_DELAY } from "../../components/docs/constants";
 import { useTranslation } from "react-i18next";
+import { DRAG_HOVER_DELAY } from "../settings";
 
 // 文档树视图
 export const DocTreeView = () => {
@@ -147,7 +147,7 @@ export const DocTreeView = () => {
           variant="outline"
           onClick={() => handleCreateDoc(null)}
         >
-          <FilePlus  />
+          <FilePlus />
           {t("common.settings.newDoc")}
         </Button>
       </div>

@@ -30,6 +30,7 @@
 @layer base {
   * {
     font-family: var(--font-sans);
+    -electron-corner-smoothing: system-ui; /* Match the system UI design. */
     @apply border-border;
   }
   body {

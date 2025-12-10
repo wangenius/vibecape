@@ -1,26 +1,31 @@
 /* @styles/components.css - 组件基础样式 (Token 化) */
+/* 
+ * 设计原则:
+ * - 所有尺寸使用 token: h-size-*, p-*, gap-*, size-icon-*
+ * - 所有颜色使用语义化: bg-muted, text-foreground, border-border
+ * - 组件类使用 @apply 统一定义，组件文件只引用类名
+ */
 
 /* ═══════════════════════════════════════════════════════════════
    BASE LAYER - 原生元素样式
-   使用语义化 Token: p-sm, h-size-sm, gap-sm 等
    ═══════════════════════════════════════════════════════════════ */
 @layer base {
   /* ═══ Button ═══ */
   button {
     @apply inline-flex items-center justify-center whitespace-nowrap;
     @apply rounded-lg border border-transparent;
-    @apply text-sm gap-sm px-sm h-size-sm;
+    @apply text-sm gap-sm px-sm;
     @apply text-muted-foreground bg-transparent;
     @apply ring-offset-background transition-colors;
     @apply hover:bg-muted-foreground/10;
     @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
     @apply disabled:pointer-events-none disabled:opacity-50;
-    @apply [&_svg]:size-icon-md flex-none;
+    @apply flex-none;
   }
 
   /* ═══ Input ═══ */
   input {
-    @apply flex w-full h-size-sm rounded-md;
+    @apply flex w-full  rounded-md;
     @apply border border-transparent px-sm;
     @apply text-sm text-foreground bg-muted;
     @apply ring-offset-background transition-colors;
@@ -43,146 +48,23 @@
   }
 
   /* ═══ Typography ═══ */
-  h1 { @apply text-2xl font-bold text-foreground; }
-  h2 { @apply text-xl font-semibold text-foreground; }
-  h3 { @apply text-lg font-semibold text-foreground; }
-  h4 { @apply text-base font-medium text-foreground; }
-
-  a { @apply text-primary hover:text-primary/80 transition-colors; }
-  hr { @apply border-border; }
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   COMPONENTS LAYER - 复合组件样式
-   ═══════════════════════════════════════════════════════════════ */
-@layer components {
-  /* ═══ Popover ═══ */
-  .popover-content {
-    @apply z-50 rounded-lg bg-popover text-popover-foreground;
-    @apply border border-border overflow-hidden;
+  h1 {
+    @apply text-2xl font-bold text-foreground;
+  }
+  h2 {
+    @apply text-xl font-semibold text-foreground;
+  }
+  h3 {
+    @apply text-lg font-semibold text-foreground;
+  }
+  h4 {
+    @apply text-base font-medium text-foreground;
   }
 
-  /* ═══ Dropdown ═══ */
-  .dropdown-content {
-    @apply z-50 min-w-32 overflow-hidden rounded-lg;
-    @apply border border-border bg-popover p-xs;
-    @apply flex flex-col gap-0.5 text-popover-foreground;
+  a {
+    @apply text-primary hover:text-primary/80 transition-colors;
   }
-
-  .dropdown-item {
-    @apply relative flex cursor-default select-none items-center;
-    @apply gap-sm rounded-md h-size-sm pl-sm pr-3;
-    @apply text-xs text-muted-foreground;
-    @apply outline-none transition-colors;
-    @apply focus:bg-muted hover:bg-muted;
-    @apply [&_svg]:size-icon-md [&_svg]:text-muted-foreground;
-  }
-
-  .dropdown-item-destructive {
-    @apply text-destructive hover:text-destructive;
-    @apply hover:bg-destructive/10 focus:bg-destructive/10;
-    @apply [&_svg]:text-destructive;
-  }
-
-  /* ═══ Dialog ═══ */
-  .dialog-overlay {
-    @apply fixed inset-0 z-50 bg-black/80;
-  }
-
-  .dialog-content {
-    @apply fixed left-1/2 top-1/2 z-50;
-    @apply flex flex-col overflow-hidden;
-    @apply w-full max-w-[90vw] max-h-[90vh];
-    @apply -translate-x-1/2 -translate-y-1/2;
-    @apply gap-md border border-border bg-background p-md;
-    @apply shadow-lg rounded-xl;
-    @apply focus:outline-none;
-  }
-
-  /* ═══ Sheet ═══ */
-  .sheet-content {
-    @apply fixed z-50 gap-md bg-background p-lg shadow-lg border-border;
-  }
-
-  /* ═══ Toast ═══ */
-  .toast {
-    @apply pointer-events-auto relative flex w-full;
-    @apply items-center justify-between gap-md;
-    @apply overflow-hidden rounded-lg;
-    @apply border border-border p-md shadow-lg;
-  }
-
-  /* ═══ Select ═══ */
-  .select-trigger {
-    @apply flex h-size-sm items-center justify-between gap-sm;
-    @apply rounded-md bg-muted px-sm;
-    @apply text-sm text-muted-foreground;
-    @apply transition-all;
-    @apply hover:bg-muted-foreground/10 focus:bg-muted-foreground/10;
-    @apply data-[state=open]:bg-muted-foreground/10;
-  }
-
-  .select-content {
-    @apply z-50 max-h-96 overflow-hidden rounded-lg;
-    @apply border border-border bg-popover p-xs;
-    @apply flex flex-col gap-0.5 text-popover-foreground;
-  }
-
-  .select-item {
-    @apply relative flex w-full cursor-default select-none items-center;
-    @apply rounded-md py-xs pl-8 pr-3;
-    @apply text-xs outline-none transition-colors;
-    @apply focus:bg-accent focus:text-accent-foreground;
-    @apply hover:bg-accent/50;
-  }
-
-  /* ═══ Badge ═══ */
-  .badge {
-    @apply inline-flex items-center rounded-full border;
-    @apply px-sm py-0.5 text-xs font-semibold;
-    @apply transition-colors focus:outline-none;
-  }
-
-  /* ═══ Tooltip ═══ */
-  .tooltip-content {
-    @apply z-50 rounded-md border bg-popover;
-    @apply px-3 py-xs text-sm text-popover-foreground shadow-md;
-  }
-
-  /* ═══ Card ═══ */
-  .card {
-    @apply rounded-lg border border-border bg-card text-card-foreground;
-    @apply p-md shadow-sm;
-  }
-
-  /* ═══ List Item (通用列表项) ═══ */
-  .list-item {
-    @apply relative flex items-center gap-sm;
-    @apply rounded-lg px-sm py-xs;
-    @apply text-sm text-foreground;
-    @apply transition-colors cursor-pointer;
-    @apply hover:bg-muted-foreground/5;
-  }
-
-  .list-item-active {
-    @apply bg-primary/5 hover:bg-primary/8;
-  }
-
-  /* ═══ Section Header (设置页分组标题) ═══ */
-  .section-header {
-    @apply px-3 py-sm text-xs font-medium text-muted-foreground uppercase tracking-wider;
-  }
-
-  /* ═══ Icon Button (纯图标按钮) ═══ */
-  .icon-btn {
-    @apply size-size-sm p-0 flex items-center justify-center;
-    @apply rounded-md text-muted-foreground;
-    @apply hover:bg-muted-foreground/10 transition-colors;
-    @apply [&_svg]:size-icon-md;
-  }
-
-  .icon-btn-sm {
-    @apply size-size-xs p-0;
-    @apply [&_svg]:size-icon-sm;
+  hr {
+    @apply border-border;
   }
 }

@@ -498,7 +498,7 @@ const Card = ({ children }) => (
 
 | 文件 | 迁移内容 |
 |------|----------|
-| `button.tsx` | `rounded-2xl` → `rounded-md`, `px-2 h-7` → `px-sm h-size-sm` |
+| `button.tsx` | `rounded-2xl` → `rounded-md`, `px-2 h-7` → `px-sm ` |
 | `input.tsx` | 统一使用 `bg-input border-border` |
 | `dialog.tsx` | `rounded-lg` → `rounded-xl`, `p-6` → `p-lg` |
 
@@ -596,7 +596,7 @@ const buttonVariants = cva(
         destructive: "bg-destructive text-destructive-fg hover:bg-destructive/90",
       },
       size: {
-        sm: "h-size-sm px-sm text-sm",
+        sm: " px-sm text-sm",
         md: "h-size-md px-md text-base",
         lg: "h-size-lg px-lg text-lg",
       },
@@ -680,14 +680,14 @@ font-normal     font-medium     font-semibold     font-bold
 
 | 组件 | 更改 |
 |------|------|
-| `button.tsx` | `h-6` → `h-size-xs`, `h-10` → `h-size-lg`, `size-7` → `size-size-sm` |
-| `input.tsx` | `h-7` → `h-size-sm`, `px-2` → `px-sm` |
+| `button.tsx` | `h-6` → `h-size-xs`, `h-10` → `h-size-lg`, `size-7` → `size-sm` |
+| `input.tsx` | `h-7` → ``, `px-2` → `px-sm` |
 | `dialog.tsx` | `right-4 top-4` → `right-md top-md`, `p-1` → `p-xs`, `h-4 w-4` → `size-icon-md` |
 | `popover.tsx` | 使用 `popover-content` CSS 类 |
 | `select.tsx` | `h-4 w-4` → `size-icon-md`, `py-1.5` → `py-xs`, `pl-8 pr-2` → `pl-8 pr-sm` |
-| `dropdown.tsx` | `h-7` → `h-size-sm`, `py-2` → `py-sm`, `py-1.5` → `py-xs`, 图标使用 `size-icon-*` |
+| `dropdown.tsx` | `h-7` → ``, `py-2` → `py-sm`, `py-1.5` → `py-xs`, 图标使用 `size-icon-*` |
 | `sheet.tsx` | `right-4 top-4` → `right-md top-md`, `h-4 w-4` → `size-icon-md` |
-| `components.css` | 全面使用 `p-sm`, `p-md`, `p-lg`, `gap-sm`, `h-size-sm` 等 Token |
+| `components.css` | 全面使用 `p-sm`, `p-md`, `p-lg`, `gap-sm`, `` 等 Token |
 
 ### 新增 Token
 

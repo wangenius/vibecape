@@ -103,7 +103,7 @@ export const TrashSettings = () => {
         <SettingCard>
           {trashItems.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              <TbTrash className="mx-auto h-12 w-12 mb-2 opacity-50" />
+              <TbTrash className="mx-auto size-icon-xl mb-sm opacity-50" />
               <p>{t("common.repository.noTrashItems")}</p>
             </div>
           ) : (
@@ -111,11 +111,11 @@ export const TrashSettings = () => {
               {trashItems.map((item) => (
                 <div
                   key={item.id}
-                  className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
+                  className="item-card-border"
                 >
                   <div className="flex-1 min-w-0 mr-4">
-                    <h4 className="font-medium truncate">{item.title}</h4>
-                    <p className="text-xs text-muted-foreground">
+                    <h4 className="text-label truncate">{item.title}</h4>
+                    <p className="text-hint">
                       {t("common.repository.delete")}:{" "}
                       {item.deleted_at
                         ? format(item.deleted_at, "yyyy-MM-dd HH:mm:ss")
@@ -129,7 +129,7 @@ export const TrashSettings = () => {
                       onClick={() => handleRestore(item.id)}
                       title={t("common.repository.restore")}
                     >
-                      <TbRotateClockwise className="h-4 w-4" />
+                      <TbRotateClockwise />
                     </Button>
                     <Button
                       variant="ghost"
@@ -138,7 +138,7 @@ export const TrashSettings = () => {
                       onClick={() => handleDeletePermanently(item.id)}
                       title={t("common.repository.deletePermanently")}
                     >
-                      <TbTrashX className="h-4 w-4" />
+                      <TbTrashX />
                     </Button>
                   </div>
                 </div>

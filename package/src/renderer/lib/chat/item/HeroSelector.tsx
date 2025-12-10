@@ -6,7 +6,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { dialog } from "@/components/ui/DialogModal";
+import { dialog } from "@/components/ui/dialog";
 import { CachedAvatar } from "@/hooks/util/useAvatarCache";
 import type { HeroInfo } from "@common/api/chat";
 import { getPrompt, type LocaleLike } from "@common/types/hero";

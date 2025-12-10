@@ -84,21 +84,17 @@ export function ModelSelector() {
                     "bg-muted-foreground/10 hover:bg-muted-foreground/10"
                 )}
               >
-                <BsStars className="h-3 w-3 shrink-0" />
+                <BsStars className="size-icon-sm shrink-0" />
                 <div className="flex flex-col gap-0.5 min-w-0 flex-1">
                   <div className="flex items-center gap-1.5">
                     <span className="text-xs font-medium truncate">
                       {model.name}
                     </span>
                     {Boolean(model.json) && (
-                      <span className="shrink-0 text-[9px] font-medium bg-lime-100 text-lime-600 px-1 py-px rounded">
-                        JSON
-                      </span>
+                      <span className="badge badge-success">JSON</span>
                     )}
                     {Boolean(model.reasoner) && (
-                      <span className="shrink-0 text-[9px] font-medium text-blue-600 bg-blue-50/60 px-1 py-px rounded">
-                        推理
-                      </span>
+                      <span className="badge badge-info">推理</span>
                     )}
                   </div>
                 </div>

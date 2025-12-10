@@ -39,9 +39,5 @@ export const RepositorySettingsPanel = () => {
     }
   };
 
-  return (
-    <div className="h-full overflow-auto">
-      <div className="mx-auto">{renderContent()}</div>
-    </div>
-  );
+  return renderContent();
 };

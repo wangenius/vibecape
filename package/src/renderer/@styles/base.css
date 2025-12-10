@@ -210,3 +210,51 @@ textarea {
 .animate-spin-slow {
   animation: spin-slow 1.5s linear infinite;
 }
+
+/* Electron 窗口拖动区域 - 侧边栏 */
+#sidebar-header {
+  -webkit-app-region: drag;
+}
+
+/* 侧边栏顶部的交互元素不可拖动 */
+#sidebar-header button,
+#sidebar-header input,
+#sidebar-header select,
+#sidebar-header a {
+  -webkit-app-region: no-drag;
+}
+
+/* 侧边栏拖动区域 */
+#drag-region {
+  -webkit-app-region: drag;
+}
+
+/* Electron 窗口拖动区域 - 顶部 header */
+#body-header {
+  -webkit-app-region: drag;
+}
+
+/* 顶部 header 的交互元素不可拖动 */
+#body-header button,
+#body-header input,
+#body-header select,
+#body-header a,
+#body-header [role="button"],
+#body-header [role="combobox"] {
+  -webkit-app-region: no-drag;
+}
+
+/* 顶部 header 拖动区域 */
+#header-drag-region {
+  -webkit-app-region: drag;
+}
+
+/* 隐藏滚动条 */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}

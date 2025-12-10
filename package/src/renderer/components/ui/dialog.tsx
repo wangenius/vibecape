@@ -1,131 +1,233 @@
-import * as React from 'react';
-import * as DialogPrimitive from '@radix-ui/react-dialog';
+import React, { ReactNode, useEffect, useRef, useState } from "react";
+import ReactDOM from "react-dom/client";
+import { createPortal } from "react-dom";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { TbCheck, TbX } from "react-icons/tb";
+import { AnimatePresence, motion } from "framer-motion";
 
-import { cn } from '@/lib/utils';
-import { PiX } from 'react-icons/pi';
+interface DialogOptions {
+  title?: string | ReactNode;
+  description?: string;
+  content: ReactNode | ((close: () => void) => ReactNode);
+  footer?: ReactNode | ((close: () => void) => ReactNode);
+  onClose?: () => void;
+  closeIconHide?: boolean;
+  className?: string;
+  autoFocus?: boolean;
+}
 
-const Dialog = DialogPrimitive.Root;
+type CloseDialog = () => void;
 
-const DialogTrigger = DialogPrimitive.Trigger;
-
-const DialogPortal = DialogPrimitive.Portal;
-
-const DialogClose = DialogPrimitive.Close;
-
-const DialogOverlay = React.forwardRef<
-  React.ElementRef<typeof DialogPrimitive.Overlay>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
->(({ className, ...props }, ref) => (
-  <DialogPrimitive.Overlay
-    ref={ref}
-    className={cn(
-      'fixed inset-0 z-50 bg-black/80  data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
-      className
-    )}
-    {...props}
-  />
-));
-DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
-
-const DialogContent = React.forwardRef<
-  React.ElementRef<typeof DialogPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & {
-    closeIconHide?: boolean;
-  }
->(({ className, children, closeIconHide, ...props }, ref) => (
-  <DialogPortal>
-    <DialogOverlay />
-    <DialogPrimitive.Content
-      ref={ref}
-      className={cn(
-        'dialog-content duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%]',
-        className
-      )}
-      onCloseAutoFocus={event => {
-        event.preventDefault();
-      }}
-      onEscapeKeyDown={event => {
-        event.preventDefault();
-      }}
-      {...props}
-    >
-      {children}
-      <DialogPrimitive.Close
-        hidden={closeIconHide}
-        className="absolute right-md top-md rounded-full opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-0 disabled:pointer-events-none hover:bg-muted p-xs"
-      >
-        <PiX className="size-icon-md" />
-        <span className="sr-only">Close</span>
-      </DialogPrimitive.Close>
-    </DialogPrimitive.Content>
-  </DialogPortal>
-));
-DialogContent.displayName = DialogPrimitive.Content.displayName;
-
-const DialogHeader = ({
+/** 创建一个对话框，可以用于弹窗、提示框等*/
+export function dialog({
+  title,
+  description,
+  content,
+  footer,
+  onClose,
   className,
+  closeIconHide,
+  autoFocus = true,
   ...props
-}: React.HTMLAttributes<HTMLDivElement>) => (
-  <div
-    className={cn(
-      'flex flex-col space-y-1.5 text-center sm:text-left',
-      className
-    )}
-    {...props}
-  />
-);
-DialogHeader.displayName = 'DialogHeader';
+}: DialogOptions): CloseDialog {
+  const existingModals = document.querySelectorAll("[data-dialog-root]").length;
+  const zIndex = 50 + existingModals * 10;
+  const dialogRoot = document.createElement("div");
+  dialogRoot.setAttribute("data-dialog-root", "true");
+  document.body.appendChild(dialogRoot);
+  const root = ReactDOM.createRoot(dialogRoot);
 
-const DialogFooter = ({
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement>) => (
-  <div
-    className={cn(
-      'flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2',
-      className
-    )}
-    {...props}
-  />
-);
-DialogFooter.displayName = 'DialogFooter';
+  const DialogPortal: React.FC = () => {
+    const [isOpen, setIsOpen] = useState(true);
+    const dialogRef = useRef<HTMLDivElement>(null);
 
-const DialogTitle = React.forwardRef<
-  React.ElementRef<typeof DialogPrimitive.Title>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title>
->(({ className, ...props }, ref) => (
-  <DialogPrimitive.Title
-    ref={ref}
-    className={cn(
-      'text-lg font-semibold leading-none tracking-tight',
-      className
-    )}
-    {...props}
-  />
-));
-DialogTitle.displayName = DialogPrimitive.Title.displayName;
+    useEffect(() => {
+      if (autoFocus && dialogRef.current) {
+        dialogRef.current.focus();
+      }
 
-const DialogDescription = React.forwardRef<
-  React.ElementRef<typeof DialogPrimitive.Description>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Description>
->(({ className, ...props }, ref) => (
-  <DialogPrimitive.Description
-    ref={ref}
-    className={cn('text-sm text-muted-foreground', className)}
-    {...props}
-  />
-));
-DialogDescription.displayName = DialogPrimitive.Description.displayName;
+      const handleEscape = (e: KeyboardEvent) => {
+        if (e.key === "Escape") {
+          setIsOpen(false);
+        }
+      };
 
-export {
-  Dialog,
-  DialogPortal,
-  DialogOverlay,
-  DialogClose,
-  DialogTrigger,
-  DialogContent,
-  DialogHeader,
-  DialogFooter,
-  DialogTitle,
-  DialogDescription,
+      document.addEventListener("keydown", handleEscape);
+      return () => {
+        document.removeEventListener("keydown", handleEscape);
+        document.body.removeChild(dialogRoot);
+      };
+    }, []);
+
+    const handleClose = () => {
+      setIsOpen(false);
+    };
+
+    const handleAnimationComplete = () => {
+      if (!isOpen) {
+        root.unmount();
+        if (onClose) onClose();
+      }
+    };
+
+    const handleBackdropClick = (e: React.MouseEvent) => {
+      if (e.target === e.currentTarget) {
+        handleClose();
+      }
+    };
+
+    return createPortal(
+      <AnimatePresence mode="wait" onExitComplete={handleAnimationComplete}>
+        {isOpen && (
+          <div
+            className="fixed inset-0 flex items-center justify-center"
+            style={{ zIndex }}
+          >
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-foreground/80"
+              onClick={handleBackdropClick}
+            />
+            <motion.div
+              ref={dialogRef}
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{
+                type: "spring",
+                damping: 25,
+                stiffness: 400,
+                mass: 0.5,
+              }}
+              onAnimationComplete={() => {
+                // 动画完成后，自动聚焦第一个输入框
+                const input = dialogRef.current?.querySelector("input");
+                if (input instanceof HTMLInputElement) {
+                  input.focus();
+                }
+              }}
+              className={cn(
+                "relative flex flex-col gap border border-border bg-background shadow-lg rounded max-h-[90vh] max-w-[90vw] overflow-hidden",
+                className
+              )}
+              {...props}
+            >
+              {(title || !closeIconHide) && (
+                <div>
+                  {title && (
+                    <div>
+                      {typeof title === "string" ? (
+                        <div>
+                          <h2>{title}</h2>
+                          {description && <p>{description}</p>}
+                        </div>
+                      ) : (
+                        title
+                      )}
+                    </div>
+                  )}
+                  {!closeIconHide && (
+                    <Button variant="ghost" size="icon" onClick={handleClose}>
+                      <TbX />
+                    </Button>
+                  )}
+                </div>
+              )}
+              {typeof content === "function" ? content(handleClose) : content}
+
+              {footer &&
+                (typeof footer === "function" ? (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                  >
+                    {footer(handleClose)}
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                  >
+                    {footer}
+                  </motion.div>
+                ))}
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>,
+      dialogRoot
+    );
+  };
+
+  root.render(<DialogPortal />);
+
+  return () => {
+    const dialogElement = dialogRoot.firstElementChild;
+    if (dialogElement) {
+      const closeEvent = new Event("close");
+      dialogElement.dispatchEvent(closeEvent);
+    }
+  };
+}
+
+dialog.confirm = ({
+  title = "确认",
+  content,
+  onOk,
+  variants = "default",
+  okText = "确认",
+  cancelText = "取消",
+  onCancel,
+}: {
+  title?: string;
+  content?: ReactNode;
+  onOk?: () => void;
+  onCancel?: () => void;
+  okText?: string;
+  cancelText?: string;
+  variants?:
+    | "link"
+    | "default"
+    | "destructive"
+    | "outline"
+    | "secondary"
+    | "ghost"
+    | null;
+}) => {
+  return dialog({
+    title,
+    content,
+    footer: (close) => {
+      return (
+        <div className="flex justify-end gap">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              close();
+              onCancel?.();
+            }}
+          >
+            <TbX />
+            {cancelText}
+          </Button>
+          <Button
+            variant={variants}
+            size="sm"
+            onClick={() => {
+              close();
+              onOk?.();
+            }}
+            autoFocus
+          >
+            <TbCheck />
+            {okText}
+          </Button>
+        </div>
+      );
+    },
+  });
 };

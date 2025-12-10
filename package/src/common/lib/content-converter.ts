@@ -72,6 +72,30 @@ export function markdownToJSON(
       continue;
     }
 
+    // Admonition (:::note, :::tip, :::warning, :::danger, :::info)
+    const admonitionMatch = line.match(/^:::(note|tip|warning|danger|info)\s*$/);
+    if (admonitionMatch) {
+      const admonitionType = admonitionMatch[1];
+      const admonitionContent: string[] = [];
+      i++;
+      while (i < lines.length && !lines[i].match(/^:::$/)) {
+        admonitionContent.push(lines[i]);
+        i++;
+      }
+      // 跳过结束的 :::
+      if (i < lines.length && lines[i].match(/^:::$/)) {
+        i++;
+      }
+      // 递归解析 admonition 内部内容
+      const innerContent = markdownToJSON(admonitionContent.join("\n"), options);
+      content.push({
+        type: "admonition",
+        attrs: { type: admonitionType },
+        content: innerContent.content || [{ type: "paragraph", content: [] }],
+      });
+      continue;
+    }
+
     // 引用块
     if (line.startsWith("> ")) {
       const quoteLines: string[] = [];
@@ -443,6 +467,19 @@ export function jsonToMarkdown(content: JSONContent): string {
 
       case "horizontalRule": {
         lines.push("---");
+        lines.push("");
+        break;
+      }
+
+      case "admonition": {
+        const admonitionType = node.attrs?.type || "note";
+        lines.push(`:::${admonitionType}`);
+        if (node.content) {
+          // 递归转换 admonition 内部内容
+          const innerMarkdown = jsonToMarkdown({ type: "doc", content: node.content });
+          lines.push(innerMarkdown);
+        }
+        lines.push(":::");
         lines.push("");
         break;
       }

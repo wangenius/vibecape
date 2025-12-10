@@ -1,22 +1,35 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { dialog } from "@/components/ui/DialogModal";
 import { Plus, RefreshCw, Search, Server } from "lucide-react";
 import { toast } from "sonner";
 import { fetchRemoteModels, type RemoteModel } from "@/hooks/model/useProvider";
 import { createModel } from "@/hooks/model/useModel";
 import type { Provider } from "@common/schema/app";
 
-const STORAGE_KEY_MODELS = "vibecape:remote-models";
-const STORAGE_KEY_PROVIDER = "vibecape:remote-models-provider";
-
-interface RemoteModelsDialogProps {
-  provider: Provider;
-}
-
+export const STORAGE_KEY_MODELS = "vibecape:remote-models";
+export const STORAGE_KEY_PROVIDER = "vibecape:remote-models-provider";
+// 获取缓存的模型数量
+export const getCachedModelCount = (providerId: string): number => {
+  try {
+    const cachedProviderId = localStorage.getItem(STORAGE_KEY_PROVIDER);
+    if (cachedProviderId === providerId) {
+      const cached = localStorage.getItem(STORAGE_KEY_MODELS);
+      if (cached) {
+        return JSON.parse(cached).length;
+      }
+    }
+    return 0;
+  } catch {
+    return 0;
+  }
+};
 // Dialog 内容组件
-const RemoteModelsDialogContent = ({ provider }: { provider: Provider }) => {
+export const RemoteModelsDialogContent = ({
+  provider,
+}: {
+  provider: Provider;
+}) => {
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
 
@@ -142,12 +155,9 @@ const RemoteModelsDialogContent = ({ provider }: { provider: Provider }) => {
           </div>
         ) : (
           filteredModels.map((model) => (
-            <div
-              key={model.id}
-              className="flex items-center justify-between p-2.5 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors group"
-            >
+            <div key={model.id} className="item-card">
               <div className="flex-1 min-w-0 pr-2">
-                <p className="text-sm font-medium truncate">{model.id}</p>
+                <p className="text-label truncate">{model.id}</p>
                 {model.object && (
                   <p className="text-xs text-muted-foreground">
                     {model.object}
@@ -157,10 +167,10 @@ const RemoteModelsDialogContent = ({ provider }: { provider: Provider }) => {
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-7 px-2 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                className="hover-visible"
                 onClick={() => handleAddModel(model)}
               >
-                <Plus className="h-3 w-3 mr-1" />
+                <Plus />
                 添加
               </Button>
             </div>
@@ -180,48 +190,3 @@ const RemoteModelsDialogContent = ({ provider }: { provider: Provider }) => {
     </div>
   );
 };
-
-// 获取缓存的模型数量
-const getCachedModelCount = (providerId: string): number => {
-  try {
-    const cachedProviderId = localStorage.getItem(STORAGE_KEY_PROVIDER);
-    if (cachedProviderId === providerId) {
-      const cached = localStorage.getItem(STORAGE_KEY_MODELS);
-      if (cached) {
-        return JSON.parse(cached).length;
-      }
-    }
-    return 0;
-  } catch {
-    return 0;
-  }
-};
-
-export function RemoteModelsSheet({ provider }: RemoteModelsDialogProps) {
-  const [modelCount, setModelCount] = useState(() => getCachedModelCount(provider.id));
-
-  const openDialog = () => {
-    dialog({
-      title: (
-        <span className="flex items-center gap-2">
-          <Server className="h-4 w-4" />
-          {provider.name} 可用模型
-        </span>
-      ),
-      description: `从 ${provider.base_url} 获取的模型列表`,
-      className: "max-w-md",
-      content: () => <RemoteModelsDialogContent provider={provider} />,
-      onClose: () => {
-        // 关闭时更新模型数量
-        setModelCount(getCachedModelCount(provider.id));
-      },
-    });
-  };
-
-  return (
-    <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={openDialog}>
-      <Server className="h-3 w-3 mr-1" />
-      {modelCount > 0 ? `${modelCount} 个模型` : "获取模型"}
-    </Button>
-  );
-}

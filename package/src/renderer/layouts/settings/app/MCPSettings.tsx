@@ -268,14 +268,14 @@ export const MCPSettings = () => {
                 {t("common.settings.mcpReload")}
               </Button>
               <Button size="sm" onClick={openAddDialog}>
-                <Plus className="h-4 w-4 mr-1" />
+                <Plus />
                 {t("common.settings.mcpAddServer")}
               </Button>
             </div>
           }
         >
           {servers.length === 0 ? (
-            <div className="text-sm text-muted-foreground text-center py-6 bg-muted/30 rounded-lg">
+            <div className="empty-placeholder">
               {t("common.settings.mcpNoServers")}
             </div>
           ) : (
@@ -290,19 +290,19 @@ export const MCPSettings = () => {
                 return (
                   <div
                     key={server.name}
-                    className="p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors group"
+                    className="item-card flex-col!"
                   >
                     <div className="flex items-center justify-between gap-4">
                       <div className="flex items-center gap-3 min-w-0">
                         {/* 状态图标 */}
                         {isConnecting ? (
-                          <Loader2 className="h-4 w-4 text-yellow-500 animate-spin shrink-0" />
+                          <Loader2 className="size-icon-md text-yellow-500 animate-spin shrink-0" />
                         ) : isConnected ? (
-                          <CheckCircle className="h-4 w-4 text-green-500 shrink-0" />
+                          <CheckCircle className="size-icon-md text-green-500 shrink-0" />
                         ) : hasError ? (
-                          <XCircle className="h-4 w-4 text-red-500 shrink-0" />
+                          <XCircle className="size-icon-md text-destructive shrink-0" />
                         ) : (
-                          <Terminal className="h-4 w-4 text-muted-foreground shrink-0" />
+                          <Terminal className="icon-muted shrink-0" />
                         )}
                         <div className="flex flex-col min-w-0">
                           <span className="text-sm font-medium truncate">
@@ -317,7 +317,7 @@ export const MCPSettings = () => {
                         {/* 工具数量 */}
                         {isConnected && toolCount > 0 && (
                           <span className="text-xs text-muted-foreground flex items-center gap-1">
-                            <Wrench className="h-3 w-3" />
+                            <Wrench className="size-icon-sm" />
                             {toolCount}
                           </span>
                         )}
@@ -326,11 +326,10 @@ export const MCPSettings = () => {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8"
                             onClick={() => handleConnect(server.name)}
                             disabled={loading}
                           >
-                            <Play className="h-4 w-4" />
+                            <Play />
                           </Button>
                         )}
                         <Switch
@@ -342,24 +341,24 @@ export const MCPSettings = () => {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="hover-visible"
                           onClick={() => openEditDialog(index)}
                         >
-                          <Pencil className="h-4 w-4" />
+                          <Pencil />
                         </Button>
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive"
+                          className="hover-visible text-destructive hover:text-destructive"
                           onClick={() => handleDelete(index)}
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 />
                         </Button>
                       </div>
                     </div>
                     {/* 错误信息 */}
                     {hasError && status?.error && (
-                      <div className="mt-2 text-xs text-red-500 bg-red-500/10 px-2 py-1 rounded">
+                      <div className="mt-sm text-xs badge-error px-sm py-xs rounded">
                         {status.error}
                       </div>
                     )}
@@ -381,9 +380,9 @@ export const MCPSettings = () => {
             {allTools.map((tool) => (
               <div
                 key={`${tool.serverName}-${tool.name}`}
-                className="flex items-start gap-3 p-2 rounded-lg bg-muted/20"
+                className="flex items-start gap-sm p-sm rounded-lg bg-muted/20"
               >
-                <Wrench className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                <Wrench className="icon-primary mt-0.5 shrink-0" />
                 <div className="min-w-0">
                   <div className="text-sm font-medium">
                     {tool.name}

@@ -13,15 +13,11 @@ export const SettingSection = ({
   action,
   children,
 }: SettingSectionProps) => (
-  <section className="space-y-4">
-    <div className="flex items-end justify-between">
+  <section>
+    <div>
       <header>
-        <h2 className="text-base font-semibold">{title}</h2>
-        {description && (
-          <small className="text-sm text-muted-foreground mt-1">
-            {description}
-          </small>
-        )}
+        <h2>{title}</h2>
+        {description && <small>{description}</small>}
       </header>
       {action}
     </div>
@@ -40,12 +36,10 @@ export const SettingItem = ({
   description,
   children,
 }: SettingItemProps) => (
-  <div className="flex items-center justify-between gap-4 p-3 rounded-lg transition-colors">
-    <div className="flex flex-col gap-1">
-      <span className="text-sm font-medium">{label}</span>
-      {description && (
-        <p className="text-xs text-muted-foreground">{description}</p>
-      )}
+  <div>
+    <div className="flex flex-col gap-xs">
+      <span className="text-label">{label}</span>
+      {description && <p className="text-hint">{description}</p>}
     </div>
     {children}
   </div>
@@ -56,27 +50,5 @@ interface SettingCardProps {
 }
 
 export const SettingCard = ({ children }: SettingCardProps) => (
-  <div className="rounded-lg bg-muted/30 p-4 space-y-4">{children}</div>
-);
-
-interface SettingRowProps {
-  label: string;
-  description?: string;
-  children: ReactNode;
-}
-
-export const SettingRow = ({
-  label,
-  description,
-  children,
-}: SettingRowProps) => (
-  <div className="flex items-center justify-between p-3 bg-muted/40 rounded-md">
-    <div>
-      <p className="text-sm font-medium">{label}</p>
-      {description && (
-        <p className="text-xs text-muted-foreground">{description}</p>
-      )}
-    </div>
-    {children}
-  </div>
+  <div>{children}</div>
 );

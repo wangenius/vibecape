@@ -41,7 +41,12 @@ import {
   SettingSection,
   SettingItem,
 } from "@/layouts/settings/item/SettingComponents";
-import { RemoteModelsSheet } from "@/layouts/settings/item/ProviderModelsSheet";
+
+import { dialog } from "@/components/ui/dialog";
+import {
+  getCachedModelCount,
+  RemoteModelsDialogContent,
+} from "../item/ProviderModels";
 
 // Provider Schema - 纯数据验证
 const providerSchema = z.object({
@@ -261,24 +266,21 @@ export const ModelSettings = () => {
         description={t("common.settings.apiProviderDesc")}
         action={
           <Button size="sm" onClick={startCreateProvider}>
-            <Plus className="h-4 w-4 mr-1" />
+            <Plus />
             {t("common.settings.addProvider")}
           </Button>
         }
       >
         {providers.length === 0 ? (
-          <div className="text-sm text-muted-foreground text-center py-6 bg-muted/30 rounded-lg">
+          <div className="empty-placeholder">
             {t("common.settings.noProviders")}
           </div>
         ) : (
           <div className="space-y-1">
             {providers.map((provider) => (
-              <div
-                key={provider.id}
-                className="flex items-center justify-between gap-4 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors group"
-              >
+              <div key={provider.id} className="item-card">
                 <div className="flex items-center gap-3">
-                  <Server className="h-4 w-4 text-primary" />
+                  <Server className="icon-primary" />
                   <div className="flex flex-col">
                     <span className="text-sm font-medium">{provider.name}</span>
                     <span className="text-xs text-muted-foreground">
@@ -287,15 +289,39 @@ export const ModelSettings = () => {
                   </div>
                 </div>
                 <div className="flex items-center gap-1">
-                  <RemoteModelsSheet provider={provider} />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      dialog({
+                        title: (
+                          <span className="flex items-center gap">
+                            <Server />
+                            {provider.name} 可用模型
+                          </span>
+                        ),
+                        description: `从 ${provider.base_url} 获取的模型列表`,
+                        className:"w-[600px] h-[80vh]",
+                        content: () => (
+                          <RemoteModelsDialogContent provider={provider} />
+                        ),
+                        onClose: () => {
+                          getCachedModelCount(provider.id);
+                        },
+                      });
+                    }}
+                  >
+                    <Server className="h-3 w-3 mr-1" />
+                    {"获取模型"}
+                  </Button>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="hover-visible"
                       >
-                        <MoreVertical className="h-4 w-4" />
+                        <MoreVertical />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
@@ -348,28 +374,25 @@ export const ModelSettings = () => {
         }
       >
         {modelList.length === 0 ? (
-          <div className="text-sm text-muted-foreground text-center py-8 bg-muted/30 rounded-lg">
+          <div className="empty-placeholder">
             {t("common.settings.noModels")}
           </div>
         ) : (
           <div className="space-y-1">
             {modelList.map((model) => (
-              <div
-                key={model.id}
-                className="flex items-center justify-between gap-4 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors group"
-              >
+              <div key={model.id} className="item-card">
                 <div className="flex items-center gap-3">
-                  <BsStars className="h-4 w-4 text-primary" />
+                  <BsStars className="icon-primary" />
                   <div className="flex flex-col">
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-medium">{model.name}</span>
                       {model.json && (
-                        <span className="text-[9px] bg-lime-100 text-lime-600 px-1.5 py-0.5 rounded">
+                        <span className="badge badge-success">
                           {t("common.settings.jsonMode")}
                         </span>
                       )}
                       {model.reasoner && (
-                        <span className="text-[9px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded">
+                        <span className="badge badge-info">
                           {t("common.settings.reasoner")}
                         </span>
                       )}
@@ -384,10 +407,10 @@ export const ModelSettings = () => {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="hover-visible"
                       disabled={deletingId === model.id}
                     >
-                      <MoreVertical className="h-4 w-4" />
+                      <MoreVertical />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">

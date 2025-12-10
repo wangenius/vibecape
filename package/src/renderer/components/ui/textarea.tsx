@@ -147,11 +147,8 @@ export const Textarea = forwardRef<CustomTextAreaRef, TextareaProps>(
           onChange={handleChange}
           onInput={!onChange ? adjustHeight : undefined}
           className={cn(
-            "flex w-full rounded-md px-2 py-2 text-sm text-muted-foreground ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none hover:bg-muted focus:bg-muted transition disabled:cursor-not-allowed disabled:opacity-50 bg-muted",
-            variant === "secondary" &&
-              "bg-muted outline-none focus-visible:outline-none border-none focus-visible:ring-0",
-            variant === "ghost" &&
-              "p-1 m-0 text-base border-none outline-none focus:outline-none h-auto block focus:border-none bg-transparent hover:bg-transparent active:bg-transparent focus-visible:ring-offset-0 focus:bg-transparent focus-visible:outline-none focus-visible:ring-0",
+            variant === "secondary" && "textarea-secondary",
+            variant === "ghost" && "textarea-ghost",
             className
           )}
           style={{

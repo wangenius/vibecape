@@ -341,7 +341,7 @@ const ImageComponent = ({
               <div
                 className={cn(
                   "absolute inset-0 transition-colors pointer-events-none",
-                  selected ? "bg-black/10" : "bg-black/0 group-hover:bg-black/5"
+                  selected ? "bg-foreground/10" : "bg-foreground/0 group-hover:bg-foreground/5"
                 )}
               />
             )}
@@ -352,11 +352,11 @@ const ImageComponent = ({
       {/* 图片预览弹层 */}
       {showPreview && resolvedSrc && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-200"
+          className="modal-container bg-foreground/80 backdrop-blur-sm animate-in fade-in duration-200"
           onClick={() => setShowPreview(false)}
         >
           <button
-            className="absolute top-4 right-4 p-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
+            className="absolute top-md right-md p-sm rounded-full bg-background/10 text-background hover:bg-background/20 transition-colors"
             onClick={() => setShowPreview(false)}
           >
             <X className="size-5" />
@@ -368,7 +368,7 @@ const ImageComponent = ({
             onClick={(e) => e.stopPropagation()}
           />
           {alt && (
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 bg-black/60 text-white text-sm rounded-full backdrop-blur-sm">
+            <div className="absolute bottom-md left-1/2 -translate-x-1/2 px-md py-sm bg-foreground/60 text-background text-sm rounded-full backdrop-blur-sm">
               {alt}
             </div>
           )}

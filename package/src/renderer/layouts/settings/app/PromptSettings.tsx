@@ -30,31 +30,30 @@ const PromptItemCard = ({
   const bodyText = getPromptText(prompt.id);
 
   return (
-    <div className="flex items-start gap-3 p-3 rounded-lg border border-border bg-card hover:bg-accent/30 transition-colors group">
+    <div className="item-card-border items-start!">
       <div className="flex-1 min-w-0">
-        <h4 className="text-sm font-medium truncate">{prompt.title}</h4>
-        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+        <h4 className="text-label truncate">{prompt.title}</h4>
+        <p className="text-hint mt-xs line-clamp-2">
           {bodyText || t("common.prompt.noContent", "无内容")}
         </p>
       </div>
-      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="flex items-center gap-xs hover-visible">
         <Button
           variant="ghost"
           size="icon"
-          className="size-7"
           onClick={() => onEdit(prompt)}
           title={t("common.prompt.edit", "编辑")}
         >
-          <TbEdit className="size-4" />
+          <TbEdit />
         </Button>
         <Button
           variant="ghost"
           size="icon"
-          className="size-7 text-destructive hover:text-destructive"
+          className="text-destructive hover:text-destructive"
           onClick={() => onDelete(prompt.id)}
           title={t("common.prompt.delete", "删除")}
         >
-          <TbTrash className="size-4" />
+          <TbTrash />
         </Button>
       </div>
     </div>
@@ -179,7 +178,7 @@ export const PromptSettings = () => {
         <SettingCard>
           <div className="space-y-3 text-sm">
             <div className="flex items-start gap-3">
-              <kbd className="px-2 py-1 rounded bg-muted border border-border font-mono text-xs shrink-0">
+              <kbd className="kbd shrink-0">
                 #
               </kbd>
               <p className="text-muted-foreground">
@@ -190,7 +189,7 @@ export const PromptSettings = () => {
               </p>
             </div>
             <div className="flex items-start gap-3">
-              <kbd className="px-2 py-1 rounded bg-muted border border-border font-mono text-xs shrink-0">
+              <kbd className="kbd shrink-0">
                 ↑↓
               </kbd>
               <p className="text-muted-foreground">
@@ -201,7 +200,7 @@ export const PromptSettings = () => {
               </p>
             </div>
             <div className="flex items-start gap-3">
-              <kbd className="px-2 py-1 rounded bg-muted border border-border font-mono text-xs shrink-0">
+              <kbd className="kbd shrink-0">
                 Esc
               </kbd>
               <p className="text-muted-foreground">

@@ -12,7 +12,19 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown";
 import { useTranslation } from "react-i18next";
-import { INDENT_WIDTH, nodeBaseStyles } from "../settings";
+export const INDENT_WIDTH = 24;
+
+const nodeBaseStyles = {
+  base: cn(
+    "group relative flex items-center gap-sm py-xs pl-xs pr-xs rounded-lg mx-xs",
+    "transition-all duration-200 ease-out",
+    "cursor-pointer",
+    "border border-transparent",
+    "hover:bg-muted-foreground/5"
+  ),
+  selected: ["bg-primary/5 hover:bg-primary/8"],
+  dragging: ["opacity-50"],
+};
 
 export interface TreeNodeProps {
   node: DocTreeNode;
@@ -91,11 +103,7 @@ export const TreeNode = memo(
         {/* 树形连接线 */}
         {level > 0 && (
           <div
-            className={cn(
-              "absolute left-0 top-0 bottom-0",
-              "border-l border-dashed border-border/15",
-              "group-hover:border-primary/20 transition-colors duration-200"
-            )}
+            className="tree-line"
             style={{ left: level * INDENT_WIDTH - 12 }}
           />
         )}
@@ -123,11 +131,8 @@ export const TreeNode = memo(
             {/* 节点标题 */}
             <div
               className={cn(
-                "flex-1 min-w-0 text-sm truncate",
-                "text-foreground",
-                "transition-colors duration-200",
-                selected && "text-foreground",
-                !node.title && "text-muted-foreground italic"
+                "flex-1 min-w-0 text-sm truncate text-foreground",
+                !node.title && "text-placeholder"
               )}
             >
               {node.title || t("common.settings.untitledDoc")}
@@ -139,11 +144,7 @@ export const TreeNode = memo(
                 <Button
                   variant="ghost"
                   size="icon"
-                  className={cn(
-                    "opacity-0 group-hover:opacity-100",
-                    "hover:bg-primary/10",
-                    "transition-opacity duration-200 data-[state=open]:opacity-100"
-                  )}
+                  className="hover-visible hover:bg-primary/10 data-[state=open]:opacity-100"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <TbDots />
@@ -169,7 +170,7 @@ export const TreeNode = memo(
                   className="text-destructive focus:text-destructive"
                   onClick={() => onDelete(node)}
                 >
-                  <Trash2 className="size-icon-md mr-sm stroke-destructive" />
+                  <Trash2 />
                   {t("common.settings.delete")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -180,9 +181,9 @@ export const TreeNode = memo(
           {isOver && !isDragging && (
             <>
               {isDraggingOver === node.id ? (
-                <div className="absolute inset-0 border-2 border-primary/30 rounded-lg bg-primary/5 animate-in fade-in-0 zoom-in-95" />
+                <div className="drop-area" />
               ) : (
-                <div className="absolute -top-0.5 inset-x-0 h-[3px] bg-primary/50" />
+                <div className="drop-line" />
               )}
             </>
           )}

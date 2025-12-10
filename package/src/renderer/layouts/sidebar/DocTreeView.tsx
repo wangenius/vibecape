@@ -15,8 +15,7 @@ import {
 import { toast } from "sonner";
 import { TreeNode } from "./TreeNode";
 import { useTranslation } from "react-i18next";
-import { DRAG_HOVER_DELAY } from "../settings";
-
+export const DRAG_HOVER_DELAY = 800;
 // 文档树视图
 export const DocTreeView = () => {
   const { t } = useTranslation();
@@ -262,9 +261,7 @@ export const DocTreeWithDnd = () => {
       <DocTreeView />
       <DragOverlay>
         {draggingNode ? (
-          <div className="bg-background border rounded-lg px-3 py-1.5 text-sm shadow-lg">
-            {draggingNode.title}
-          </div>
+          <div className="drag-overlay">{draggingNode.title}</div>
         ) : null}
       </DragOverlay>
     </DndContext>

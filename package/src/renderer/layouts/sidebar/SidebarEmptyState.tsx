@@ -4,9 +4,8 @@ import { useRepositoryStore, useUIStore } from "@/hooks/stores";
 import { Loader2, Trash2, Plus, FolderOpen } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { dialog } from "@/components/ui/DialogModal";
+import { dialog } from "@/components/ui/dialog";
 import { TbCheck, TbX } from "react-icons/tb";
-import { cn } from "@/lib/utils";
 
 export const SidebarEmptyState = () => {
   const { t } = useTranslation();
@@ -77,7 +76,7 @@ export const SidebarEmptyState = () => {
         </div>
       ),
       footer: (close) => (
-        <div className="flex justify-end gap-2">
+        <div className="btn-group">
           <Button variant="ghost" size="sm" onClick={close}>
             <TbX />
             {t("common.cancel")}
@@ -126,11 +125,11 @@ export const SidebarEmptyState = () => {
       {/* 工作区列表 */}
       <div className="flex-1 overflow-y-auto space-y-1">
         {listLoading ? (
-          <div className="flex items-center justify-center py-8">
+          <div className="flex-center py-lg">
             <Loader2 className="animate-spin" />
           </div>
         ) : repositoryList.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
+          <div className="flex-center-col py-xl">
             <FolderOpen className="mb-3" />
             <p className="text-sm text-muted-foreground">
               {t("common.repository.noHistory")}
@@ -140,20 +139,17 @@ export const SidebarEmptyState = () => {
           repositoryList.map((item) => (
             <div
               key={item.id}
-              className={cn(
-                "group flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer",
-                "hover:bg-muted/60 transition-colors"
-              )}
+              className="list-item"
               onClick={() => void handleOpenRepository(item.id)}
             >
-              <FolderOpen className="h-4 w-4 text-muted-foreground shrink-0" />
+              <FolderOpen className="size-icon-md text-muted-foreground shrink-0" />
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium truncate">{item.name}</div>
+                <div className="text-truncate">{item.name}</div>
               </div>
               <Button
                 variant="ghost"
                 size="icon"
-                className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+className="hover-visible shrink-0"
                 onClick={(e) => {
                   e.stopPropagation();
                   void handleDeleteRepository(item.id, item.name);

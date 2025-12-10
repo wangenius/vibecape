@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { dialog } from "@/components/ui/DialogModal";
+import { dialog } from "@/components/ui/dialog";
 import { useViewManager, setViewManager } from "@/hooks/app/useViewManager";
 import { useRepositoryStore } from "@/hooks/stores";
 
@@ -7,7 +7,6 @@ import { useTranslation } from "react-i18next";
 import { AppSettingsPanel } from "./app";
 import { RepositorySettingsPanel } from "./repo";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import {
   TbSettings,
   TbBox,
@@ -21,22 +20,6 @@ import {
   TbTrash,
   TbPrompt,
 } from "react-icons/tb";
-
-export const DRAG_HOVER_DELAY = 800;
-export const INDENT_WIDTH = 24;
-
-// 节点样式
-export const nodeBaseStyles = {
-  base: cn(
-    "group relative flex items-center gap-sm py-xs pl-xs pr-xs rounded-lg mx-xs",
-    "transition-all duration-200 ease-out",
-    "cursor-pointer",
-    "border border-transparent",
-    "hover:bg-muted-foreground/5"
-  ),
-  selected: ["bg-primary/5 hover:bg-primary/8"],
-  dragging: ["opacity-50"],
-};
 
 // 设置导航项
 export const SETTINGS_NAV_ITEMS = [
@@ -68,7 +51,7 @@ const SettingsSidebar = () => {
   const repository = useRepositoryStore((state) => state.repository);
 
   return (
-    <div className="w-60 flex flex-col border-r border-border overflow-hidden shrink-0">
+    <div className="w-60 flex flex-col border-r overflow-hidden shrink-0 h-full">
       <div className="flex-1 p-sm space-y-xs overflow-y-auto">
         {/* Repo Settings - 仅当有 repository 时显示 */}
         {repository && (
@@ -98,9 +81,7 @@ const SettingsSidebar = () => {
         )}
 
         {/* App Settings */}
-        <div className="section-header">
-          {t("common.settings.appSettings")}
-        </div>
+        <div className="section-header">{t("common.settings.appSettings")}</div>
         {SETTINGS_NAV_ITEMS.map((item) => {
           const Icon = item.icon;
           const isActive = currentSection === item.key;
@@ -129,24 +110,19 @@ const SettingsSidebar = () => {
   );
 };
 
-const SettingsContent = () => {
+const SettingsDialogContent = () => {
   const settingsSection = useViewManager((state) => state.previewCosmosId);
   const repository = useRepositoryStore((state) => state.repository);
 
-  // 如果是 Repo Settings 的 key 且有 repository，显示 RepositorySettingsPanel
-  if (repository && REPO_SETTINGS_KEYS.includes(settingsSection || "")) {
-    return <RepositorySettingsPanel />;
-  }
-
-  return <AppSettingsPanel />;
-};
-
-const SettingsDialogContent = () => {
   return (
     <div className="flex h-full">
       <SettingsSidebar />
-      <div className="flex-1 overflow-y-auto p-lg">
-        <SettingsContent />
+      <div className="flex-1 overflow-auto p-4">
+        {repository && REPO_SETTINGS_KEYS.includes(settingsSection || "") ? (
+          <RepositorySettingsPanel />
+        ) : (
+          <AppSettingsPanel />
+        )}
       </div>
     </div>
   );
@@ -183,7 +159,7 @@ export function openSettingsDialog(initialSection?: string) {
   const close = dialog({
     title: "",
     content: <SettingsDialogContent />,
-    className: "w-[90vw] h-[90vh] p-0",
+    className: "w-[90vw] h-[90vh]",
     closeIconHide: true,
     onClose: () => {
       useSettingsDialogStore.setState({ isOpen: false, closeDialog: null });

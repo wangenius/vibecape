@@ -1,70 +1,17 @@
-import { useState, useCallback } from "react";
+import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { useEditor, EditorContent } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import Placeholder from "@tiptap/extension-placeholder";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { SettingSection, SettingCard } from "@/components/settings/SettingComponents";
+import { dialogForm } from "@/components/ui/DialogForm";
+import { SettingSection, SettingCard } from "@/layouts/settings/item/SettingComponents";
 import { usePromptStore, type PromptItem } from "@/hooks/stores/usePromptStore";
-import { TbPlus, TbTrash, TbEdit, TbCheck, TbX } from "react-icons/tb";
-import { cn } from "@/lib/utils";
-import type { JSONContent } from "@tiptap/core";
+import { TbPlus, TbTrash, TbEdit } from "react-icons/tb";
 
-/**
- * Prompt 编辑器组件
- */
-const PromptEditor = ({
-  initialContent,
-  placeholder,
-  onChange,
-  className,
-}: {
-  initialContent?: JSONContent;
-  placeholder?: string;
-  onChange?: (content: JSONContent) => void;
-  className?: string;
-}) => {
-  const editor = useEditor({
-    extensions: [
-      StarterKit.configure({
-        heading: false,
-        codeBlock: false,
-        blockquote: false,
-        bulletList: false,
-        orderedList: false,
-        horizontalRule: false,
-      }),
-      Placeholder.configure({
-        placeholder: placeholder || "输入 Prompt 内容...",
-        emptyEditorClass: "is-editor-empty",
-      }),
-    ],
-    content: initialContent,
-    editorProps: {
-      attributes: {
-        class: "prompt-editor-content",
-      },
-    },
-    onUpdate: ({ editor: e }) => {
-      onChange?.(e.getJSON());
-    },
-  });
-
-  return (
-    <div
-      className={cn(
-        "min-h-[100px] max-h-[200px] overflow-y-auto rounded-md border border-input bg-background px-3 py-2 text-sm",
-        "[&_.ProseMirror]:outline-none [&_.ProseMirror]:min-h-20",
-        "[&_.ProseMirror_p]:m-0 [&_.ProseMirror_p]:leading-relaxed",
-        "[&_.is-editor-empty]:before:content-[attr(data-placeholder)] [&_.is-editor-empty]:before:text-muted-foreground/50 [&_.is-editor-empty]:before:float-left [&_.is-editor-empty]:before:h-0 [&_.is-editor-empty]:before:pointer-events-none",
-        className
-      )}
-    >
-      <EditorContent editor={editor} />
-    </div>
-  );
-};
+// Prompt Schema
+const promptSchema = z.object({
+  title: z.string().min(1, "标题不能为空"),
+  body: z.string(),
+});
 
 /**
  * 单个 Prompt 项组件
@@ -114,65 +61,14 @@ const PromptItemCard = ({
   );
 };
 
-/**
- * Prompt 编辑表单
- */
-const PromptForm = ({
-  prompt,
-  onSave,
-  onCancel,
-}: {
-  prompt?: PromptItem;
-  onSave: (title: string, body: JSONContent) => void;
-  onCancel: () => void;
-}) => {
-  const { t } = useTranslation();
-  const [title, setTitle] = useState(prompt?.title || "");
-  const [body, setBody] = useState<JSONContent>(
-    prompt?.body || { type: "doc", content: [] }
-  );
-
-  const handleSubmit = () => {
-    if (!title.trim()) return;
-    onSave(title.trim(), body);
-  };
-
-  return (
-    <div className="space-y-4 p-4 rounded-lg border border-primary/30 bg-primary/5">
-      <div className="space-y-2">
-        <label className="text-sm font-medium">
-          {t("common.prompt.title", "标题")}
-        </label>
-        <Input
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder={t("common.prompt.titlePlaceholder", "输入 Prompt 标题...")}
-          autoFocus
-        />
-      </div>
-      <div className="space-y-2">
-        <label className="text-sm font-medium">
-          {t("common.prompt.body", "内容")}
-        </label>
-        <PromptEditor
-          initialContent={body}
-          placeholder={t("common.prompt.bodyPlaceholder", "输入 Prompt 内容...")}
-          onChange={setBody}
-        />
-      </div>
-      <div className="flex items-center justify-end gap-2">
-        <Button variant="ghost" size="sm" onClick={onCancel}>
-          <TbX className="size-4 mr-1" />
-          {t("common.cancel", "取消")}
-        </Button>
-        <Button size="sm" onClick={handleSubmit} disabled={!title.trim()}>
-          <TbCheck className="size-4 mr-1" />
-          {t("common.save", "保存")}
-        </Button>
-      </div>
-    </div>
-  );
-};
+/** 将纯文本转换为 JSONContent */
+const textToJSONContent = (text: string): { type: "doc"; content: { type: "paragraph"; content: { type: "text"; text: string }[] }[] } => ({
+  type: "doc",
+  content: text.split("\n").map((line) => ({
+    type: "paragraph",
+    content: line ? [{ type: "text", text: line }] : [],
+  })),
+});
 
 /**
  * Prompt 管理设置面板
@@ -183,27 +79,42 @@ export const PromptSettings = () => {
   const addPrompt = usePromptStore((state) => state.addPrompt);
   const updatePrompt = usePromptStore((state) => state.updatePrompt);
   const deletePrompt = usePromptStore((state) => state.deletePrompt);
+  const getPromptText = usePromptStore((state) => state.getPromptText);
 
-  const [isAdding, setIsAdding] = useState(false);
-  const [editingPrompt, setEditingPrompt] = useState<PromptItem | null>(null);
+  // 打开添加对话框
+  const openAddDialog = () => {
+    dialogForm({
+      title: t("common.prompt.add", "添加 Prompt"),
+      schema: promptSchema,
+      fields: {
+        title: { label: "标题", placeholder: "输入 Prompt 标题..." },
+        body: { label: "内容", type: "textarea", placeholder: "输入 Prompt 内容..." },
+      },
+      defaultValues: { title: "", body: "" },
+      onSubmit: (data) => {
+        addPrompt(data.title, textToJSONContent(data.body));
+      },
+    });
+  };
 
-  const handleAdd = useCallback(
-    (title: string, body: JSONContent) => {
-      addPrompt(title, body);
-      setIsAdding(false);
-    },
-    [addPrompt]
-  );
-
-  const handleEdit = useCallback(
-    (title: string, body: JSONContent) => {
-      if (editingPrompt) {
-        updatePrompt(editingPrompt.id, { title, body });
-        setEditingPrompt(null);
-      }
-    },
-    [editingPrompt, updatePrompt]
-  );
+  // 打开编辑对话框
+  const openEditDialog = useCallback((prompt: PromptItem) => {
+    dialogForm({
+      title: t("common.prompt.edit", "编辑 Prompt"),
+      schema: promptSchema,
+      fields: {
+        title: { label: "标题", placeholder: "输入 Prompt 标题..." },
+        body: { label: "内容", type: "textarea", placeholder: "输入 Prompt 内容..." },
+      },
+      defaultValues: { 
+        title: prompt.title, 
+        body: getPromptText(prompt.id),
+      },
+      onSubmit: (data) => {
+        updatePrompt(prompt.id, { title: data.title, body: textToJSONContent(data.body) });
+      },
+    });
+  }, [t, getPromptText, updatePrompt]);
 
   const handleDelete = useCallback(
     (id: string) => {
@@ -223,32 +134,15 @@ export const PromptSettings = () => {
           "创建和管理常用的 AI Prompt 模板，在编辑器中输入 # 可快速插入"
         )}
         action={
-          !isAdding &&
-          !editingPrompt && (
-            <Button size="sm" onClick={() => setIsAdding(true)}>
-              <TbPlus className="size-4 mr-1" />
-              {t("common.prompt.add", "添加 Prompt")}
-            </Button>
-          )
+          <Button size="sm" onClick={openAddDialog}>
+            <TbPlus className="size-4 mr-1" />
+            {t("common.prompt.add", "添加 Prompt")}
+          </Button>
         }
       >
         <div className="space-y-3">
-          {/* 添加表单 */}
-          {isAdding && (
-            <PromptForm onSave={handleAdd} onCancel={() => setIsAdding(false)} />
-          )}
-
-          {/* 编辑表单 */}
-          {editingPrompt && (
-            <PromptForm
-              prompt={editingPrompt}
-              onSave={handleEdit}
-              onCancel={() => setEditingPrompt(null)}
-            />
-          )}
-
           {/* Prompt 列表 */}
-          {prompts.length === 0 && !isAdding ? (
+          {prompts.length === 0 ? (
             <SettingCard>
               <div className="text-center py-8 text-muted-foreground">
                 <p className="text-sm">
@@ -264,16 +158,14 @@ export const PromptSettings = () => {
             </SettingCard>
           ) : (
             <div className="space-y-2">
-              {prompts.map((prompt) =>
-                editingPrompt?.id === prompt.id ? null : (
-                  <PromptItemCard
-                    key={prompt.id}
-                    prompt={prompt}
-                    onEdit={setEditingPrompt}
-                    onDelete={handleDelete}
-                  />
-                )
-              )}
+              {prompts.map((prompt) => (
+                <PromptItemCard
+                  key={prompt.id}
+                  prompt={prompt}
+                  onEdit={openEditDialog}
+                  onDelete={handleDelete}
+                />
+              ))}
             </div>
           )}
         </div>

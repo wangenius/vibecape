@@ -4,8 +4,8 @@ import { Button } from "@/components/ui/button";
 import { useThread } from "@/hooks/chat/useThread";
 import { useHero } from "@/hooks/chat/useHero";
 import { ChatCore } from "./ChatCore";
-import { HeroSelector } from "../../components/chat/components/HeroSelector";
-import { HistoryPopover } from "../../components/chat/components/HistoryPopover";
+import { HeroSelector } from "@/lib/chat/item/HeroSelector";
+import { HistoryPopover } from "@/lib/chat/item/HistoryPopover";
 import { useTranslation } from "react-i18next";
 
 export const ChatPanel = () => {

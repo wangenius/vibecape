@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import {
   SettingSection,
   SettingCard,
-} from "@/components/settings/SettingComponents";
+} from "@/layouts/settings/item/SettingComponents";
 import type { DocData } from "@common/schema/docs";
 import { format } from "date-fns";
 import {

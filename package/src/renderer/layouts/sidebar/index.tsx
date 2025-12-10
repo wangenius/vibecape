@@ -2,11 +2,7 @@ import { motion } from "framer-motion";
 import { useViewManager } from "@/hooks/app/useViewManager";
 import { useWorkspaceStore } from "@/hooks/stores";
 import { SidebarHeader } from "./SidebarHeader";
-import {
-    DocTreeWithDnd,
-    DocTocView,
-    useCreateDocDialog,
-} from "@/components/docs";
+import { DocTreeWithDnd, DocTocView } from "@/components/docs";
 import { SidebarEmptyState } from "./SidebarEmptyState";
 
 const SidebarContainer = ({ children }: { children: React.ReactNode }) => {
@@ -37,7 +33,7 @@ export const Sidebar = () => {
     (selector) => selector.sidebarViewMode
   );
   const workspace = useWorkspaceStore((state) => state.workspace);
-  const handleCreateDoc = useCreateDocDialog();
+
   if (!workspace) {
     return (
       <SidebarContainer>
@@ -58,7 +54,7 @@ export const Sidebar = () => {
 
   return (
     <SidebarContainer>
-      <SidebarHeader onCreateDoc={handleCreateDoc} />
+      <SidebarHeader />
       {renderContent()}
     </SidebarContainer>
   );

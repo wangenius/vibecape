@@ -28,11 +28,7 @@ import { toast } from "sonner";
 import { ViewModeSwitch } from "./ViewModeSwitch";
 import { setSidebarViewMode, useViewManager } from "@/hooks/app/useViewManager";
 
-interface SidebarHeaderProps {
-  onCreateDoc: (parentId: string | null) => void;
-}
-
-export const SidebarHeader = ({ onCreateDoc }: SidebarHeaderProps) => {
+export const SidebarHeader = () => {
   const { t } = useTranslation();
   const workspace = useWorkspaceStore((state) => state.workspace);
   const closeWorkspace = useWorkspaceStore((state) => state.closeWorkspace);
@@ -92,7 +88,7 @@ export const SidebarHeader = ({ onCreateDoc }: SidebarHeaderProps) => {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => onCreateDoc(null)}
+          onClick={() => {}}
           title={t("common.settings.newDoc")}
         >
           <Plus />

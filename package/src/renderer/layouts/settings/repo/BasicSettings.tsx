@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import {
   SettingSection,
   SettingItem,
-} from "@/components/settings/SettingComponents";
+} from "@/layouts/settings/item/SettingComponents";
 import type { WorkspaceConfig } from "@common/schema/workspace";
 import { useDebounce } from "./hooks";
 

@@ -14,7 +14,7 @@ import {
   SettingSection,
   SettingItem,
   SettingCard,
-} from "@/components/settings/SettingComponents";
+} from "@/layouts/settings/item/SettingComponents";
 import { FolderOpen } from "lucide-react";
 import type { WorkspaceConfig } from "@common/schema/workspace";
 

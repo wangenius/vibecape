@@ -11,8 +11,7 @@ import { useSidebarToggle } from "@/hooks/shortcuts/useSidebarToggle";
 import { usePalette } from "@/hooks/shortcuts/usePalette";
 import { useDocEditorFocus } from "@/hooks/shortcuts/useDocEditorFocus";
 import { useSettingsToggle } from "@/hooks/shortcuts/useSettingsToggle";
-import { CommandPalette } from "@/components/custom/CommandPalette";
-import { DocSearchPalette } from "@/components/custom/DocSearchPalette";
+import { CommandPalette, DocSearchPalette } from "@/lib/palette";
 
 const App = () => {
   useTheme();

@@ -1,6 +1,6 @@
 import { ReactNode, useEffect } from "react";
 import { useWorkspaceStore, useDocumentStore, bootstrap } from "@/hooks/stores";
-import { EmptyDocState } from "../../components/custom/EmptyState";
+import { EmptyDocState } from "../../components/ui/EmptyState";
 import { DocWorkspace } from "./DocWorkspace";
 
 const MainContainer = ({ children }: { children: ReactNode }) => {

@@ -4,7 +4,7 @@ import { useWorkspaceStore, useUIStore } from "@/hooks/stores";
 import { Loader2, Trash2, Plus, FolderOpen } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { dialog } from "@/components/custom/DialogModal";
+import { dialog } from "@/components/ui/DialogModal";
 import { TbCheck, TbX } from "react-icons/tb";
 import { cn } from "@/lib/utils";
 

@@ -3,21 +3,19 @@ import { cva, type VariantProps } from 'class-variance-authority';
 
 import { cn } from '@/lib/utils';
 
-const inputVariants = cva(
-  'flex w-full h-7 rounded-md border border-transparent px-1.5 text-sm text-foreground ring-offset-background transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground/50 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
-  {
-    variants: {
-      variant: {
-        primary: 'bg-muted hover:bg-muted/80 focus:bg-muted/80',
-        outline: 'bg-transparent border-input hover:border-muted-foreground/30 focus:border-primary',
-        ghost: 'bg-transparent hover:bg-muted/50 focus:bg-muted/50',
-      },
+/* 基础样式在 @styles/components.css @layer base input */
+const inputVariants = cva('', {
+  variants: {
+    variant: {
+      primary: '',
+      outline: 'bg-transparent border-input hover:border-muted-foreground/30 focus:border-primary',
+      ghost: 'bg-transparent hover:bg-muted/50 focus:bg-muted/50',
     },
-    defaultVariants: {
-      variant: 'primary',
-    },
-  }
-);
+  },
+  defaultVariants: {
+    variant: 'primary',
+  },
+});
 
 export interface InputProps
   extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onValueChange'>,

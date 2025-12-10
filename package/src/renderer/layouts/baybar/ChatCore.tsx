@@ -4,11 +4,14 @@ import {
   Conversation,
   ConversationContent,
   ConversationScrollButton,
-} from "@/components/chat/ai/conversation";
+} from "@/lib/chat/item/conversation";
 import { useChat } from "@/hooks/chat/useChat";
 import type { UIMessage } from "ai";
-import { MessageRenderer, ErrorMessage } from "../../components/chat/components/MessageRenderer";
-import { ChatInputEditor, ChatInputProps } from "../../components/chat/components/ChatInputEditor";
+import { MessageRenderer, ErrorMessage } from "@/lib/chat/item/MessageRenderer";
+import {
+  ChatInputEditor,
+  ChatInputProps,
+} from "@/lib/chat/item/ChatInputEditor";
 
 // 预设建议
 const suggestionPresets = [
@@ -46,7 +49,8 @@ interface ChatCoreProps {
 }
 
 export const ChatCore: React.FC<ChatCoreProps> = ({ chatId }) => {
-  const { messages, status, error, sendMessage, stop, getQueueLength } = useChat(chatId);
+  const { messages, status, error, sendMessage, stop, getQueueLength } =
+    useChat(chatId);
   const [queueLength, setQueueLength] = useState(0);
 
   // 定期检查队列长度

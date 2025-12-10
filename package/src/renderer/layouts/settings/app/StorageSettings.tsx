@@ -11,7 +11,7 @@ import { updateSettings, useSettings } from "@/hooks/app/useSettings";
 import { createShape } from "@common/lib/shape";
 import { DEFAULT_APP_CONFIG } from "@common/schema/config";
 import { useTranslation } from "react-i18next";
-import { SettingSection, SettingItem, SettingCard } from "@/components/settings/SettingComponents";
+import { SettingSection, SettingItem, SettingCard } from "@/layouts/settings/item/SettingComponents";
 
 const appConfigShape = createShape(DEFAULT_APP_CONFIG);
 

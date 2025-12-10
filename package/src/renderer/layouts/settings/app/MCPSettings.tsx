@@ -1,14 +1,14 @@
-import { useCallback, useRef, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { z } from "zod";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import { dialog } from "@/components/custom/DialogModal";
+import { dialogForm } from "@/components/ui/DialogForm";
 import { toast } from "sonner";
 import { type MCPConfig, type MCPServerConfig, DEFAULT_MCP_CONFIG } from "@common/schema/config";
 import { type MCPServerStatus, type MCPTool } from "@common/api/app";
 import { useTranslation } from "react-i18next";
-import { SettingSection, SettingItem } from "@/components/settings/SettingComponents";
+import { SettingSection, SettingItem } from "@/layouts/settings/item/SettingComponents";
 import { CheckCircle, Loader2, Pencil, Play, Plus, RefreshCw, Terminal, Trash2, XCircle, Wrench } from "lucide-react";
-import i18n from "@/lib/locales/i18n";
 
 // 解析 MCP JSON 配置，支持两种格式：
 // 1. { "mcpServers": { "name": { command, args, env } } }
@@ -45,56 +45,10 @@ const serverToJson = (server: MCPServerConfig): string => {
   return JSON.stringify({ [server.name]: config }, null, 2);
 };
 
-// 服务器弹窗内容组件（添加/编辑共用）
-const ServerDialogContent = ({
-  initialValue,
-  onSave,
-  close,
-}: {
-  initialValue?: string;
-  onSave: (servers: MCPServerConfig[]) => void;
-  close: () => void;
-}) => {
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const t = i18n.t.bind(i18n);
-
-  const handleConfirm = () => {
-    const jsonInput = textareaRef.current?.value || "";
-    if (!jsonInput.trim()) return;
-
-    try {
-      const newServers = parseMCPJson(jsonInput);
-      if (newServers.length === 0) {
-        toast.error(t("common.settings.mcpInvalidJson"));
-        return;
-      }
-      onSave(newServers);
-      close();
-    } catch {
-      toast.error(t("common.settings.mcpInvalidJson"));
-    }
-  };
-
-  return (
-    <div className="space-y-4">
-      <textarea
-        ref={textareaRef}
-        defaultValue={initialValue}
-        className="w-full min-h-48 px-3 py-2 text-sm font-mono rounded-md border border-input bg-background resize-y"
-        placeholder={t("common.settings.mcpJsonPlaceholder")}
-        autoFocus
-      />
-      <div className="flex justify-end gap-2">
-        <Button variant="outline" onClick={close}>
-          {t("common.actions.cancel")}
-        </Button>
-        <Button onClick={handleConfirm}>
-          {t("common.actions.confirm")}
-        </Button>
-      </div>
-    </div>
-  );
-};
+// MCP Server Schema
+const mcpServerSchema = z.object({
+  json: z.string().min(1, "请输入 JSON 配置"),
+});
 
 export const MCPSettings = () => {
   const { t } = useTranslation();
@@ -190,58 +144,74 @@ export const MCPSettings = () => {
 
   // 打开添加弹窗
   const openAddDialog = () => {
-    dialog({
+    dialogForm({
       title: t("common.settings.mcpAddServer"),
       description: t("common.settings.mcpPasteJsonDesc"),
+      schema: mcpServerSchema,
+      fields: {
+        json: { label: "JSON 配置", type: "textarea", placeholder: t("common.settings.mcpJsonPlaceholder") },
+      },
+      defaultValues: { json: "" },
       className: "max-w-lg",
-      content: (close) => (
-        <ServerDialogContent
-          close={close}
-          onSave={(newServers) => {
-            // 合并到现有服务器，按 name 去重
-            const existingNames = new Set(servers.map((s) => s.name));
-            const toAdd = newServers.filter((s) => !existingNames.has(s.name));
-            const toUpdate = newServers.filter((s) => existingNames.has(s.name));
+      onSubmit: (data) => {
+        try {
+          const newServers = parseMCPJson(data.json);
+          if (newServers.length === 0) {
+            toast.error(t("common.settings.mcpInvalidJson"));
+            return;
+          }
+          // 合并到现有服务器，按 name 去重
+          const existingNames = new Set(servers.map((s) => s.name));
+          const toAdd = newServers.filter((s) => !existingNames.has(s.name));
+          const toUpdate = newServers.filter((s) => existingNames.has(s.name));
 
-            const merged = servers.map((s) => {
-              const updated = toUpdate.find((u) => u.name === s.name);
-              return updated ? { ...s, ...updated, enabled: s.enabled } : s;
-            });
+          const merged = servers.map((s) => {
+            const updated = toUpdate.find((u) => u.name === s.name);
+            return updated ? { ...s, ...updated, enabled: s.enabled } : s;
+          });
 
-            handleServersUpdate([...merged, ...toAdd]);
-            toast.success(
-              t("common.settings.mcpAddServerSuccess") +
-                (toAdd.length > 0 ? ` (+${toAdd.length})` : "") +
-                (toUpdate.length > 0 ? ` (↻${toUpdate.length})` : "")
-            );
-          }}
-        />
-      ),
+          handleServersUpdate([...merged, ...toAdd]);
+          toast.success(
+            t("common.settings.mcpAddServerSuccess") +
+              (toAdd.length > 0 ? ` (+${toAdd.length})` : "") +
+              (toUpdate.length > 0 ? ` (↻${toUpdate.length})` : "")
+          );
+        } catch {
+          toast.error(t("common.settings.mcpInvalidJson"));
+        }
+      },
     });
   };
 
   // 打开编辑弹窗
   const openEditDialog = (index: number) => {
     const server = servers[index];
-    dialog({
+    dialogForm({
       title: t("common.settings.mcpEditServer"),
       description: t("common.settings.mcpPasteJsonDesc"),
+      schema: mcpServerSchema,
+      fields: {
+        json: { label: "JSON 配置", type: "textarea", placeholder: t("common.settings.mcpJsonPlaceholder") },
+      },
+      defaultValues: { json: serverToJson(server) },
       className: "max-w-lg",
-      content: (close) => (
-        <ServerDialogContent
-          initialValue={serverToJson(server)}
-          close={close}
-          onSave={(newServers) => {
-            if (newServers.length === 0) return;
-            // 编辑模式：替换当前服务器，保留 enabled 状态
-            const updated = { ...newServers[0], enabled: server.enabled };
-            const newList = [...servers];
-            newList[index] = updated;
-            handleServersUpdate(newList);
-            toast.success(t("common.settings.mcpUpdateServerSuccess"));
-          }}
-        />
-      ),
+      onSubmit: (data) => {
+        try {
+          const newServers = parseMCPJson(data.json);
+          if (newServers.length === 0) {
+            toast.error(t("common.settings.mcpInvalidJson"));
+            return;
+          }
+          // 编辑模式：替换当前服务器，保留 enabled 状态
+          const updated = { ...newServers[0], enabled: server.enabled };
+          const newList = [...servers];
+          newList[index] = updated;
+          handleServersUpdate(newList);
+          toast.success(t("common.settings.mcpUpdateServerSuccess"));
+        } catch {
+          toast.error(t("common.settings.mcpInvalidJson"));
+        }
+      },
     });
   };
 

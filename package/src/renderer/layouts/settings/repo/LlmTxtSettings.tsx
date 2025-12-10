@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import {
   SettingSection,
   SettingCard,
-} from "@/components/settings/SettingComponents";
+} from "@/layouts/settings/item/SettingComponents";
 import { useDebounce, updateLlmTxt } from "./hooks";
 
 export const LlmTxtSettings = () => {

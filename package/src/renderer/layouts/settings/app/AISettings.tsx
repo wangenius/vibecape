@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { SettingSection } from "@/components/settings/SettingComponents";
+import { SettingSection } from "@/layouts/settings/item/SettingComponents";
 import { Sparkles, MessageSquare, Search, FileEdit, Wand2 } from "lucide-react";
 
 /**

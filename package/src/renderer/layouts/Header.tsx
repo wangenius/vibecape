@@ -13,7 +13,7 @@ import {
   BsLayoutSidebarReverse,
 } from "react-icons/bs";
 import { TbSettings, TbChevronDown, TbFolder } from "react-icons/tb";
-import { ModelSelector } from "../components/custom/ModelSelector";
+
 import {
   Popover,
   PopoverContent,
@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/popover";
 import { toast } from "sonner";
 import { openSettingsDialog } from "./settings";
+import { ModelSelector } from "@/layouts/settings/item/ModelSelector";
 
 export function Header() {
   const [isRepoPopoverOpen, setIsRepoPopoverOpen] = useState(false);

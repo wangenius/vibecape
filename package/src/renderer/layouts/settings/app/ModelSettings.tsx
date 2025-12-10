@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { dialogForm } from "@/components/custom/DialogForm";
+import { dialogForm } from "@/components/ui/DialogForm";
 import {
   Select,
   SelectContent,
@@ -36,9 +36,12 @@ import {
 } from "@/hooks/model/useProvider";
 import { BsStars } from "react-icons/bs";
 import { MoreVertical, Plus, Server } from "lucide-react";
-import { RemoteModelsSheet } from "@/components/custom/ProviderModelsSheet";
 import { useTranslation } from "react-i18next";
-import { SettingSection, SettingItem } from "@/components/settings/SettingComponents";
+import {
+  SettingSection,
+  SettingItem,
+} from "@/layouts/settings/item/SettingComponents";
+import { RemoteModelsSheet } from "@/layouts/settings/item/ProviderModelsSheet";
 
 // Provider Schema - 纯数据验证
 const providerSchema = z.object({
@@ -58,7 +61,6 @@ type ModelForm = {
   json: boolean;
   reasoner: boolean;
 };
-
 
 export const ModelSettings = () => {
   const { t } = useTranslation();
@@ -98,16 +100,26 @@ export const ModelSettings = () => {
   }, []);
 
   // Provider 操作 - 使用 dialogForm
-  const openProviderDialog = (editingId: string | null, initialForm: ProviderForm) => {
+  const openProviderDialog = (
+    editingId: string | null,
+    initialForm: ProviderForm
+  ) => {
     dialogForm({
-      title: editingId === null ? t("common.settings.addProvider") : t("common.settings.editProvider"),
+      title:
+        editingId === null
+          ? t("common.settings.addProvider")
+          : t("common.settings.editProvider"),
       description: t("common.settings.providerSettingsDesc"),
       schema: providerSchema,
       fields: {
         name: { label: "名称", placeholder: "Provider 名称" },
         base_url: { label: "Base URL", placeholder: "https://api.example.com" },
         api_key: { label: "API Key", placeholder: "sk-...", type: "password" },
-        models_path: { label: "Models Path", placeholder: "/models", description: "获取模型列表的路径" },
+        models_path: {
+          label: "Models Path",
+          placeholder: "/models",
+          description: "获取模型列表的路径",
+        },
       },
       defaultValues: initialForm,
       onSubmit: async (form) => {
@@ -120,14 +132,21 @@ export const ModelSettings = () => {
             toast.success(t("common.settings.updateProviderSuccess"));
           }
         } catch (error: any) {
-          toast.error(error?.message ?? t("common.settings.saveProviderFailed"));
+          toast.error(
+            error?.message ?? t("common.settings.saveProviderFailed")
+          );
         }
       },
     });
   };
 
   const startCreateProvider = () => {
-    openProviderDialog(null, { name: "", base_url: "", api_key: "", models_path: "/models" });
+    openProviderDialog(null, {
+      name: "",
+      base_url: "",
+      api_key: "",
+      models_path: "/models",
+    });
   };
 
   const startEditProvider = (provider: (typeof providers)[0]) => {
@@ -160,15 +179,24 @@ export const ModelSettings = () => {
   });
 
   // Model 操作 - 使用 dialogForm
-  const openModelDialog = (editingId: string | null, initialForm: ModelForm) => {
+  const openModelDialog = (
+    editingId: string | null,
+    initialForm: ModelForm
+  ) => {
     dialogForm({
-      title: editingId === null ? t("common.settings.addModel") : t("common.settings.editModel"),
+      title:
+        editingId === null
+          ? t("common.settings.addModel")
+          : t("common.settings.editModel"),
       description: t("common.settings.modelSettingsDesc"),
       schema: modelSchema,
       fields: {
         name: { label: "显示名称", placeholder: "模型显示名称" },
         model: { label: "模型名称", placeholder: "gpt-4o" },
-        provider_id: { label: "Provider", options: providers.map((p) => ({ value: p.id, label: p.name })) },
+        provider_id: {
+          label: "Provider",
+          options: providers.map((p) => ({ value: p.id, label: p.name })),
+        },
         type: { label: "模型类型" },
         json: { label: "JSON 输出", description: "是否支持 JSON 结构化输出" },
         reasoner: { label: "推理模型", description: "是否为推理模型" },
@@ -191,7 +219,14 @@ export const ModelSettings = () => {
   };
 
   const startCreate = () => {
-    openModelDialog(null, { name: "", model: "", provider_id: "", type: "text", json: false, reasoner: false });
+    openModelDialog(null, {
+      name: "",
+      model: "",
+      provider_id: "",
+      type: "text",
+      json: false,
+      reasoner: false,
+    });
   };
 
   const startEdit = (model: (typeof modelList)[0]) => {
@@ -422,7 +457,6 @@ export const ModelSettings = () => {
           })}
         </div>
       </SettingSection>
-
     </div>
   );
 };

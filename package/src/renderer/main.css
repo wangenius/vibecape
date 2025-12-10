@@ -1,0 +1,39 @@
+/* 1. Tailwind 核心 */
+@import "tailwindcss";
+@plugin "tailwindcss-animate";
+@plugin "@tailwindcss/typography";
+
+/* 2. 主题变量（只定义 CSS 变量） */
+@import "@/@styles/theme/default.css";
+@import "@/@styles/theme/dim.css";
+@import "@/@styles/theme/forest.css";
+@import "@/@styles/theme/graph.css";
+@import "@/@styles/theme/haze.css";
+@import "@/@styles/theme/mono.css";
+@import "@/@styles/theme/ocean.css";
+@import "@/@styles/theme/sunset.css";
+@import "@/@styles/theme/vercel.css";
+
+/* 3. 统一 Token 定义（唯一的 @theme inline） */
+@import "@/@styles/tokens.css";
+
+/* 4. 基础样式 */
+@import "@/@styles/base.css";
+
+/* 5. 组件基础样式 (@layer base) */
+@import "@/@styles/components.css";
+
+/* 6. 工具类 */
+@import "@/@styles/utils.css";
+
+/* 全局样式重置 */
+@layer base {
+  * {
+    font-family: var(--font-sans);
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    overflow: hidden;
+  }
+}

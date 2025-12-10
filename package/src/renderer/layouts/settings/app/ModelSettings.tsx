@@ -1,4 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import { dialogForm } from "@/components/custom/DialogForm";
 import {
   Select,
   SelectContent,
@@ -6,18 +9,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -47,24 +38,18 @@ import { BsStars } from "react-icons/bs";
 import { MoreVertical, Plus, Server } from "lucide-react";
 import { RemoteModelsSheet } from "@/components/custom/ProviderModelsSheet";
 import { useTranslation } from "react-i18next";
-import { SettingSection, SettingItem, SettingRow } from "@/components/settings/SettingComponents";
+import { SettingSection, SettingItem } from "@/components/settings/SettingComponents";
 
-// Provider 表单类型
-type ProviderForm = {
-  name: string;
-  base_url: string;
-  api_key: string;
-  models_path: string;
-};
-
-const createEmptyProviderForm = (): ProviderForm => ({
-  name: "",
-  base_url: "",
-  api_key: "",
-  models_path: "/models",
+// Provider Schema - 纯数据验证
+const providerSchema = z.object({
+  name: z.string().min(1, "名称不能为空"),
+  base_url: z.string().min(1, "Base URL 不能为空"),
+  api_key: z.string().min(1, "API Key 不能为空"),
+  models_path: z.string().default("/models"),
 });
+type ProviderForm = z.infer<typeof providerSchema>;
 
-// 模型表单类型
+// Model 类型
 type ModelForm = {
   name: string;
   model: string;
@@ -74,16 +59,6 @@ type ModelForm = {
   reasoner: boolean;
 };
 
-const MODEL_TYPES: ModelForm["type"][] = ["text", "img", "video"];
-
-const createEmptyForm = (): ModelForm => ({
-  name: "",
-  model: "",
-  provider_id: "",
-  type: "text",
-  json: false,
-  reasoner: false,
-});
 
 export const ModelSettings = () => {
   const { t } = useTranslation();
@@ -94,19 +69,7 @@ export const ModelSettings = () => {
 
   // Model 状态
   const [refreshing, setRefreshing] = useState(false);
-  const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [form, setForm] = useState<ModelForm | null>(null);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [sheetOpen, setSheetOpen] = useState(false);
-
-  // Provider 状态
-  const [providerForm, setProviderForm] = useState<ProviderForm | null>(null);
-  const [editingProviderId, setEditingProviderId] = useState<string | null>(
-    null
-  );
-  const [providerSheetOpen, setProviderSheetOpen] = useState(false);
-  const [savingProvider, setSavingProvider] = useState(false);
 
   const modelList = useMemo(() => Object.values(models), [models]);
 
@@ -134,67 +97,46 @@ export const ModelSettings = () => {
     );
   }, []);
 
-  // Provider 操作
+  // Provider 操作 - 使用 dialogForm
+  const openProviderDialog = (editingId: string | null, initialForm: ProviderForm) => {
+    dialogForm({
+      title: editingId === null ? t("common.settings.addProvider") : t("common.settings.editProvider"),
+      description: t("common.settings.providerSettingsDesc"),
+      schema: providerSchema,
+      fields: {
+        name: { label: "名称", placeholder: "Provider 名称" },
+        base_url: { label: "Base URL", placeholder: "https://api.example.com" },
+        api_key: { label: "API Key", placeholder: "sk-...", type: "password" },
+        models_path: { label: "Models Path", placeholder: "/models", description: "获取模型列表的路径" },
+      },
+      defaultValues: initialForm,
+      onSubmit: async (form) => {
+        try {
+          if (editingId === null) {
+            await createProvider(form);
+            toast.success(t("common.settings.addProviderSuccess"));
+          } else {
+            await updateProvider(editingId, form);
+            toast.success(t("common.settings.updateProviderSuccess"));
+          }
+        } catch (error: any) {
+          toast.error(error?.message ?? t("common.settings.saveProviderFailed"));
+        }
+      },
+    });
+  };
+
   const startCreateProvider = () => {
-    setProviderForm(createEmptyProviderForm());
-    setEditingProviderId("__new");
-    setProviderSheetOpen(true);
+    openProviderDialog(null, { name: "", base_url: "", api_key: "", models_path: "/models" });
   };
 
   const startEditProvider = (provider: (typeof providers)[0]) => {
-    setProviderForm({
+    openProviderDialog(provider.id, {
       name: provider.name,
       base_url: provider.base_url,
       api_key: provider.api_key,
       models_path: provider.models_path,
     });
-    setEditingProviderId(provider.id);
-    setProviderSheetOpen(true);
-  };
-
-  const cancelEditProvider = () => {
-    setProviderForm(null);
-    setEditingProviderId(null);
-    setProviderSheetOpen(false);
-  };
-
-  const handleProviderChange = <K extends keyof ProviderForm>(
-    key: K,
-    value: ProviderForm[K]
-  ) => {
-    setProviderForm((prev) => (prev ? { ...prev, [key]: value } : prev));
-  };
-
-  const handleSaveProvider = async () => {
-    if (!providerForm) return;
-    const trimmed = {
-      ...providerForm,
-      name: providerForm.name.trim(),
-      base_url: providerForm.base_url.trim(),
-      api_key: providerForm.api_key.trim(),
-      models_path: providerForm.models_path.trim() || "/models",
-    };
-
-    if (!trimmed.name || !trimmed.base_url || !trimmed.api_key) {
-      toast.error(t("common.settings.providerInfo"));
-      return;
-    }
-
-    try {
-      setSavingProvider(true);
-      if (editingProviderId === "__new") {
-        await createProvider(trimmed);
-        toast.success(t("common.settings.addProviderSuccess"));
-      } else if (editingProviderId) {
-        await updateProvider(editingProviderId, trimmed);
-        toast.success(t("common.settings.updateProviderSuccess"));
-      }
-      cancelEditProvider();
-    } catch (error: any) {
-      toast.error(error?.message ?? t("common.settings.saveProviderFailed"));
-    } finally {
-      setSavingProvider(false);
-    }
   };
 
   const handleDeleteProvider = async (id: string, name: string) => {
@@ -207,14 +149,53 @@ export const ModelSettings = () => {
     }
   };
 
+  // Model Schema - 纯数据验证
+  const modelSchema = z.object({
+    name: z.string().min(1, "显示名称不能为空"),
+    model: z.string().min(1, "模型名称不能为空"),
+    provider_id: z.string().min(1, "请选择 Provider"),
+    type: z.enum(["text", "img", "video"]),
+    json: z.boolean(),
+    reasoner: z.boolean(),
+  });
+
+  // Model 操作 - 使用 dialogForm
+  const openModelDialog = (editingId: string | null, initialForm: ModelForm) => {
+    dialogForm({
+      title: editingId === null ? t("common.settings.addModel") : t("common.settings.editModel"),
+      description: t("common.settings.modelSettingsDesc"),
+      schema: modelSchema,
+      fields: {
+        name: { label: "显示名称", placeholder: "模型显示名称" },
+        model: { label: "模型名称", placeholder: "gpt-4o" },
+        provider_id: { label: "Provider", options: providers.map((p) => ({ value: p.id, label: p.name })) },
+        type: { label: "模型类型" },
+        json: { label: "JSON 输出", description: "是否支持 JSON 结构化输出" },
+        reasoner: { label: "推理模型", description: "是否为推理模型" },
+      },
+      defaultValues: initialForm,
+      onSubmit: async (form) => {
+        try {
+          if (editingId === null) {
+            await createModel(form);
+            toast.success(t("common.settings.addModelSuccess"));
+          } else {
+            await updateModel(editingId, form);
+            toast.success(t("common.settings.updateModelSuccess"));
+          }
+        } catch (error: any) {
+          toast.error(error?.message ?? t("common.settings.saveModelFailed"));
+        }
+      },
+    });
+  };
+
   const startCreate = () => {
-    setForm(createEmptyForm());
-    setEditingId("__new");
-    setSheetOpen(true);
+    openModelDialog(null, { name: "", model: "", provider_id: "", type: "text", json: false, reasoner: false });
   };
 
   const startEdit = (model: (typeof modelList)[0]) => {
-    setForm({
+    openModelDialog(model.id, {
       name: model.name,
       model: model.model,
       provider_id: model.provider_id,
@@ -222,51 +203,6 @@ export const ModelSettings = () => {
       json: model.json,
       reasoner: model.reasoner,
     });
-    setEditingId(model.id);
-    setSheetOpen(true);
-  };
-
-  const cancelEdit = () => {
-    setForm(null);
-    setEditingId(null);
-    setSheetOpen(false);
-  };
-
-  const handleChange = <K extends keyof ModelForm>(
-    key: K,
-    value: ModelForm[K]
-  ) => {
-    setForm((prev) => (prev ? { ...prev, [key]: value } : prev));
-  };
-
-  const handleSave = async () => {
-    if (!form) return;
-    const trimmed = {
-      ...form,
-      name: form.name.trim(),
-      model: form.model.trim(),
-    };
-
-    if (!trimmed.name || !trimmed.model || !trimmed.provider_id) {
-      toast.error(t("common.settings.modelInfo"));
-      return;
-    }
-
-    try {
-      setSaving(true);
-      if (editingId === "__new") {
-        await createModel(trimmed);
-        toast.success(t("common.settings.addModelSuccess"));
-      } else if (editingId) {
-        await updateModel(editingId, trimmed);
-        toast.success(t("common.settings.updateModelSuccess"));
-      }
-      cancelEdit();
-    } catch (error: any) {
-      toast.error(error?.message ?? t("common.settings.saveModelFailed"));
-    } finally {
-      setSaving(false);
-    }
   };
 
   const handleDelete = async (id: string, name: string) => {
@@ -487,231 +423,6 @@ export const ModelSettings = () => {
         </div>
       </SettingSection>
 
-      {/* 编辑模型 Sheet */}
-      <Sheet open={sheetOpen} onOpenChange={(open) => !open && cancelEdit()}>
-        <SheetContent className="sm:max-w-md overflow-y-auto flex flex-col">
-          <SheetHeader>
-            <SheetTitle>
-              {editingId === "__new"
-                ? t("common.settings.addModel")
-                : t("common.settings.editModel")}
-            </SheetTitle>
-            <SheetDescription>
-              {t("common.settings.modelSettingsDesc")}
-            </SheetDescription>
-          </SheetHeader>
-
-          {form && (
-            <div className="flex-1 space-y-4 py-4">
-              <div className="space-y-2">
-                <Label>{t("common.settings.displayName")}</Label>
-                <Input
-                  value={form.name}
-                  onChange={(e) => handleChange("name", e.target.value)}
-                  placeholder={t("common.settings.displayNamePlaceholder")}
-                  disabled={saving}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>{t("common.settings.modelName")}</Label>
-                <Input
-                  value={form.model}
-                  onChange={(e) => handleChange("model", e.target.value)}
-                  placeholder={t("common.settings.modelNamePlaceholder")}
-                  disabled={saving}
-                />
-              </div>
-
-              <SettingRow
-                label={t("common.settings.provider")}
-                description={t("common.settings.providerConfigDesc")}
-              >
-                <Select
-                  value={form.provider_id || "__none__"}
-                  onValueChange={(v) => {
-                    handleChange("provider_id", v === "__none__" ? "" : v);
-                  }}
-                  disabled={saving}
-                >
-                  <SelectTrigger className="w-32">
-                    <SelectValue
-                      placeholder={t("common.settings.providerSelect")}
-                    />
-                  </SelectTrigger>
-                  <SelectContent align="end">
-                    <SelectItem value="__none__" disabled>
-                      {t("common.settings.providerSelectPlaceholder")}
-                    </SelectItem>
-                    {providers.map((p) => (
-                      <SelectItem key={p.id} value={p.id}>
-                        {p.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </SettingRow>
-
-              <SettingRow
-                label={t("common.settings.modelType")}
-                description={t("common.settings.modelTypeDesc")}
-              >
-                <Select
-                  value={form.type}
-                  onValueChange={(v) =>
-                    handleChange("type", v as ModelForm["type"])
-                  }
-                  disabled={saving}
-                >
-                  <SelectTrigger className="w-24">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent align="end">
-                    {MODEL_TYPES.map((t) => (
-                      <SelectItem key={t} value={t}>
-                        {t}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </SettingRow>
-
-              <SettingRow
-                label={t("common.settings.jsonOutput")}
-                description={t("common.settings.jsonOutputDesc")}
-              >
-                <Switch
-                  checked={form.json}
-                  onCheckedChange={(v) => handleChange("json", v)}
-                  disabled={saving}
-                />
-              </SettingRow>
-
-              <SettingRow
-                label={t("common.settings.reasonerModel")}
-                description={t("common.settings.reasonerModelDesc")}
-              >
-                <Switch
-                  checked={form.reasoner}
-                  onCheckedChange={(v) => handleChange("reasoner", v)}
-                  disabled={saving}
-                />
-              </SettingRow>
-            </div>
-          )}
-
-          <SheetFooter className="mt-4 flex gap-3">
-            <Button
-              variant="outline"
-              className="flex-1 h-11"
-              onClick={cancelEdit}
-              disabled={saving}
-            >
-              {t("common.actions.cancel")}
-            </Button>
-            <Button
-              className="flex-1 h-11"
-              onClick={handleSave}
-              disabled={saving}
-            >
-              {saving ? t("common.settings.saving") : t("common.settings.save")}
-            </Button>
-          </SheetFooter>
-        </SheetContent>
-      </Sheet>
-
-      {/* Provider 编辑 Sheet */}
-      <Sheet
-        open={providerSheetOpen}
-        onOpenChange={(open) => !open && cancelEditProvider()}
-      >
-        <SheetContent className="sm:max-w-md overflow-y-auto flex flex-col">
-          <SheetHeader>
-            <SheetTitle>
-              {editingProviderId === "__new"
-                ? t("common.settings.addProvider")
-                : t("common.settings.editProvider")}
-            </SheetTitle>
-            <SheetDescription>
-              {t("common.settings.providerSettingsDesc")}
-            </SheetDescription>
-          </SheetHeader>
-
-          {providerForm && (
-            <div className="flex-1 space-y-4 py-4">
-              <div className="space-y-2">
-                <Label>{t("common.settings.name")}</Label>
-                <Input
-                  value={providerForm.name}
-                  onChange={(e) => handleProviderChange("name", e.target.value)}
-                  placeholder={t("common.settings.providerNamePlaceholder")}
-                  disabled={savingProvider}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>{t("common.settings.baseUrl")}</Label>
-                <Input
-                  value={providerForm.base_url}
-                  onChange={(e) =>
-                    handleProviderChange("base_url", e.target.value)
-                  }
-                  placeholder={t("common.settings.baseUrlPlaceholder")}
-                  disabled={savingProvider}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>{t("common.settings.apiKey")}</Label>
-                <Input
-                  value={providerForm.api_key}
-                  onChange={(e) =>
-                    handleProviderChange("api_key", e.target.value)
-                  }
-                  placeholder={t("common.settings.apiKeyPlaceholder")}
-                  disabled={savingProvider}
-                  type="password"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>{t("common.settings.modelsPath")}</Label>
-                <Input
-                  value={providerForm.models_path}
-                  onChange={(e) =>
-                    handleProviderChange("models_path", e.target.value)
-                  }
-                  placeholder="/models"
-                  disabled={savingProvider}
-                />
-                <p className="text-xs text-muted-foreground">
-                  {t("common.settings.modelsPathDesc")}
-                </p>
-              </div>
-            </div>
-          )}
-
-          <SheetFooter className="mt-4 flex gap-3">
-            <Button
-              variant="outline"
-              className="flex-1 h-11"
-              onClick={cancelEditProvider}
-              disabled={savingProvider}
-            >
-              {t("common.actions.cancel")}
-            </Button>
-            <Button
-              className="flex-1 h-11"
-              onClick={handleSaveProvider}
-              disabled={savingProvider}
-            >
-              {savingProvider
-                ? t("common.settings.saving")
-                : t("common.settings.save")}
-            </Button>
-          </SheetFooter>
-        </SheetContent>
-      </Sheet>
     </div>
   );
 };

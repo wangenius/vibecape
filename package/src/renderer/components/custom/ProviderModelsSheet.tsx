@@ -1,14 +1,7 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+import { dialog } from "@/components/custom/DialogModal";
 import { Plus, RefreshCw, Search, Server } from "lucide-react";
 import { toast } from "sonner";
 import { fetchRemoteModels, type RemoteModel } from "@/hooks/model/useProvider";
@@ -18,12 +11,12 @@ import type { Provider } from "@common/schema/app";
 const STORAGE_KEY_MODELS = "vibecape:remote-models";
 const STORAGE_KEY_PROVIDER = "vibecape:remote-models-provider";
 
-interface RemoteModelsSheetProps {
+interface RemoteModelsDialogProps {
   provider: Provider;
 }
 
-export function RemoteModelsSheet({ provider }: RemoteModelsSheetProps) {
-  const [open, setOpen] = useState(false);
+// Dialog 内容组件
+const RemoteModelsDialogContent = ({ provider }: { provider: Provider }) => {
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
 
@@ -105,105 +98,130 @@ export function RemoteModelsSheet({ provider }: RemoteModelsSheetProps) {
   }, [models, search]);
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
-        <Button variant="ghost" size="sm" className="h-7 px-2 text-xs">
-          <Server className="h-3 w-3 mr-1" />
-          {models.length > 0 ? `${models.length} 个模型` : "获取模型"}
+    <div className="flex flex-col gap-3 max-h-[60vh]">
+      {/* 搜索和刷新 */}
+      <div className="flex items-center gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+          <Input
+            placeholder="搜索模型..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="h-8 pl-8 text-sm"
+          />
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-8 px-3"
+          onClick={handleFetch}
+          disabled={loading}
+        >
+          <RefreshCw
+            className={`h-3.5 w-3.5 mr-1.5 ${loading ? "animate-spin" : ""}`}
+          />
+          {loading ? "获取中" : "刷新"}
         </Button>
-      </SheetTrigger>
-      <SheetContent className="sm:max-w-md flex flex-col">
-        <SheetHeader>
-          <SheetTitle className="flex items-center gap-2">
-            <Server className="h-4 w-4" />
-            {provider.name} 可用模型
-          </SheetTitle>
-          <SheetDescription>
-            从 {provider.base_url} 获取的模型列表
-          </SheetDescription>
-        </SheetHeader>
+      </div>
 
-        <div className="flex-1 flex flex-col gap-3 py-4 overflow-hidden">
-          {/* 搜索和刷新 */}
-          <div className="flex items-center gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-              <Input
-                placeholder="搜索模型..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="h-8 pl-8 text-sm"
-              />
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 px-3"
-              onClick={handleFetch}
-              disabled={loading}
-            >
-              <RefreshCw
-                className={`h-3.5 w-3.5 mr-1.5 ${loading ? "animate-spin" : ""}`}
-              />
-              {loading ? "获取中" : "刷新"}
-            </Button>
-          </div>
-
-          {/* 模型列表 */}
-          <div className="flex-1 overflow-y-auto space-y-1">
-            {filteredModels.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-                {models.length === 0 ? (
-                  <>
-                    <Server className="h-8 w-8 mb-2 opacity-40" />
-                    <p className="text-sm">点击刷新获取模型列表</p>
-                  </>
-                ) : (
-                  <>
-                    <Search className="h-8 w-8 mb-2 opacity-40" />
-                    <p className="text-sm">没有找到匹配的模型</p>
-                  </>
-                )}
-              </div>
+      {/* 模型列表 */}
+      <div className="flex-1 overflow-y-auto space-y-1 min-h-[200px]">
+        {filteredModels.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+            {models.length === 0 ? (
+              <>
+                <Server className="h-8 w-8 mb-2 opacity-40" />
+                <p className="text-sm">点击刷新获取模型列表</p>
+              </>
             ) : (
-              filteredModels.map((model) => (
-                <div
-                  key={model.id}
-                  className="flex items-center justify-between p-2.5 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors group"
-                >
-                  <div className="flex-1 min-w-0 pr-2">
-                    <p className="text-sm font-medium truncate">{model.id}</p>
-                    {model.object && (
-                      <p className="text-xs text-muted-foreground">
-                        {model.object}
-                      </p>
-                    )}
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 px-2 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-                    onClick={() => handleAddModel(model)}
-                  >
-                    <Plus className="h-3 w-3 mr-1" />
-                    添加
-                  </Button>
-                </div>
-              ))
+              <>
+                <Search className="h-8 w-8 mb-2 opacity-40" />
+                <p className="text-sm">没有找到匹配的模型</p>
+              </>
             )}
           </div>
-
-          {/* 底部统计 */}
-          {models.length > 0 && (
-            <div className="text-xs text-muted-foreground text-center pt-2 border-t">
-              共 {models.length} 个模型
-              {search && filteredModels.length !== models.length && (
-                <span>，显示 {filteredModels.length} 个</span>
-              )}
+        ) : (
+          filteredModels.map((model) => (
+            <div
+              key={model.id}
+              className="flex items-center justify-between p-2.5 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors group"
+            >
+              <div className="flex-1 min-w-0 pr-2">
+                <p className="text-sm font-medium truncate">{model.id}</p>
+                {model.object && (
+                  <p className="text-xs text-muted-foreground">
+                    {model.object}
+                  </p>
+                )}
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 px-2 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                onClick={() => handleAddModel(model)}
+              >
+                <Plus className="h-3 w-3 mr-1" />
+                添加
+              </Button>
             </div>
+          ))
+        )}
+      </div>
+
+      {/* 底部统计 */}
+      {models.length > 0 && (
+        <div className="text-xs text-muted-foreground text-center pt-2 border-t">
+          共 {models.length} 个模型
+          {search && filteredModels.length !== models.length && (
+            <span>，显示 {filteredModels.length} 个</span>
           )}
         </div>
-      </SheetContent>
-    </Sheet>
+      )}
+    </div>
+  );
+};
+
+// 获取缓存的模型数量
+const getCachedModelCount = (providerId: string): number => {
+  try {
+    const cachedProviderId = localStorage.getItem(STORAGE_KEY_PROVIDER);
+    if (cachedProviderId === providerId) {
+      const cached = localStorage.getItem(STORAGE_KEY_MODELS);
+      if (cached) {
+        return JSON.parse(cached).length;
+      }
+    }
+    return 0;
+  } catch {
+    return 0;
+  }
+};
+
+export function RemoteModelsSheet({ provider }: RemoteModelsDialogProps) {
+  const [modelCount, setModelCount] = useState(() => getCachedModelCount(provider.id));
+
+  const openDialog = () => {
+    dialog({
+      title: (
+        <span className="flex items-center gap-2">
+          <Server className="h-4 w-4" />
+          {provider.name} 可用模型
+        </span>
+      ),
+      description: `从 ${provider.base_url} 获取的模型列表`,
+      className: "max-w-md",
+      content: () => <RemoteModelsDialogContent provider={provider} />,
+      onClose: () => {
+        // 关闭时更新模型数量
+        setModelCount(getCachedModelCount(provider.id));
+      },
+    });
+  };
+
+  return (
+    <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={openDialog}>
+      <Server className="h-3 w-3 mr-1" />
+      {modelCount > 0 ? `${modelCount} 个模型` : "获取模型"}
+    </Button>
   );
 }

@@ -85,3 +85,5 @@ jspm_packages/
 .docusaurus/
 
 package-lock.json
+
+.windsurf

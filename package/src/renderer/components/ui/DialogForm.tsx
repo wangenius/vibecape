@@ -134,11 +134,11 @@ const RichTextEditor = ({
   return (
     <div
       className={cn(
-        "rich-editor",
+        "w-full rounded-md border border-input bg-muted px-3 py-2 text-sm ring-offset-background transition-colors",
         "[&_.ProseMirror]:outline-none [&_.ProseMirror]:min-h-20",
         "[&_.ProseMirror_p]:m-0 [&_.ProseMirror_p]:leading-relaxed",
         "[&_.is-editor-empty]:before:content-[attr(data-placeholder)] [&_.is-editor-empty]:before:text-muted-foreground/50 [&_.is-editor-empty]:before:float-left [&_.is-editor-empty]:before:h-0 [&_.is-editor-empty]:before:pointer-events-none",
-        hasError && "rich-editor-error"
+        hasError && "border-destructive"
       )}
     >
       <EditorContent editor={editor} />
@@ -187,7 +187,7 @@ function AutoField<T extends FieldValues>({
   const renderLabel = () => (
     <Label>
       {label}
-      {isRequired && <span className="form-field-required">*</span>}
+      {isRequired && <span className="text-destructive ml-1">*</span>}
     </Label>
   );
 
@@ -200,11 +200,11 @@ function AutoField<T extends FieldValues>({
     switch (fieldType) {
       case "switch":
         return (
-          <div className="list-item-between">
+          <div className="flex items-center justify-between">
             <div>
               <Label>{label}</Label>
               {config.description && (
-                <p className="form-field-description">{config.description}</p>
+                <p className="text-xs text-muted-foreground mt-1">{config.description}</p>
               )}
             </div>
             <Switch
@@ -217,7 +217,7 @@ function AutoField<T extends FieldValues>({
       case "select": {
         const options = getEnumOptions(unwrapped, config);
         return (
-          <div className="form-field">
+          <div className="flex flex-col gap-1.5">
             {renderLabel()}
             <Select
               value={value as string}
@@ -235,10 +235,10 @@ function AutoField<T extends FieldValues>({
               </SelectContent>
             </Select>
             {config.description && (
-              <p className="form-field-description">{config.description}</p>
+              <p className="text-xs text-muted-foreground mt-1">{config.description}</p>
             )}
             {error && (
-              <p className="form-field-error">{error.message as string}</p>
+              <p className="text-xs text-destructive mt-1">{error.message as string}</p>
             )}
           </div>
         );
@@ -246,7 +246,7 @@ function AutoField<T extends FieldValues>({
 
       case "textarea":
         return (
-          <div className="form-field">
+          <div className="flex flex-col gap-1.5">
             {renderLabel()}
             <RichTextEditor
               value={value as string}
@@ -255,17 +255,17 @@ function AutoField<T extends FieldValues>({
               hasError={!!error}
             />
             {config.description && (
-              <p className="form-field-description">{config.description}</p>
+              <p className="text-xs text-muted-foreground mt-1">{config.description}</p>
             )}
             {error && (
-              <p className="form-field-error">{error.message as string}</p>
+              <p className="text-xs text-destructive mt-1">{error.message as string}</p>
             )}
           </div>
         );
 
       case "number":
         return (
-          <div className="form-field">
+          <div className="flex flex-col gap-1.5">
             {renderLabel()}
             <Input
               {...register(name as any, { valueAsNumber: true })}
@@ -273,17 +273,17 @@ function AutoField<T extends FieldValues>({
               placeholder={config.placeholder}
             />
             {config.description && (
-              <p className="form-field-description">{config.description}</p>
+              <p className="text-xs text-muted-foreground mt-1">{config.description}</p>
             )}
             {error && (
-              <p className="form-field-error">{error.message as string}</p>
+              <p className="text-xs text-destructive mt-1">{error.message as string}</p>
             )}
           </div>
         );
 
       case "password":
         return (
-          <div className="form-field">
+          <div className="flex flex-col gap-1.5">
             {renderLabel()}
             <Input
               {...register(name as any)}
@@ -291,17 +291,17 @@ function AutoField<T extends FieldValues>({
               placeholder={config.placeholder}
             />
             {config.description && (
-              <p className="form-field-description">{config.description}</p>
+              <p className="text-xs text-muted-foreground mt-1">{config.description}</p>
             )}
             {error && (
-              <p className="form-field-error">{error.message as string}</p>
+              <p className="text-xs text-destructive mt-1">{error.message as string}</p>
             )}
           </div>
         );
 
       default:
         return (
-          <div className="form-field">
+          <div className="flex flex-col gap-1.5">
             {renderLabel()}
             <Input
               {...register(name as any)}
@@ -309,10 +309,10 @@ function AutoField<T extends FieldValues>({
               placeholder={config.placeholder}
             />
             {config.description && (
-              <p className="form-field-description">{config.description}</p>
+              <p className="text-xs text-muted-foreground mt-1">{config.description}</p>
             )}
             {error && (
-              <p className="form-field-error">{error.message as string}</p>
+              <p className="text-xs text-destructive mt-1">{error.message as string}</p>
             )}
           </div>
         );
@@ -367,7 +367,7 @@ function DialogFormContent<T extends FieldValues>({
         ))}
       </div>
 
-      <div className="btn-group">
+      <div className="flex justify-end gap-2">
         <Button
           type="button"
           variant="ghost"

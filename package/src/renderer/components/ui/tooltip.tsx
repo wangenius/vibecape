@@ -11,22 +11,18 @@ const Tooltip = TooltipPrimitive.Root;
 
 const TooltipTrigger = TooltipPrimitive.Trigger;
 
-// 在 TooltipContent 之前添加接口定义
-interface TooltipContentProps
-  extends React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Content> {
-  className?: string;
-  sideOffset?: number;
-}
-
 const TooltipContent = React.forwardRef<
   React.ElementRef<typeof TooltipPrimitive.Content>,
-  TooltipContentProps
+  React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Content>
 >(({ className, sideOffset = 4, ...props }, ref) => (
   <TooltipPrimitive.Portal>
     <TooltipPrimitive.Content
       ref={ref}
       sideOffset={sideOffset}
-      className={cn('tooltip-content animate-popover', className)}
+      className={cn(
+        "bg-popover text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-sm data-[side=left]:slide-in-from-right-sm data-[side=right]:slide-in-from-left-sm data-[side=top]:slide-in-from-bottom-sm z-50 origin-(--radix-tooltip-content-transform-origin) overflow-hidden rounded-md border px-sm py-xs text-xs shadow-md",
+        className
+      )}
       {...props}
     />
   </TooltipPrimitive.Portal>

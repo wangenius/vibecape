@@ -7,13 +7,17 @@ interface SettingSectionProps {
   children: ReactNode;
 }
 
+export const SettingsContainer = ({ children }: { children: ReactNode }) => {
+  return <div className="space-y-6">{children}</div>;
+};
+
 export const SettingSection = ({
   title,
   description,
   action,
   children,
 }: SettingSectionProps) => (
-  <section>
+  <section className="space-y-2">
     <div>
       <header>
         <h2>{title}</h2>
@@ -36,8 +40,8 @@ export const SettingItem = ({
   description,
   children,
 }: SettingItemProps) => (
-  <div>
-    <div className="flex flex-col gap-xs">
+  <div className="flex items-center gap-2 justify-between">
+    <div className="flex flex-col gap-2">
       <span className="text-label">{label}</span>
       {description && <p className="text-hint">{description}</p>}
     </div>
@@ -50,5 +54,5 @@ interface SettingCardProps {
 }
 
 export const SettingCard = ({ children }: SettingCardProps) => (
-  <div>{children}</div>
+  <div className="p-4 border border-border rounded-lg">{children}</div>
 );

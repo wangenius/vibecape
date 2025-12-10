@@ -3,7 +3,11 @@ import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { dialogForm } from "@/components/ui/DialogForm";
-import { SettingSection, SettingCard } from "@/layouts/settings/item/SettingComponents";
+import {
+  SettingsContainer,
+  SettingSection,
+  SettingCard,
+} from "@/layouts/settings/item/SettingComponents";
 import { usePromptStore, type PromptItem } from "@/hooks/stores/usePromptStore";
 import { TbPlus, TbTrash, TbEdit } from "react-icons/tb";
 
@@ -61,7 +65,12 @@ const PromptItemCard = ({
 };
 
 /** 将纯文本转换为 JSONContent */
-const textToJSONContent = (text: string): { type: "doc"; content: { type: "paragraph"; content: { type: "text"; text: string }[] }[] } => ({
+const textToJSONContent = (
+  text: string
+): {
+  type: "doc";
+  content: { type: "paragraph"; content: { type: "text"; text: string }[] }[];
+} => ({
   type: "doc",
   content: text.split("\n").map((line) => ({
     type: "paragraph",
@@ -87,7 +96,11 @@ export const PromptSettings = () => {
       schema: promptSchema,
       fields: {
         title: { label: "标题", placeholder: "输入 Prompt 标题..." },
-        body: { label: "内容", type: "textarea", placeholder: "输入 Prompt 内容..." },
+        body: {
+          label: "内容",
+          type: "textarea",
+          placeholder: "输入 Prompt 内容...",
+        },
       },
       defaultValues: { title: "", body: "" },
       onSubmit: (data) => {
@@ -97,27 +110,39 @@ export const PromptSettings = () => {
   };
 
   // 打开编辑对话框
-  const openEditDialog = useCallback((prompt: PromptItem) => {
-    dialogForm({
-      title: t("common.prompt.edit", "编辑 Prompt"),
-      schema: promptSchema,
-      fields: {
-        title: { label: "标题", placeholder: "输入 Prompt 标题..." },
-        body: { label: "内容", type: "textarea", placeholder: "输入 Prompt 内容..." },
-      },
-      defaultValues: { 
-        title: prompt.title, 
-        body: getPromptText(prompt.id),
-      },
-      onSubmit: (data) => {
-        updatePrompt(prompt.id, { title: data.title, body: textToJSONContent(data.body) });
-      },
-    });
-  }, [t, getPromptText, updatePrompt]);
+  const openEditDialog = useCallback(
+    (prompt: PromptItem) => {
+      dialogForm({
+        title: t("common.prompt.edit", "编辑 Prompt"),
+        schema: promptSchema,
+        fields: {
+          title: { label: "标题", placeholder: "输入 Prompt 标题..." },
+          body: {
+            label: "内容",
+            type: "textarea",
+            placeholder: "输入 Prompt 内容...",
+          },
+        },
+        defaultValues: {
+          title: prompt.title,
+          body: getPromptText(prompt.id),
+        },
+        onSubmit: (data) => {
+          updatePrompt(prompt.id, {
+            title: data.title,
+            body: textToJSONContent(data.body),
+          });
+        },
+      });
+    },
+    [t, getPromptText, updatePrompt]
+  );
 
   const handleDelete = useCallback(
     (id: string) => {
-      if (confirm(t("common.prompt.deleteConfirm", "确定要删除这个 Prompt 吗？"))) {
+      if (
+        confirm(t("common.prompt.deleteConfirm", "确定要删除这个 Prompt 吗？"))
+      ) {
         deletePrompt(id);
       }
     },
@@ -125,7 +150,7 @@ export const PromptSettings = () => {
   );
 
   return (
-    <div className="space-y-6">
+    <SettingsContainer>
       <SettingSection
         title={t("common.prompt.management", "Prompt 管理")}
         description={t(
@@ -178,9 +203,7 @@ export const PromptSettings = () => {
         <SettingCard>
           <div className="space-y-3 text-sm">
             <div className="flex items-start gap-3">
-              <kbd className="kbd shrink-0">
-                #
-              </kbd>
+              <kbd className="kbd shrink-0">#</kbd>
               <p className="text-muted-foreground">
                 {t(
                   "common.prompt.usageStep1",
@@ -189,9 +212,7 @@ export const PromptSettings = () => {
               </p>
             </div>
             <div className="flex items-start gap-3">
-              <kbd className="kbd shrink-0">
-                ↑↓
-              </kbd>
+              <kbd className="kbd shrink-0">↑↓</kbd>
               <p className="text-muted-foreground">
                 {t(
                   "common.prompt.usageStep2",
@@ -200,9 +221,7 @@ export const PromptSettings = () => {
               </p>
             </div>
             <div className="flex items-start gap-3">
-              <kbd className="kbd shrink-0">
-                Esc
-              </kbd>
+              <kbd className="kbd shrink-0">Esc</kbd>
               <p className="text-muted-foreground">
                 {t("common.prompt.usageStep3", "按 Esc 关闭菜单")}
               </p>
@@ -210,6 +229,6 @@ export const PromptSettings = () => {
           </div>
         </SettingCard>
       </SettingSection>
-    </div>
+    </SettingsContainer>
   );
 };

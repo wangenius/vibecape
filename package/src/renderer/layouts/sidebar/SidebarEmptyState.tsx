@@ -12,9 +12,13 @@ export const SidebarEmptyState = () => {
   const loading = useUIStore((state) => state.loading);
   const listLoading = useUIStore((state) => state.listLoading);
   const repositoryList = useRepositoryStore((state) => state.repositoryList);
-  const createRepository = useRepositoryStore((state) => state.createRepository);
+  const createRepository = useRepositoryStore(
+    (state) => state.createRepository
+  );
   const openRepository = useRepositoryStore((state) => state.openRepository);
-  const deleteRepository = useRepositoryStore((state) => state.deleteRepository);
+  const deleteRepository = useRepositoryStore(
+    (state) => state.deleteRepository
+  );
 
   const handleOpenRepository = async (id: string) => {
     try {
@@ -149,7 +153,7 @@ export const SidebarEmptyState = () => {
               <Button
                 variant="ghost"
                 size="icon"
-className="hover-visible shrink-0"
+                className="hover-visible shrink-0"
                 onClick={(e) => {
                   e.stopPropagation();
                   void handleDeleteRepository(item.id, item.name);

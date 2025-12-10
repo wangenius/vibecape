@@ -147,8 +147,8 @@ export const Textarea = forwardRef<CustomTextAreaRef, TextareaProps>(
           onChange={handleChange}
           onInput={!onChange ? adjustHeight : undefined}
           className={cn(
-            variant === "secondary" && "textarea-secondary",
-            variant === "ghost" && "textarea-ghost",
+            variant === "secondary" && "bg-secondary border-secondary",
+            variant === "ghost" && "bg-transparent border-transparent hover:bg-muted/50",
             className
           )}
           style={{

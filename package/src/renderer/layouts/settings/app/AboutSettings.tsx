@@ -4,14 +4,10 @@ import iconImage from "@/assets/new-macOS-Default-1024x1024@2x.png";
 export const AboutSettings = () => {
   const { t } = useTranslation();
   return (
-    <div className="space-y-lg">
+    <div className="space-y-4">
       <section className="section">
         <div className="flex items-center gap-md">
-          <img
-            src={iconImage}
-            alt="Vibecape"
-            className="size-16 rounded-xl"
-          />
+          <img src={iconImage} alt="Vibecape" className="size-16 rounded-xl" />
           <div>
             <h3 className="text-xl font-semibold">Vibecape</h3>
             <p className="text-sm text-muted-foreground mt-1">

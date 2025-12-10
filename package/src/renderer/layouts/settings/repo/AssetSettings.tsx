@@ -10,6 +10,7 @@ import { useTranslation } from "react-i18next";
 import {
   SettingSection,
   SettingItem,
+  SettingsContainer,
 } from "@/layouts/settings/item/SettingComponents";
 import type { RepositoryConfig } from "@common/schema/repository";
 
@@ -33,7 +34,7 @@ export const AssetSettings = ({ config }: AssetSettingsProps) => {
   };
 
   return (
-    <div className="space-y-6">
+    <SettingsContainer>
       <SettingSection
         title={t("common.repository.assetSettings")}
         description={t("common.repository.assetSettingsDesc")}
@@ -60,6 +61,6 @@ export const AssetSettings = ({ config }: AssetSettingsProps) => {
           </Select>
         </SettingItem>
       </SettingSection>
-    </div>
+    </SettingsContainer>
   );
 };

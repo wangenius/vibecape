@@ -4,11 +4,30 @@ import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { dialogForm } from "@/components/ui/DialogForm";
 import { toast } from "sonner";
-import { type MCPConfig, type MCPServerConfig, DEFAULT_MCP_CONFIG } from "@common/schema/config";
+import {
+  type MCPConfig,
+  type MCPServerConfig,
+  DEFAULT_MCP_CONFIG,
+} from "@common/schema/config";
 import { type MCPServerStatus, type MCPTool } from "@common/api/app";
 import { useTranslation } from "react-i18next";
-import { SettingSection, SettingItem } from "@/layouts/settings/item/SettingComponents";
-import { CheckCircle, Loader2, Pencil, Play, Plus, RefreshCw, Terminal, Trash2, XCircle, Wrench } from "lucide-react";
+import {
+  SettingsContainer,
+  SettingSection,
+  SettingItem,
+} from "@/layouts/settings/item/SettingComponents";
+import {
+  CheckCircle,
+  Loader2,
+  Pencil,
+  Play,
+  Plus,
+  RefreshCw,
+  Terminal,
+  Trash2,
+  XCircle,
+  Wrench,
+} from "lucide-react";
 
 // 解析 MCP JSON 配置，支持两种格式：
 // 1. { "mcpServers": { "name": { command, args, env } } }
@@ -19,7 +38,11 @@ const parseMCPJson = (jsonStr: string): MCPServerConfig[] => {
 
   const result: MCPServerConfig[] = [];
   for (const [name, config] of Object.entries(serversObj)) {
-    const cfg = config as { command?: string; args?: string[]; env?: Record<string, string> };
+    const cfg = config as {
+      command?: string;
+      args?: string[];
+      env?: Record<string, string>;
+    };
     if (cfg.command) {
       result.push({
         name,
@@ -53,7 +76,9 @@ const mcpServerSchema = z.object({
 export const MCPSettings = () => {
   const { t } = useTranslation();
   const [mcpConfig, setMcpConfig] = useState<MCPConfig>(DEFAULT_MCP_CONFIG);
-  const [serverStatus, setServerStatus] = useState<Record<string, MCPServerStatus>>({});
+  const [serverStatus, setServerStatus] = useState<
+    Record<string, MCPServerStatus>
+  >({});
   const [allTools, setAllTools] = useState<MCPTool[]>([]);
   const [loading, setLoading] = useState(true); // 初始为 true，表示正在加载
 
@@ -63,10 +88,10 @@ export const MCPSettings = () => {
       // 分开请求，避免一个失败导致全部失败
       const config = await window.api.app.mcp.get();
       setMcpConfig(config);
-      
+
       const status = await window.api.app.mcp.status();
       setServerStatus(status);
-      
+
       const tools = await window.api.app.mcp.tools();
       setAllTools(tools);
     } catch (error) {
@@ -78,47 +103,55 @@ export const MCPSettings = () => {
 
   useEffect(() => {
     loadData();
-    
+
     // 监听后端 MCP 状态变化事件（如初始化完成）
     const unsubscribe = window.api.app.mcp.onStatusChanged(() => {
       loadData();
     });
-    
+
     return () => unsubscribe();
   }, [loadData]);
 
   const servers = mcpConfig.servers || [];
 
   // 更新配置并保存
-  const updateMCPConfig = useCallback(async (newConfig: MCPConfig) => {
-    setMcpConfig(newConfig);
-    setLoading(true);
-    try {
-      await window.api.app.mcp.set(newConfig);
-      // 重新加载状态
-      await loadData();
-    } finally {
-      setLoading(false);
-    }
-  }, [loadData]);
+  const updateMCPConfig = useCallback(
+    async (newConfig: MCPConfig) => {
+      setMcpConfig(newConfig);
+      setLoading(true);
+      try {
+        await window.api.app.mcp.set(newConfig);
+        // 重新加载状态
+        await loadData();
+      } finally {
+        setLoading(false);
+      }
+    },
+    [loadData]
+  );
 
   // 手动连接服务器
-  const handleConnect = useCallback(async (serverName: string) => {
-    setLoading(true);
-    try {
-      const result = await window.api.app.mcp.connect(serverName);
-      if (result.success) {
-        toast.success(t("common.settings.mcpConnectSuccess", { name: serverName }));
-      } else {
-        toast.error(result.error || t("common.settings.mcpConnectFailed"));
+  const handleConnect = useCallback(
+    async (serverName: string) => {
+      setLoading(true);
+      try {
+        const result = await window.api.app.mcp.connect(serverName);
+        if (result.success) {
+          toast.success(
+            t("common.settings.mcpConnectSuccess", { name: serverName })
+          );
+        } else {
+          toast.error(result.error || t("common.settings.mcpConnectFailed"));
+        }
+        await loadData();
+      } catch (error) {
+        toast.error(String(error));
+      } finally {
+        setLoading(false);
       }
-      await loadData();
-    } catch (error) {
-      toast.error(String(error));
-    } finally {
-      setLoading(false);
-    }
-  }, [loadData, t]);
+    },
+    [loadData, t]
+  );
 
   // 重新加载所有连接
   const handleReload = useCallback(async () => {
@@ -134,13 +167,19 @@ export const MCPSettings = () => {
     }
   }, [loadData, t]);
 
-  const handleMCPEnabledChange = useCallback((checked: boolean) => {
-    void updateMCPConfig({ ...mcpConfig, enabled: checked });
-  }, [mcpConfig, updateMCPConfig]);
+  const handleMCPEnabledChange = useCallback(
+    (checked: boolean) => {
+      void updateMCPConfig({ ...mcpConfig, enabled: checked });
+    },
+    [mcpConfig, updateMCPConfig]
+  );
 
-  const handleServersUpdate = useCallback((newServers: MCPServerConfig[]) => {
-    void updateMCPConfig({ ...mcpConfig, servers: newServers });
-  }, [mcpConfig, updateMCPConfig]);
+  const handleServersUpdate = useCallback(
+    (newServers: MCPServerConfig[]) => {
+      void updateMCPConfig({ ...mcpConfig, servers: newServers });
+    },
+    [mcpConfig, updateMCPConfig]
+  );
 
   // 打开添加弹窗
   const openAddDialog = () => {
@@ -149,7 +188,11 @@ export const MCPSettings = () => {
       description: t("common.settings.mcpPasteJsonDesc"),
       schema: mcpServerSchema,
       fields: {
-        json: { label: "JSON 配置", type: "textarea", placeholder: t("common.settings.mcpJsonPlaceholder") },
+        json: {
+          label: "JSON 配置",
+          type: "textarea",
+          placeholder: t("common.settings.mcpJsonPlaceholder"),
+        },
       },
       defaultValues: { json: "" },
       className: "max-w-lg",
@@ -191,7 +234,11 @@ export const MCPSettings = () => {
       description: t("common.settings.mcpPasteJsonDesc"),
       schema: mcpServerSchema,
       fields: {
-        json: { label: "JSON 配置", type: "textarea", placeholder: t("common.settings.mcpJsonPlaceholder") },
+        json: {
+          label: "JSON 配置",
+          type: "textarea",
+          placeholder: t("common.settings.mcpJsonPlaceholder"),
+        },
       },
       defaultValues: { json: serverToJson(server) },
       className: "max-w-lg",
@@ -230,7 +277,7 @@ export const MCPSettings = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <SettingsContainer>
       <SettingSection
         title={t("common.settings.mcpConfig")}
         description={t("common.settings.mcpConfigDesc")}
@@ -288,10 +335,7 @@ export const MCPSettings = () => {
                 const toolCount = status?.toolCount || 0;
 
                 return (
-                  <div
-                    key={server.name}
-                    className="item-card flex-col!"
-                  >
+                  <div key={server.name} className="item-card flex-col!">
                     <div className="flex items-center justify-between gap-4">
                       <div className="flex items-center gap-3 min-w-0">
                         {/* 状态图标 */}
@@ -401,6 +445,6 @@ export const MCPSettings = () => {
           </div>
         </SettingSection>
       )}
-    </div>
+    </SettingsContainer>
   );
 };

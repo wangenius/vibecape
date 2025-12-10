@@ -14,6 +14,7 @@ import {
   SettingSection,
   SettingItem,
   SettingCard,
+  SettingsContainer,
 } from "@/layouts/settings/item/SettingComponents";
 import { FolderOpen } from "lucide-react";
 import type { RepositoryConfig } from "@common/schema/repository";
@@ -75,7 +76,7 @@ export const LinkSettings = ({ config }: LinkSettingsProps) => {
   };
 
   return (
-    <div className="space-y-6">
+    <SettingsContainer>
       <SettingSection
         title={t("common.repository.linkSettings")}
         description={t("common.repository.linkSettingsDesc")}
@@ -165,6 +166,6 @@ export const LinkSettings = ({ config }: LinkSettingsProps) => {
           )}
         </div>
       </SettingSection>
-    </div>
+    </SettingsContainer>
   );
 };

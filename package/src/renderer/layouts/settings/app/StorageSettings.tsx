@@ -11,7 +11,12 @@ import { updateSettings, useSettings } from "@/hooks/app/useSettings";
 import { createShape } from "@common/lib/shape";
 import { DEFAULT_APP_CONFIG } from "@common/schema/config";
 import { useTranslation } from "react-i18next";
-import { SettingSection, SettingItem, SettingCard } from "@/layouts/settings/item/SettingComponents";
+import {
+  SettingSection,
+  SettingItem,
+  SettingCard,
+  SettingsContainer,
+} from "@/layouts/settings/item/SettingComponents";
 
 const appConfigShape = createShape(DEFAULT_APP_CONFIG);
 
@@ -20,7 +25,7 @@ export const StorageSettings = () => {
   const settings = useSettings();
 
   return (
-    <div className="space-y-6">
+    <SettingsContainer>
       <SettingSection
         title={t("common.settings.cloudStorage")}
         description={t("common.settings.cloudStorageDesc")}
@@ -168,6 +173,6 @@ export const StorageSettings = () => {
           )}
         </div>
       </SettingSection>
-    </div>
+    </SettingsContainer>
   );
 };

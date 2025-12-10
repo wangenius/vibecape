@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import {
   SettingSection,
   SettingCard,
+  SettingsContainer,
 } from "@/layouts/settings/item/SettingComponents";
 import { useDebounce } from "@/hooks/util/useDebounce";
 
@@ -30,7 +31,7 @@ export const LlmTxtSettings = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <SettingsContainer>
       <SettingSection
         title={t("common.repository.aiContext")}
         description={t("common.repository.llmTxtDesc")}
@@ -49,6 +50,6 @@ export const LlmTxtSettings = () => {
           </div>
         </SettingCard>
       </SettingSection>
-    </div>
+    </SettingsContainer>
   );
 };

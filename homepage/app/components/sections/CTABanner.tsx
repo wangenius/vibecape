@@ -5,7 +5,7 @@ const DOWNLOAD_URL = "https://github.com/wangenius/vibecape/releases/latest";
 
 export const CTABanner: FC = () => {
   return (
-    <section className="py-20 border-t">
+    <section className="py-24 border-t">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">
           开始使用 Vibecape

@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import {
   SettingSection,
   SettingItem,
+  SettingsContainer,
 } from "@/layouts/settings/item/SettingComponents";
 import type { RepositoryConfig } from "@common/schema/repository";
 import { useDebounce } from "@/hooks/util/useDebounce";
@@ -23,7 +24,7 @@ export const BasicSettings = ({ config }: BasicSettingsProps) => {
   }, 500);
 
   return (
-    <div className="space-y-6">
+    <SettingsContainer>
       <SettingSection
         title={t("common.repository.basicInfo")}
         description={t("common.repository.basicInfoDesc")}
@@ -40,6 +41,6 @@ export const BasicSettings = ({ config }: BasicSettingsProps) => {
           />
         </SettingItem>
       </SettingSection>
-    </div>
+    </SettingsContainer>
   );
 };

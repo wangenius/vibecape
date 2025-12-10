@@ -51,7 +51,6 @@ export default defineConfig({
         "@": resolve("src/renderer"),
         "@common": resolve("src/common"),
         "@assets": resolve("src/renderer/assets"),
-        "@styles": resolve("src/renderer/@styles"),
       },
     },
     publicDir: resolve("src/renderer/assets"),

@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import {
   SettingSection,
   SettingCard,
+  SettingsContainer,
 } from "@/layouts/settings/item/SettingComponents";
 import type { DocData } from "@common/schema/docs";
 import { format } from "date-fns";
@@ -72,7 +73,7 @@ export const TrashSettings = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <SettingsContainer>
       <SettingSection
         title={t("common.repository.trash")}
         description={t("common.repository.trashDesc")}
@@ -109,10 +110,7 @@ export const TrashSettings = () => {
           ) : (
             <div className="space-y-2">
               {trashItems.map((item) => (
-                <div
-                  key={item.id}
-                  className="item-card-border"
-                >
+                <div key={item.id} className="item-card-border">
                   <div className="flex-1 min-w-0 mr-4">
                     <h4 className="text-label truncate">{item.title}</h4>
                     <p className="text-hint">
@@ -147,6 +145,6 @@ export const TrashSettings = () => {
           )}
         </SettingCard>
       </SettingSection>
-    </div>
+    </SettingsContainer>
   );
 };

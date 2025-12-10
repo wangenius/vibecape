@@ -38,6 +38,7 @@ import { BsStars } from "react-icons/bs";
 import { MoreVertical, Plus, Server } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
+  SettingsContainer,
   SettingSection,
   SettingItem,
 } from "@/layouts/settings/item/SettingComponents";
@@ -259,7 +260,7 @@ export const ModelSettings = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <SettingsContainer>
       {/* Provider 管理 */}
       <SettingSection
         title={t("common.settings.apiProvider")}
@@ -301,7 +302,7 @@ export const ModelSettings = () => {
                           </span>
                         ),
                         description: `从 ${provider.base_url} 获取的模型列表`,
-                        className:"w-[600px] h-[80vh]",
+                        className: "w-[600px] h-[80vh]",
                         content: () => (
                           <RemoteModelsDialogContent provider={provider} />
                         ),
@@ -480,6 +481,6 @@ export const ModelSettings = () => {
           })}
         </div>
       </SettingSection>
-    </div>
+    </SettingsContainer>
   );
 };

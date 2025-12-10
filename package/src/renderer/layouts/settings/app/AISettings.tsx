@@ -1,5 +1,8 @@
 import { useTranslation } from "react-i18next";
-import { SettingSection } from "@/layouts/settings/item/SettingComponents";
+import {
+  SettingsContainer,
+  SettingSection,
+} from "@/layouts/settings/item/SettingComponents";
 import { Sparkles, MessageSquare, Search, FileEdit, Wand2 } from "lucide-react";
 
 /**
@@ -52,7 +55,7 @@ export const AISettings = () => {
   ];
 
   return (
-    <div className="space-y-6">
+    <SettingsContainer>
       <SettingSection
         title={t("common.settings.aiFeatures", "AI 编辑功能")}
         description={t(
@@ -116,7 +119,7 @@ export const AISettings = () => {
           "AI 编辑相关的键盘快捷键"
         )}
       >
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-4">
           {[
             { key: "⌘K", label: "触发 AI 编辑" },
             { key: "⌘L", label: "引用到 Chat" },
@@ -127,7 +130,7 @@ export const AISettings = () => {
           ].map((shortcut) => (
             <div
               key={shortcut.key}
-              className="flex items-center gap-3 p-3 rounded-lg border border-border bg-background"
+              className="flex items-center gap-3 p-2 rounded-lg border border-border bg-background"
             >
               <kbd className="px-2 py-1 text-sm rounded bg-muted border border-border font-mono min-w-12 text-center">
                 {shortcut.key}
@@ -199,6 +202,6 @@ export const AISettings = () => {
           </table>
         </div>
       </SettingSection>
-    </div>
+    </SettingsContainer>
   );
 };

@@ -15,7 +15,12 @@ import { createShape } from "@common/lib/shape";
 import { DEFAULT_APP_CONFIG } from "@common/schema/config";
 import { setLang } from "@/lib/locales/i18n";
 import { useTranslation } from "react-i18next";
-import { SettingSection, SettingItem, SettingCard } from "@/layouts/settings/item/SettingComponents";
+import {
+  SettingsContainer,
+  SettingSection,
+  SettingItem,
+  SettingCard,
+} from "@/layouts/settings/item/SettingComponents";
 import { FolderOpen } from "lucide-react";
 
 const appConfigShape = createShape(DEFAULT_APP_CONFIG);
@@ -61,7 +66,7 @@ export const GeneralSettings = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <SettingsContainer>
       <SettingSection
         title={t("common.settings.appearance")}
         description={t("common.settings.customizeInterface")}
@@ -213,6 +218,6 @@ export const GeneralSettings = () => {
           </SettingItem>
         </div>
       </SettingSection>
-    </div>
+    </SettingsContainer>
   );
 };

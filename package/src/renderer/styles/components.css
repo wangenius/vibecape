@@ -14,7 +14,6 @@
   button {
     @apply inline-flex items-center justify-center whitespace-nowrap;
     @apply rounded-lg border border-transparent;
-    @apply text-sm gap-sm px-sm;
     @apply text-muted-foreground bg-transparent;
     @apply ring-offset-background transition-colors;
     @apply hover:bg-muted-foreground/10;
@@ -26,8 +25,8 @@
   /* ═══ Input ═══ */
   input {
     @apply flex w-full  rounded-md;
-    @apply border border-transparent px-sm;
-    @apply text-sm text-foreground bg-muted;
+    @apply border border-transparent;
+    @apply text-foreground bg-muted;
     @apply ring-offset-background transition-colors;
     @apply placeholder:text-muted-foreground/50;
     @apply hover:bg-muted/80 focus:bg-muted/80;
@@ -37,7 +36,7 @@
 
   textarea {
     @apply w-full rounded-md;
-    @apply border border-transparent p-sm;
+    @apply border border-transparent;
     @apply text-sm text-foreground bg-muted;
     @apply ring-offset-background transition-colors;
     @apply placeholder:text-muted-foreground/50;

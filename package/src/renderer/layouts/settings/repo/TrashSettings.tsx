@@ -48,7 +48,7 @@ export const TrashSettings = () => {
   };
 
   const handleDeletePermanently = async (id: string) => {
-    if (!confirm(t("common.workspace.deletePermanentlyConfirm"))) {
+    if (!confirm(t("common.repository.deletePermanentlyConfirm"))) {
       return;
     }
     try {
@@ -60,7 +60,7 @@ export const TrashSettings = () => {
   };
 
   const handleEmptyTrash = async () => {
-    if (!confirm(t("common.workspace.emptyTrashConfirm"))) {
+    if (!confirm(t("common.repository.emptyTrashConfirm"))) {
       return;
     }
     try {
@@ -74,8 +74,8 @@ export const TrashSettings = () => {
   return (
     <div className="space-y-6">
       <SettingSection
-        title={t("common.workspace.trash")}
-        description={t("common.workspace.trashDesc")}
+        title={t("common.repository.trash")}
+        description={t("common.repository.trashDesc")}
       >
         <div className="flex justify-between items-center mb-4">
           <Button
@@ -87,7 +87,7 @@ export const TrashSettings = () => {
             <TbRefresh
               className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`}
             />
-            {t("common.workspace.refreshHistory")}
+            {t("common.repository.refreshHistory")}
           </Button>
           <Button
             variant="destructive"
@@ -96,7 +96,7 @@ export const TrashSettings = () => {
             disabled={trashItems.length === 0 || loading}
           >
             <TbTrashX className="mr-2 h-4 w-4" />
-            {t("common.workspace.emptyTrash")}
+            {t("common.repository.emptyTrash")}
           </Button>
         </div>
 
@@ -104,7 +104,7 @@ export const TrashSettings = () => {
           {trashItems.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <TbTrash className="mx-auto h-12 w-12 mb-2 opacity-50" />
-              <p>{t("common.workspace.noTrashItems")}</p>
+              <p>{t("common.repository.noTrashItems")}</p>
             </div>
           ) : (
             <div className="space-y-2">
@@ -116,7 +116,7 @@ export const TrashSettings = () => {
                   <div className="flex-1 min-w-0 mr-4">
                     <h4 className="font-medium truncate">{item.title}</h4>
                     <p className="text-xs text-muted-foreground">
-                      {t("common.workspace.delete")}:{" "}
+                      {t("common.repository.delete")}:{" "}
                       {item.deleted_at
                         ? format(item.deleted_at, "yyyy-MM-dd HH:mm:ss")
                         : "-"}
@@ -127,7 +127,7 @@ export const TrashSettings = () => {
                       variant="ghost"
                       size="icon"
                       onClick={() => handleRestore(item.id)}
-                      title={t("common.workspace.restore")}
+                      title={t("common.repository.restore")}
                     >
                       <TbRotateClockwise className="h-4 w-4" />
                     </Button>
@@ -136,7 +136,7 @@ export const TrashSettings = () => {
                       size="icon"
                       className="text-destructive hover:text-destructive"
                       onClick={() => handleDeletePermanently(item.id)}
-                      title={t("common.workspace.deletePermanently")}
+                      title={t("common.repository.deletePermanently")}
                     >
                       <TbTrashX className="h-4 w-4" />
                     </Button>

@@ -10,7 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { updateSettings, useSettings } from "@/hooks/app/useSettings";
-import { useWorkspaceStore } from "@/hooks/stores";
+import { useRepositoryStore } from "@/hooks/stores";
 import { createShape } from "@common/lib/shape";
 import { DEFAULT_APP_CONFIG } from "@common/schema/config";
 import { setLang } from "@/lib/locales/i18n";
@@ -40,8 +40,8 @@ const LANGUAGE_OPTIONS = [
 export const GeneralSettings = () => {
   const { t } = useTranslation();
   const settings = useSettings();
-  const docsRoot = useWorkspaceStore((state) => state.docsRoot);
-  const setDocsRoot = useWorkspaceStore((state) => state.setDocsRoot);
+  const docsRoot = useRepositoryStore((state) => state.docsRoot);
+  const setDocsRoot = useRepositoryStore((state) => state.setDocsRoot);
 
   const handleThemeChange = useCallback((value: string) => {
     void updateSettings(appConfigShape.ui.theme, value);
@@ -192,8 +192,8 @@ export const GeneralSettings = () => {
       </SettingSection>
 
       <SettingSection
-        title={t("common.settings.workspaceStorage")}
-        description={t("common.settings.workspaceStorageDesc")}
+        title={t("common.settings.repositoryStorage")}
+        description={t("common.settings.repositoryStorageDesc")}
       >
         <div className="space-y-2">
           <SettingItem

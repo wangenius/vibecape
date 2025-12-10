@@ -109,28 +109,28 @@ const api = {
   },
   vibecape: {
     // 工作区管理
-    getWorkspace: () => ipcRenderer.invoke("vibecape:getWorkspace"),
+    getRepository: () => ipcRenderer.invoke("vibecape:getRepository"),
     getDocsRoot: () => ipcRenderer.invoke("vibecape:getDocsRoot"),
     setDocsRoot: (path: string) =>
       ipcRenderer.invoke("vibecape:setDocsRoot", path),
-    createWorkspace: (name: string) =>
-      ipcRenderer.invoke("vibecape:createWorkspace", name),
-    openWorkspace: (id: string) =>
-      ipcRenderer.invoke("vibecape:openWorkspace", id),
-    closeWorkspace: () => ipcRenderer.invoke("vibecape:closeWorkspace"),
-    deleteWorkspace: (id: string) =>
-      ipcRenderer.invoke("vibecape:deleteWorkspace", id),
-    listWorkspaces: () => ipcRenderer.invoke("vibecape:listWorkspaces"),
-    restoreLastWorkspace: () =>
-      ipcRenderer.invoke("vibecape:restoreLastWorkspace"),
+    createRepository: (name: string) =>
+      ipcRenderer.invoke("vibecape:createRepository", name),
+    openRepository: (id: string) =>
+      ipcRenderer.invoke("vibecape:openRepository", id),
+    closeRepository: () => ipcRenderer.invoke("vibecape:closeRepository"),
+    deleteRepository: (id: string) =>
+      ipcRenderer.invoke("vibecape:deleteRepository", id),
+    listRepositorys: () => ipcRenderer.invoke("vibecape:listRepositorys"),
+    restoreLastRepository: () =>
+      ipcRenderer.invoke("vibecape:restoreLastRepository"),
     getLlmTxt: (id?: string) => ipcRenderer.invoke("vibecape:getLlmTxt", id),
     setLlmTxt: (content: string, id?: string) =>
       ipcRenderer.invoke("vibecape:setLlmTxt", content, id),
-    updateWorkspaceConfig: (config: any) =>
-      ipcRenderer.invoke("vibecape:updateWorkspaceConfig", config),
+    updateRepositoryConfig: (config: any) =>
+      ipcRenderer.invoke("vibecape:updateRepositoryConfig", config),
     // 兼容旧 API
-    /** @deprecated 使用 listWorkspaces */
-    getWorkspaceHistory: () => ipcRenderer.invoke("vibecape:listWorkspaces"),
+    /** @deprecated 使用 listRepositorys */
+    getRepositoryHistory: () => ipcRenderer.invoke("vibecape:listRepositorys"),
     // 文档树
     getTree: () => ipcRenderer.invoke("vibecape:getTree"),
     // 文档 CRUD

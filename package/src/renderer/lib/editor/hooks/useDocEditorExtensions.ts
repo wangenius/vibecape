@@ -25,6 +25,8 @@ import { LinkNode } from "../extensions/LinkNode";
 import { CustomKeyboardExtension } from "../extensions/CustomKeyboardExtension";
 import { TableExtension } from "../extensions/TableExtension";
 import { TFunction } from "i18next";
+import { dispatchQuoteEvent } from "@/lib/events/quoteEvent";
+import { useDocumentStore } from "@/hooks/stores/useDocumentStore";
 
 type UseDocEditorExtensionsOptions = {
   t: TFunction;
@@ -92,25 +94,18 @@ const createQuoteKeymapExtension = () =>
             return true;
           });
 
-          // 动态导入避免循环依赖
-          import("@/lib/events/quoteEvent").then(({ dispatchQuoteEvent }) => {
-            import("@/hooks/stores/useDocumentStore").then(
-              ({ useDocumentStore }) => {
-                const activeDoc = useDocumentStore.getState().activeDoc;
-                dispatchQuoteEvent({
-                  text: text.trim(),
-                  docId: activeDoc?.id,
-                  docTitle: activeDoc?.title,
-                  position: { from, to },
-                  context: {
-                    before: contextBefore,
-                    after: contextAfter,
-                  },
-                  paragraph: paragraph || undefined,
-                  paragraphOffset: paragraph ? paragraphOffset : undefined,
-                });
-              }
-            );
+          const activeDoc = useDocumentStore.getState().activeDoc;
+          dispatchQuoteEvent({
+            text: text.trim(),
+            docId: activeDoc?.id,
+            docTitle: activeDoc?.title,
+            position: { from, to },
+            context: {
+              before: contextBefore,
+              after: contextAfter,
+            },
+            paragraph: paragraph || undefined,
+            paragraphOffset: paragraph ? paragraphOffset : undefined,
           });
 
           return true;

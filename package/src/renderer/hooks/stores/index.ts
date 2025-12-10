@@ -1,7 +1,7 @@
 // Stores - 状态管理模块
 // 按领域拆分的 Zustand stores
 
-export { useWorkspaceStore } from "./useWorkspaceStore";
+export { useRepositoryStore } from "./useRepositoryStore";
 export { useDocumentStore } from "./useDocumentStore";
 export { useUIStore } from "./useUIStore";
 export { useMentionHistoryStore } from "./useMentionHistoryStore";
@@ -10,8 +10,9 @@ export { usePromptStore } from "./usePromptStore";
 // Bootstrap 函数 - 初始化应用
 import { initModels, initDefaultModels } from "@/hooks/model/useModel";
 import { initProviders } from "@/hooks/model/useProvider";
-import { useWorkspaceStore } from "./useWorkspaceStore";
 import { useDocumentStore } from "./useDocumentStore";
+import { useUIStore } from "./useUIStore";
+import { useRepositoryStore } from "./useRepositoryStore";
 
 export const bootstrap = async () => {
   try {
@@ -19,15 +20,15 @@ export const bootstrap = async () => {
 
     // 获取 docs_root 路径
     const docsRoot = await window.api.vibecape.getDocsRoot();
-    useWorkspaceStore.setState({ docsRoot });
+    useRepositoryStore.setState({ docsRoot });
 
     // 加载工作区列表
-    await useWorkspaceStore.getState().loadWorkspaceList();
+    await useRepositoryStore.getState().loadRepositoryList();
 
     // 尝试恢复上次打开的工作区
-    const workspace = await window.api.vibecape.restoreLastWorkspace();
-    if (workspace) {
-      useWorkspaceStore.setState({ workspace });
+    const repository = await window.api.vibecape.restoreLastRepository();
+    if (repository) {
+      useRepositoryStore.setState({ repository });
       await useDocumentStore.getState().refreshTree();
 
       // 恢复上次打开的文档
@@ -49,7 +50,6 @@ export const bootstrap = async () => {
       }
     });
   } catch (error) {
-    const { useUIStore } = await import("./useUIStore");
     useUIStore.getState().setError((error as Error).message);
   }
 };

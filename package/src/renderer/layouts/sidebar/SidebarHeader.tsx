@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import {
-  useWorkspaceStore,
+  useRepositoryStore,
   useDocumentStore,
   useUIStore,
 } from "@/hooks/stores";
@@ -30,13 +30,13 @@ import { setSidebarViewMode, useViewManager } from "@/hooks/app/useViewManager";
 
 export const SidebarHeader = () => {
   const { t } = useTranslation();
-  const workspace = useWorkspaceStore((state) => state.workspace);
-  const closeWorkspace = useWorkspaceStore((state) => state.closeWorkspace);
+  const repository = useRepositoryStore((state) => state.repository);
+  const closeRepository = useRepositoryStore((state) => state.closeRepository);
   const refreshTree = useDocumentStore((state) => state.refreshTree);
   const loading = useUIStore((state) => state.loading);
 
   // 未打开工作区时不显示头部
-  if (!workspace) {
+  if (!repository) {
     return null;
   }
 
@@ -44,7 +44,7 @@ export const SidebarHeader = () => {
     const result = await window.api.vibecape.importMarkdownFile();
     if (result.count > 0) {
       toast.success(
-        t("common.workspace.importSuccess", { count: result.count })
+        t("common.repository.importSuccess", { count: result.count })
       );
       await refreshTree();
     }
@@ -54,7 +54,7 @@ export const SidebarHeader = () => {
     const result = await window.api.vibecape.importDirectory();
     if (result.count > 0) {
       toast.success(
-        t("common.workspace.importSuccess", { count: result.count })
+        t("common.repository.importSuccess", { count: result.count })
       );
       await refreshTree();
     }
@@ -64,7 +64,7 @@ export const SidebarHeader = () => {
     const result = await window.api.vibecape.importVibecapeDb();
     if (result.count > 0) {
       toast.success(
-        t("common.workspace.importSuccess", { count: result.count })
+        t("common.repository.importSuccess", { count: result.count })
       );
       await refreshTree();
     }
@@ -76,8 +76,8 @@ export const SidebarHeader = () => {
   return (
     <div className="p-1 w-full shrink-0">
       <div className="flex items-center gap-1 whitespace-nowrap">
-        {/* 视图模式切换（仅在有 workspace 时显示） */}
-        {workspace && (
+        {/* 视图模式切换（仅在有 repository 时显示） */}
+        {repository && (
           <ViewModeSwitch
             mode={sidebarViewMode}
             onModeChange={setSidebarViewMode}
@@ -105,20 +105,20 @@ export const SidebarHeader = () => {
             <DropdownMenuSub>
               <DropdownMenuSubTrigger>
                 <FolderInput />
-                {t("common.workspace.import")}
+                {t("common.repository.import")}
               </DropdownMenuSubTrigger>
               <DropdownMenuSubContent>
                 <DropdownMenuItem onClick={handleImportDirectory}>
                   <FolderOpen />
-                  {t("common.workspace.importDirectory")}
+                  {t("common.repository.importDirectory")}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleImportMarkdown}>
                   <FileText />
-                  {t("common.workspace.importMarkdown")}
+                  {t("common.repository.importMarkdown")}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleImportVibecapeDb}>
                   <Database />
-                  {t("common.workspace.importVibecape")}
+                  {t("common.repository.importVibecape")}
                 </DropdownMenuItem>
               </DropdownMenuSubContent>
             </DropdownMenuSub>
@@ -130,10 +130,10 @@ export const SidebarHeader = () => {
             </DropdownMenuItem>
             <DropdownMenuItem
               variant="destructive"
-              onClick={() => void closeWorkspace()}
+              onClick={() => void closeRepository()}
             >
               <X />
-              {t("common.settings.closeWorkspace")}
+              {t("common.settings.closeRepository")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

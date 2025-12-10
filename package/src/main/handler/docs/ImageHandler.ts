@@ -7,7 +7,7 @@ import { ipcMain } from "electron";
 import fs from "fs/promises";
 import path from "path";
 import crypto from "crypto";
-import { WorkspaceService } from "@main/services/Workspace";
+import { RepositoryService } from "@main/services/Repository";
 import { SettingsService } from "@main/services/Settings";
 
 // ==================== 图片路径解析 ====================
@@ -19,15 +19,15 @@ ipcMain.handle(
   "vibecape:resolveAssetPath",
   async (_event, assetPath: string) => {
     try {
-      const workspace = WorkspaceService.getCurrentWorkspace();
-      if (!workspace?.path) {
+      const repository = RepositoryService.getCurrentRepository();
+      if (!repository?.path) {
         return null;
       }
 
-      // /img/xxx -> {workspace}/asset/img/xxx
+      // /img/xxx -> {repository}/asset/img/xxx
       if (assetPath.startsWith("/img/")) {
         const relativePath = assetPath.slice(1); // 移除开头的 /
-        const fullPath = path.join(workspace.path, "asset", relativePath);
+        const fullPath = path.join(repository.path, "asset", relativePath);
 
         // 检查文件是否存在
         try {
@@ -110,13 +110,13 @@ async function saveToLocal(
   buffer: Buffer,
   filename: string
 ): Promise<UploadResult> {
-  const workspace = WorkspaceService.getCurrentWorkspace();
-  if (!workspace?.path) {
+  const repository = RepositoryService.getCurrentRepository();
+  if (!repository?.path) {
     return { success: false, error: "未初始化工作区" };
   }
 
   // 确保目录存在
-  const imgDir = path.join(workspace.path, "asset", "img");
+  const imgDir = path.join(repository.path, "asset", "img");
   await fs.mkdir(imgDir, { recursive: true });
 
   // 保存文件

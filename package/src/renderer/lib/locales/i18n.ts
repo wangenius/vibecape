@@ -1,6 +1,6 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
-import { getCurrentSettings, updateSettings } from "@/hooks/app/useSettings";
+import { updateSettings, useSettingsStore } from "@/hooks/app/useSettings";
 import { createShape } from "@common/lib/shape";
 import { DEFAULT_APP_CONFIG } from "@common/schema/config";
 
@@ -50,7 +50,7 @@ const resources = {
 i18n.use(initReactI18next).init({
   resources,
   fallbackLng: "en",
-  lng: getCurrentSettings().ui.language,
+  lng: DEFAULT_APP_CONFIG.ui.language,
   interpolation: {
     escapeValue: false,
   },
@@ -76,5 +76,17 @@ export const setLang = (language: keyof typeof resources) => {
   void updateSettings(appConfigShape.ui.language, language);
   i18n.changeLanguage(language);
 };
+
+// 同步语言设置
+export function syncLanguageFromSettings(language: string) {
+  if (language && language !== i18n.language) {
+    i18n.changeLanguage(language);
+  }
+}
+
+// 订阅 settings 变化，自动同步语言
+useSettingsStore.subscribe((state) => {
+  syncLanguageFromSettings(state.ui.language);
+});
 
 export default i18n;

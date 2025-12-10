@@ -1,21 +1,21 @@
 import { Input } from "@/components/ui/input";
-import { useWorkspaceStore } from "@/hooks/stores";
+import { useRepositoryStore } from "@/hooks/stores";
 import { useTranslation } from "react-i18next";
 import {
   SettingSection,
   SettingItem,
 } from "@/layouts/settings/item/SettingComponents";
-import type { WorkspaceConfig } from "@common/schema/workspace";
+import type { RepositoryConfig } from "@common/schema/repository";
 import { useDebounce } from "./hooks";
 
 interface BasicSettingsProps {
-  config: WorkspaceConfig;
+  config: RepositoryConfig;
 }
 
 export const BasicSettings = ({ config }: BasicSettingsProps) => {
   const { t } = useTranslation();
-  const updateConfig = useWorkspaceStore(
-    (state) => state.updateWorkspaceConfig
+  const updateConfig = useRepositoryStore(
+    (state) => state.updateRepositoryConfig
   );
 
   const debouncedNameChange = useDebounce((value: string) => {
@@ -25,17 +25,17 @@ export const BasicSettings = ({ config }: BasicSettingsProps) => {
   return (
     <div className="space-y-6">
       <SettingSection
-        title={t("common.workspace.basicInfo")}
-        description={t("common.workspace.basicInfoDesc")}
+        title={t("common.repository.basicInfo")}
+        description={t("common.repository.basicInfoDesc")}
       >
         <SettingItem
-          label={t("common.workspace.workspaceName")}
-          description={t("common.workspace.workspaceNameDesc")}
+          label={t("common.repository.repositoryName")}
+          description={t("common.repository.repositoryNameDesc")}
         >
           <Input
             defaultValue={config.name}
             onChange={(e) => debouncedNameChange(e.target.value)}
-            placeholder={t("common.workspace.workspaceName")}
+            placeholder={t("common.repository.repositoryName")}
             className="w-60"
           />
         </SettingItem>

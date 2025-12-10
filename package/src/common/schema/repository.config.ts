@@ -1,7 +1,7 @@
 /**
  * 工作区配置类型定义
  *
- * 存储位置: {docs_root}/{workspace_id}/config.json
+ * 存储位置: {docs_root}/{repository_id}/config.json
  * 每个工作区独立维护自己的配置文件
  */
 
@@ -10,7 +10,7 @@
 /**
  * 资源上传与存储配置
  */
-export type WorkspaceAssetConfig = {
+export type RepositoryAssetConfig = {
   /**
    * 资源上传优先级策略
    * - "oss-first": 优先上传到 OSS，失败时回退到本地
@@ -33,7 +33,7 @@ export type LinkTargetType = "fumadocs" | "docusaurus" | "feishu";
  * 工作区关联配置
  * 用于将工作区与外部文档系统关联
  */
-export type WorkspaceLinkConfig = {
+export type RepositoryLinkConfig = {
   /**
    * 是否启用关联
    */
@@ -61,28 +61,28 @@ export type WorkspaceLinkConfig = {
 
 /**
  * 工作区完整配置
- * 存储在 {docs_root}/{workspace_id}/config.json
+ * 存储在 {docs_root}/{repository_id}/config.json
  */
-export type WorkspaceConfig = {
+export type RepositoryConfig = {
   /** 工作区名称 */
   name: string;
 
   /** 资源配置 */
-  asset: WorkspaceAssetConfig;
+  asset: RepositoryAssetConfig;
 
   /** 关联配置 */
-  link: WorkspaceLinkConfig;
+  link: RepositoryLinkConfig;
 };
 
 // ==================== 默认值 ====================
 
 /** 默认资源配置 */
-export const DEFAULT_WORKSPACE_ASSET_CONFIG: WorkspaceAssetConfig = {
+export const DEFAULT_REPOSITORY_ASSET_CONFIG: RepositoryAssetConfig = {
   upload_priority: "local-first",
 };
 
 /** 默认关联配置 */
-export const DEFAULT_WORKSPACE_LINK_CONFIG: WorkspaceLinkConfig = {
+export const DEFAULT_REPOSITORY_LINK_CONFIG: RepositoryLinkConfig = {
   enabled: false,
   target: "fumadocs",
   docs_path: "",
@@ -93,10 +93,10 @@ export const DEFAULT_WORKSPACE_LINK_CONFIG: WorkspaceLinkConfig = {
  * 创建默认工作区配置
  * @param name 工作区名称
  */
-export const createDefaultWorkspaceConfig = (name: string): WorkspaceConfig => {
+export const createDefaultRepositoryConfig = (name: string): RepositoryConfig => {
   return {
     name,
-    asset: DEFAULT_WORKSPACE_ASSET_CONFIG,
-    link: DEFAULT_WORKSPACE_LINK_CONFIG,
+    asset: DEFAULT_REPOSITORY_ASSET_CONFIG,
+    link: DEFAULT_REPOSITORY_LINK_CONFIG,
   };
 };

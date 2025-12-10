@@ -32,18 +32,18 @@ export const LlmTxtSettings = () => {
   return (
     <div className="space-y-6">
       <SettingSection
-        title={t("common.workspace.aiContext")}
-        description={t("common.workspace.llmTxtDesc")}
+        title={t("common.repository.aiContext")}
+        description={t("common.repository.llmTxtDesc")}
       >
         <SettingCard>
           <div className="space-y-2">
             <label className="text-sm font-medium">
-              {t("common.workspace.llmTxt")}
+              {t("common.repository.llmTxt")}
             </label>
             <textarea
               defaultValue={llmTxt}
               onChange={(e) => debouncedChange(e.target.value)}
-              placeholder={t("common.workspace.llmTxtPlaceholder")}
+              placeholder={t("common.repository.llmTxtPlaceholder")}
               className="min-h-[300px] font-mono text-sm"
             />
           </div>

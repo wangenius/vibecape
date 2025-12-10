@@ -4,6 +4,12 @@ import { pathToFileURL } from "url";
 import icon from "../../resources/new-macOS-Default-1024x1024@2x.png?asset";
 import { ensureDatabaseReady } from "./db/client";
 import { registerAllHandlers } from "./handler";
+import { getDocsRoot, getUserDataPaths } from "./services/UserData";
+import { SettingsService } from "./services/Settings";
+import { Model } from "./services/Model";
+import { Provider } from "./services/Provider";
+import { initProxyConfig } from "./utils/proxy";
+import { MCPManager } from "./services/MCPManager";
 
 function createWindow(): void {
   // Create the browser window.
@@ -62,8 +68,6 @@ protocol.registerSchemesAsPrivileged([
 app.whenReady().then(async () => {
   // 注册 local-asset 协议处理器（带路径安全验证）
   protocol.handle("local-asset", async (request) => {
-    const { getDocsRoot, getUserDataPaths } = await import("./services/UserData");
-
     // local-asset://path/to/file -> file:///path/to/file
     const filePath = decodeURIComponent(request.url.replace("local-asset://", ""));
     const normalizedPath = normalize(filePath);
@@ -132,9 +136,6 @@ app.whenReady().then(async () => {
     await ensureDatabaseReady();
 
     // 数据库就绪后初始化服务
-    const { SettingsService } = await import("./services/Settings");
-    const { Model } = await import("./services/Model");
-    const { Provider } = await import("./services/Provider");
     await Promise.all([
       SettingsService.init(),
       Model.init(),
@@ -145,11 +146,9 @@ app.whenReady().then(async () => {
   }
 
   // 初始化代理配置
-  const { initProxyConfig } = await import("./utils/proxy");
   await initProxyConfig();
 
   // 初始化 MCP 连接
-  const { MCPManager } = await import("./services/MCPManager");
   MCPManager.initialize().catch((error) => {
     console.error("[MCP] Failed to initialize MCP:", error);
   });

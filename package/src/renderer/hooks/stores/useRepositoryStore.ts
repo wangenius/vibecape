@@ -1,43 +1,43 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { Workspace, WorkspaceEntry } from "@common/schema/workspace";
+import type { Repository, RepositoryEntry } from "@common/schema/repository";
 import { useUIStore } from "./useUIStore";
 import { useDocumentStore } from "./useDocumentStore";
 
 // ============================================================================
-// Workspace Store - 工作区状态管理
+// Repository Store - 工作区状态管理
 // ============================================================================
 
-type WorkspaceState = {
-  workspace: Workspace | null;
-  workspaceList: WorkspaceEntry[];
+type RepositoryState = {
+  repository: Repository | null;
+  repositoryList: RepositoryEntry[];
   docsRoot: string;
 };
 
-type WorkspaceActions = {
+type RepositoryActions = {
   setDocsRoot: (path: string) => Promise<void>;
-  createWorkspace: (name: string) => Promise<Workspace | null>;
-  openWorkspace: (id: string) => Promise<Workspace | null>;
-  deleteWorkspace: (id: string) => Promise<void>;
-  loadWorkspaceList: () => Promise<void>;
-  closeWorkspace: () => Promise<void>;
-  updateWorkspaceConfig: (
-    updates: Partial<Workspace["config"]>
+  createRepository: (name: string) => Promise<Repository | null>;
+  openRepository: (id: string) => Promise<Repository | null>;
+  deleteRepository: (id: string) => Promise<void>;
+  loadRepositoryList: () => Promise<void>;
+  closeRepository: () => Promise<void>;
+  updateRepositoryConfig: (
+    updates: Partial<Repository["config"]>
   ) => Promise<void>;
 };
 
-export const useWorkspaceStore = create<WorkspaceState & WorkspaceActions>()(
+export const useRepositoryStore = create<RepositoryState & RepositoryActions>()(
   persist(
     (set, get) => ({
-      workspace: null,
-      workspaceList: [],
+      repository: null,
+      repositoryList: [],
       docsRoot: "",
 
-      loadWorkspaceList: async () => {
+      loadRepositoryList: async () => {
         useUIStore.getState().setListLoading(true);
         try {
-          const workspaceList = await window.api.vibecape.listWorkspaces();
-          set({ workspaceList });
+          const repositoryList = await window.api.vibecape.listRepositorys();
+          set({ repositoryList });
         } catch (error) {
           useUIStore.getState().setError((error as Error).message);
         } finally {
@@ -49,21 +49,21 @@ export const useWorkspaceStore = create<WorkspaceState & WorkspaceActions>()(
         try {
           await window.api.vibecape.setDocsRoot(path);
           set({ docsRoot: path });
-          await get().loadWorkspaceList();
+          await get().loadRepositoryList();
         } catch (error) {
           useUIStore.getState().setError((error as Error).message);
         }
       },
 
-      createWorkspace: async (name: string) => {
+      createRepository: async (name: string) => {
         useUIStore.getState().setLoading(true);
         useUIStore.getState().clearError();
         try {
-          const workspace = await window.api.vibecape.createWorkspace(name);
-          set({ workspace });
+          const repository = await window.api.vibecape.createRepository(name);
+          set({ repository });
           useDocumentStore.getState().reset();
-          await get().loadWorkspaceList();
-          return workspace;
+          await get().loadRepositoryList();
+          return repository;
         } catch (error) {
           useUIStore.getState().setError((error as Error).message);
           return null;
@@ -72,7 +72,7 @@ export const useWorkspaceStore = create<WorkspaceState & WorkspaceActions>()(
         }
       },
 
-      openWorkspace: async (id: string) => {
+      openRepository: async (id: string) => {
         const uiStore = useUIStore.getState();
         const docStore = useDocumentStore.getState();
 
@@ -81,16 +81,16 @@ export const useWorkspaceStore = create<WorkspaceState & WorkspaceActions>()(
         uiStore.setInitProgress("正在打开工作区...");
 
         try {
-          const workspace = await window.api.vibecape.openWorkspace(id);
-          set({ workspace });
+          const repository = await window.api.vibecape.openRepository(id);
+          set({ repository });
           docStore.reset();
 
           uiStore.setInitProgress("正在加载文档树...");
           await docStore.refreshTree();
-          await get().loadWorkspaceList();
+          await get().loadRepositoryList();
 
           uiStore.setInitProgress(null);
-          return workspace;
+          return repository;
         } catch (error) {
           uiStore.setError((error as Error).message);
           uiStore.setInitProgress(null);
@@ -101,18 +101,18 @@ export const useWorkspaceStore = create<WorkspaceState & WorkspaceActions>()(
         }
       },
 
-      deleteWorkspace: async (id: string) => {
+      deleteRepository: async (id: string) => {
         const uiStore = useUIStore.getState();
         uiStore.setLoading(true);
         uiStore.clearError();
 
         try {
-          await window.api.vibecape.deleteWorkspace(id);
-          if (get().workspace?.id === id) {
-            set({ workspace: null });
+          await window.api.vibecape.deleteRepository(id);
+          if (get().repository?.id === id) {
+            set({ repository: null });
             useDocumentStore.getState().reset();
           }
-          await get().loadWorkspaceList();
+          await get().loadRepositoryList();
         } catch (error) {
           uiStore.setError((error as Error).message);
         } finally {
@@ -120,23 +120,23 @@ export const useWorkspaceStore = create<WorkspaceState & WorkspaceActions>()(
         }
       },
 
-      closeWorkspace: async () => {
-        await window.api.vibecape.closeWorkspace();
-        set({ workspace: null });
+      closeRepository: async () => {
+        await window.api.vibecape.closeRepository();
+        set({ repository: null });
         useDocumentStore.getState().reset();
         useUIStore.getState().clearError();
       },
 
-      updateWorkspaceConfig: async (updates) => {
-        const { workspace } = get();
-        if (!workspace) return;
+      updateRepositoryConfig: async (updates) => {
+        const { repository } = get();
+        if (!repository) return;
 
         try {
           const newConfig =
-            await window.api.vibecape.updateWorkspaceConfig(updates);
+            await window.api.vibecape.updateRepositoryConfig(updates);
           set({
-            workspace: {
-              ...workspace,
+            repository: {
+              ...repository,
               config: newConfig,
             },
           });
@@ -146,7 +146,7 @@ export const useWorkspaceStore = create<WorkspaceState & WorkspaceActions>()(
       },
     }),
     {
-      name: "workspace_store",
+      name: "repository_store",
       partialize: () => ({}), // 不持久化任何状态
     }
   )

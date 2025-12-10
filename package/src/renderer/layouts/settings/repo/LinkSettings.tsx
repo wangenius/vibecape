@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useWorkspaceStore } from "@/hooks/stores";
+import { useRepositoryStore } from "@/hooks/stores";
 import { useTranslation } from "react-i18next";
 import {
   SettingSection,
@@ -16,16 +16,16 @@ import {
   SettingCard,
 } from "@/layouts/settings/item/SettingComponents";
 import { FolderOpen } from "lucide-react";
-import type { WorkspaceConfig } from "@common/schema/workspace";
+import type { RepositoryConfig } from "@common/schema/repository";
 
 interface LinkSettingsProps {
-  config: WorkspaceConfig;
+  config: RepositoryConfig;
 }
 
 export const LinkSettings = ({ config }: LinkSettingsProps) => {
   const { t } = useTranslation();
-  const updateConfig = useWorkspaceStore(
-    (state) => state.updateWorkspaceConfig
+  const updateConfig = useRepositoryStore(
+    (state) => state.updateRepositoryConfig
   );
 
   const handleEnabledChange = (enabled: boolean) => {
@@ -77,13 +77,13 @@ export const LinkSettings = ({ config }: LinkSettingsProps) => {
   return (
     <div className="space-y-6">
       <SettingSection
-        title={t("common.workspace.linkSettings")}
-        description={t("common.workspace.linkSettingsDesc")}
+        title={t("common.repository.linkSettings")}
+        description={t("common.repository.linkSettingsDesc")}
       >
         <div className="space-y-2">
           <SettingItem
-            label={t("common.workspace.linkEnabled")}
-            description={t("common.workspace.linkEnabledDesc")}
+            label={t("common.repository.linkEnabled")}
+            description={t("common.repository.linkEnabledDesc")}
           >
             <Switch
               checked={config.link?.enabled ?? false}
@@ -95,7 +95,7 @@ export const LinkSettings = ({ config }: LinkSettingsProps) => {
             <SettingCard>
               <div className="space-y-2">
                 <label className="text-sm font-medium">
-                  {t("common.workspace.linkTarget")}
+                  {t("common.repository.linkTarget")}
                 </label>
                 <Select
                   value={config.link?.target || "fumadocs"}
@@ -108,7 +108,7 @@ export const LinkSettings = ({ config }: LinkSettingsProps) => {
                     <SelectItem value="fumadocs">Fumadocs</SelectItem>
                     <SelectItem value="docusaurus">Docusaurus</SelectItem>
                     <SelectItem value="feishu">
-                      {t("common.workspace.feishu")}
+                      {t("common.repository.feishu")}
                     </SelectItem>
                   </SelectContent>
                 </Select>
@@ -116,13 +116,13 @@ export const LinkSettings = ({ config }: LinkSettingsProps) => {
 
               <div className="space-y-2">
                 <label className="text-sm font-medium">
-                  {t("common.workspace.docsPath")}
+                  {t("common.repository.docsPath")}
                 </label>
                 <div className="flex items-center gap-2">
                   <Input
                     value={config.link?.docs_path || ""}
                     readOnly
-                    placeholder={t("common.workspace.docsPathPlaceholder")}
+                    placeholder={t("common.repository.docsPathPlaceholder")}
                     className="flex-1 text-sm"
                   />
                   <Button
@@ -134,19 +134,19 @@ export const LinkSettings = ({ config }: LinkSettingsProps) => {
                   </Button>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {t("common.workspace.docsPathDesc")}
+                  {t("common.repository.docsPathDesc")}
                 </p>
               </div>
 
               <div className="space-y-2">
                 <label className="text-sm font-medium">
-                  {t("common.workspace.assetsPath")}
+                  {t("common.repository.assetsPath")}
                 </label>
                 <div className="flex items-center gap-2">
                   <Input
                     value={config.link?.assets_path || ""}
                     readOnly
-                    placeholder={t("common.workspace.assetsPathPlaceholder")}
+                    placeholder={t("common.repository.assetsPathPlaceholder")}
                     className="flex-1 text-sm"
                   />
                   <Button
@@ -158,7 +158,7 @@ export const LinkSettings = ({ config }: LinkSettingsProps) => {
                   </Button>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {t("common.workspace.assetsPathDesc")}
+                  {t("common.repository.assetsPathDesc")}
                 </p>
               </div>
             </SettingCard>

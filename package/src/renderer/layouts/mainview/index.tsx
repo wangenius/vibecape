@@ -1,7 +1,7 @@
 import { ReactNode, useEffect } from "react";
-import { useWorkspaceStore, useDocumentStore, bootstrap } from "@/hooks/stores";
+import { useRepositoryStore, useDocumentStore, bootstrap } from "@/hooks/stores";
 import { EmptyDocState } from "../../components/ui/EmptyState";
-import { DocWorkspace } from "./DocWorkspace";
+import { DocRepository } from "./DocRepository";
 
 const MainContainer = ({ children }: { children: ReactNode }) => {
   return (
@@ -12,7 +12,7 @@ const MainContainer = ({ children }: { children: ReactNode }) => {
 };
 
 export const MainView = () => {
-  const workspace = useWorkspaceStore((state) => state.workspace);
+  const repository = useRepositoryStore((state) => state.repository);
   const activeDoc = useDocumentStore((state) => state.activeDoc);
   const saveDoc = useDocumentStore((state) => state.saveDoc);
   const openDoc = useDocumentStore((state) => state.openDoc);
@@ -36,7 +36,7 @@ export const MainView = () => {
   }, [openDoc]);
 
   // 未打开工作区 - 显示欢迎页面
-  if (!workspace || !activeDoc) {
+  if (!repository || !activeDoc) {
     return (
       <MainContainer>
         <EmptyDocState />
@@ -46,7 +46,7 @@ export const MainView = () => {
 
   return (
     <MainContainer>
-      <DocWorkspace key={activeDoc.id} doc={activeDoc} onSave={saveDoc} />
+      <DocRepository key={activeDoc.id} doc={activeDoc} onSave={saveDoc} />
     </MainContainer>
   );
 };

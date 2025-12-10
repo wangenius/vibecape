@@ -1,6 +1,6 @@
 /**
  * 文档数据库表定义
- * 位置: {docs_root}/{workspace_id}/docs.db
+ * 位置: {docs_root}/{repository_id}/docs.db
  */
 
 import { sqliteTable, text, integer, index } from "drizzle-orm/sqlite-core";

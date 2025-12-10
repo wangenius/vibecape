@@ -45,7 +45,7 @@ npm run dev
 
 ```
 docs/                    # Your Fumadocs docs directory
-├── .vibecape/          # Vibecape workspace (auto-created)
+├── .vibecape/          # Vibecape repository (auto-created)
 │   └── docs.db         # Local SQLite database
 ├── index.mdx
 ├── getting-started.mdx

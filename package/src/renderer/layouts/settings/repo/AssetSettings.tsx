@@ -5,22 +5,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useWorkspaceStore } from "@/hooks/stores";
+import { useRepositoryStore } from "@/hooks/stores";
 import { useTranslation } from "react-i18next";
 import {
   SettingSection,
   SettingItem,
 } from "@/layouts/settings/item/SettingComponents";
-import type { WorkspaceConfig } from "@common/schema/workspace";
+import type { RepositoryConfig } from "@common/schema/repository";
 
 interface AssetSettingsProps {
-  config: WorkspaceConfig;
+  config: RepositoryConfig;
 }
 
 export const AssetSettings = ({ config }: AssetSettingsProps) => {
   const { t } = useTranslation();
-  const updateConfig = useWorkspaceStore(
-    (state) => state.updateWorkspaceConfig
+  const updateConfig = useRepositoryStore(
+    (state) => state.updateRepositoryConfig
   );
 
   const handlePriorityChange = (value: "oss-first" | "local-first") => {
@@ -35,12 +35,12 @@ export const AssetSettings = ({ config }: AssetSettingsProps) => {
   return (
     <div className="space-y-6">
       <SettingSection
-        title={t("common.workspace.assetSettings")}
-        description={t("common.workspace.assetSettingsDesc")}
+        title={t("common.repository.assetSettings")}
+        description={t("common.repository.assetSettingsDesc")}
       >
         <SettingItem
-          label={t("common.workspace.assetUploadPriority")}
-          description={t("common.workspace.assetUploadPriorityDesc")}
+          label={t("common.repository.assetUploadPriority")}
+          description={t("common.repository.assetUploadPriorityDesc")}
         >
           <Select
             value={config.asset?.upload_priority || "local-first"}
@@ -51,10 +51,10 @@ export const AssetSettings = ({ config }: AssetSettingsProps) => {
             </SelectTrigger>
             <SelectContent align="end">
               <SelectItem value="local-first">
-                {t("common.workspace.localFirst")}
+                {t("common.repository.localFirst")}
               </SelectItem>
               <SelectItem value="oss-first">
-                {t("common.workspace.ossFirst")}
+                {t("common.repository.ossFirst")}
               </SelectItem>
             </SelectContent>
           </Select>

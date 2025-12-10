@@ -1,18 +1,18 @@
 /**
  * 工作区和文档 IPC Handler
- * 使用新的 Workspace 和 Docs 服务
+ * 使用新的 Repository 和 Docs 服务
  */
 
 import { ipcMain, shell, dialog, BrowserWindow } from "electron";
-import { WorkspaceService } from "@main/services/Workspace";
+import { RepositoryService } from "@main/services/Repository";
 import { DocsService } from "@main/services/Docs";
 import { getDocsRoot, setDocsRoot } from "@main/services/UserData";
 import type { JSONContent } from "@tiptap/core";
 
 // ==================== 工作区管理 ====================
 
-ipcMain.handle("vibecape:getWorkspace", () =>
-  WorkspaceService.getCurrentWorkspace()
+ipcMain.handle("vibecape:getRepository", () =>
+  RepositoryService.getCurrentRepository()
 );
 
 ipcMain.handle("vibecape:getDocsRoot", () =>
@@ -23,44 +23,44 @@ ipcMain.handle("vibecape:setDocsRoot", (_event, path: string) => {
   setDocsRoot(path);
 });
 
-ipcMain.handle("vibecape:createWorkspace", (_event, name: string) =>
-  WorkspaceService.create(name)
+ipcMain.handle("vibecape:createRepository", (_event, name: string) =>
+  RepositoryService.create(name)
 );
 
-ipcMain.handle("vibecape:openWorkspace", (_event, id: string) =>
-  WorkspaceService.open(id)
+ipcMain.handle("vibecape:openRepository", (_event, id: string) =>
+  RepositoryService.open(id)
 );
 
-ipcMain.handle("vibecape:closeWorkspace", () =>
-  WorkspaceService.close()
+ipcMain.handle("vibecape:closeRepository", () =>
+  RepositoryService.close()
 );
 
-ipcMain.handle("vibecape:deleteWorkspace", (_event, id: string) =>
-  WorkspaceService.delete(id)
+ipcMain.handle("vibecape:deleteRepository", (_event, id: string) =>
+  RepositoryService.delete(id)
 );
 
-ipcMain.handle("vibecape:listWorkspaces", () =>
-  WorkspaceService.listWorkspaces()
+ipcMain.handle("vibecape:listRepositorys", () =>
+  RepositoryService.listRepositorys()
 );
 
-ipcMain.handle("vibecape:restoreLastWorkspace", () =>
-  WorkspaceService.restoreLastWorkspace()
+ipcMain.handle("vibecape:restoreLastRepository", () =>
+  RepositoryService.restoreLastRepository()
 );
 
 ipcMain.handle("vibecape:getLlmTxt", (_event, id?: string) =>
-  WorkspaceService.getLlmTxt(id)
+  RepositoryService.getLlmTxt(id)
 );
 
 ipcMain.handle("vibecape:setLlmTxt", (_event, content: string, id?: string) =>
-  WorkspaceService.setLlmTxt(content, id)
+  RepositoryService.setLlmTxt(content, id)
 );
 
-ipcMain.handle("vibecape:updateWorkspaceConfig", (_event, config: any) => {
-  const workspace = WorkspaceService.getCurrentWorkspace();
-  if (!workspace) {
-    throw new Error("No workspace open");
+ipcMain.handle("vibecape:updateRepositoryConfig", (_event, config: any) => {
+  const repository = RepositoryService.getCurrentRepository();
+  if (!repository) {
+    throw new Error("No repository open");
   }
-  return WorkspaceService.updateConfig(workspace.id, config);
+  return RepositoryService.updateConfig(repository.id, config);
 });
 
 // ==================== 文档树 ====================
@@ -148,9 +148,9 @@ ipcMain.handle("vibecape:exportDocAsPdf", (_event, id: string) =>
 );
 
 ipcMain.handle("vibecape:openInFinder", async () => {
-  const workspace = WorkspaceService.getCurrentWorkspace();
-  if (workspace?.path) {
-    await shell.openPath(workspace.path);
+  const repository = RepositoryService.getCurrentRepository();
+  if (repository?.path) {
+    await shell.openPath(repository.path);
   }
 });
 

@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useViewManager } from "@/hooks/app/useViewManager";
-import { useWorkspaceStore } from "@/hooks/stores";
+import { useRepositoryStore } from "@/hooks/stores";
 import { SidebarHeader } from "./SidebarHeader";
 import { SidebarEmptyState } from "./SidebarEmptyState";
 import { DocTocView } from "./DocTocView";
@@ -33,9 +33,9 @@ export const Sidebar = () => {
   const sidebarViewMode = useViewManager(
     (selector) => selector.sidebarViewMode
   );
-  const workspace = useWorkspaceStore((state) => state.workspace);
+  const repository = useRepositoryStore((state) => state.repository);
 
-  if (!workspace) {
+  if (!repository) {
     return (
       <SidebarContainer>
         <SidebarEmptyState />

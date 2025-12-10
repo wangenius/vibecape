@@ -4,7 +4,7 @@ title: Vibecape 数据存储架构
 
 本文档描述 Vibecape 应用的数据存储方式，采用**用户目录 + 统一文档根目录**的架构设计。
 
-**核心设计理念：** Workspace 与实际项目目录解耦，所有工作区统一存储在 `docs_root` 下，用 ID 命名。
+**核心设计理念：** Repository 与实际项目目录解耦，所有工作区统一存储在 `docs_root` 下，用 ID 命名。
 
 ---
 
@@ -19,7 +19,7 @@ title: Vibecape 数据存储架构
 ├── config.json                 # 应用配置 (UI、代理、OSS)
 ├── app.db                      # AI 配置数据库 (providers、models)
 ├── chat.db                     # 全局聊天记录
-├── workspaces.json             # 工作区索引 + docs_root 配置
+├── repositorys.json             # 工作区索引 + docs_root 配置
 └── cache/                      # 缓存目录
 ```
 
@@ -60,7 +60,7 @@ title: Vibecape 数据存储架构
 }
 ```
 
-#### `workspaces.json` - 工作区索引
+#### `repositorys.json` - 工作区索引
 
 ```typescript
 {
@@ -95,12 +95,12 @@ title: Vibecape 数据存储架构
 
 ```
 {docs_root}/                            # 用户配置的文档根目录
-├── {workspace_id}/                     # 工作区目录 (用 ID 命名)
+├── {repository_id}/                     # 工作区目录 (用 ID 命名)
 │   ├── config.json                     # 工作区配置
 │   ├── docs.db                         # 文档数据库
 │   ├── chat.db                         # 项目聊天记录
 │   └── llm.txt                         # AI 上下文提示词
-├── {workspace_id}/
+├── {repository_id}/
 │   └── ...
 └── ...
 ```
@@ -175,7 +175,7 @@ title: Vibecape 数据存储架构
 
 ## 术语表
 - Vibecape: 文档编辑器
-- Workspace: 工作区
+- Repository: 工作区
 
 ## 注意事项
 - 使用中文
@@ -191,10 +191,10 @@ title: Vibecape 数据存储架构
 ├── config.json                         # 应用配置
 ├── app.db                              # AI 配置 (providers, models)
 ├── chat.db                             # 全局聊天记录
-├── workspaces.json                     # 工作区索引
+├── repositorys.json                     # 工作区索引
 └── cache/                              # 缓存
 
-/Users/username/vibecape-docs/          # docs_root (在 workspaces.json 中配置)
+/Users/username/vibecape-docs/          # docs_root (在 repositorys.json 中配置)
 ├── abc123/                             # 工作区 1
 │   ├── config.json                     # 工作区配置
 │   ├── docs.db                         # 文档数据
@@ -218,7 +218,7 @@ title: Vibecape 数据存储架构
 │  └─────────────┘  └─────────────┘  └─────────────────────┘  │
 │                                                             │
 │  ┌─────────────────────────────────────────────────────┐   │
-│  │              workspaces.json                         │   │
+│  │              repositorys.json                         │   │
 │  │  { docs_root, current, recent: [...] }              │   │
 │  └─────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────┘
@@ -229,7 +229,7 @@ title: Vibecape 数据存储架构
 │                 文档根目录 {docs_root}/                      │
 │                                                             │
 │  ┌─────────────────────┐  ┌─────────────────────────────┐  │
-│  │    {workspace_id}/  │  │      {workspace_id}/        │  │
+│  │    {repository_id}/  │  │      {repository_id}/        │  │
 │  │  ├── config.json    │  │  ├── config.json            │  │
 │  │  ├── docs.db        │  │  ├── docs.db                │  │
 │  │  ├── chat.db        │  │  ├── chat.db                │  │
@@ -247,19 +247,19 @@ title: Vibecape 数据存储架构
 1. 生成唯一 ID (如 nanoid)
 2. 在 `{docs_root}/{id}/` 创建目录
 3. 初始化 `config.json`、`docs.db`、`chat.db`、`llm.txt`
-4. 更新 `~/vibecape/workspaces.json` 的 `recent` 列表
+4. 更新 `~/vibecape/repositorys.json` 的 `recent` 列表
 
 ### 打开工作区
 
-1. 读取 `~/vibecape/workspaces.json` 获取 `docs_root`
+1. 读取 `~/vibecape/repositorys.json` 获取 `docs_root`
 2. 根据 ID 定位 `{docs_root}/{id}/`
 3. 加载 `config.json` 和 `docs.db`
-4. 更新 `workspaces.json` 的 `current` 和 `lastOpenedAt`
+4. 更新 `repositorys.json` 的 `current` 和 `lastOpenedAt`
 
 ### 删除工作区
 
 1. 删除 `{docs_root}/{id}/` 目录
-2. 从 `workspaces.json` 的 `recent` 中移除
+2. 从 `repositorys.json` 的 `recent` 中移除
 
 ---
 
@@ -284,6 +284,6 @@ title: Vibecape 数据存储架构
 | `src/main/db/chat.ts`            | 聊天数据库                   |
 | `src/main/db/docs.ts`            | 工作区文档数据库             |
 | `src/main/services/Settings.ts`  | 应用配置服务 (改为读写 JSON) |
-| `src/main/services/Workspace.ts` | 工作区服务 (新增)            |
+| `src/main/services/Repository.ts` | 工作区服务 (新增)            |
 | `src/common/schema/app.ts`       | 应用配置类型定义             |
-| `src/common/schema/workspace.ts` | 工作区类型定义 (新增)        |
+| `src/common/schema/repository.ts` | 工作区类型定义 (新增)        |

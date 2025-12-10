@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useWorkspaceStore, useUIStore } from "@/hooks/stores";
+import { useRepositoryStore, useUIStore } from "@/hooks/stores";
 import { Loader2, Trash2, Plus, FolderOpen } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
@@ -12,33 +12,33 @@ export const SidebarEmptyState = () => {
   const { t } = useTranslation();
   const loading = useUIStore((state) => state.loading);
   const listLoading = useUIStore((state) => state.listLoading);
-  const workspaceList = useWorkspaceStore((state) => state.workspaceList);
-  const createWorkspace = useWorkspaceStore((state) => state.createWorkspace);
-  const openWorkspace = useWorkspaceStore((state) => state.openWorkspace);
-  const deleteWorkspace = useWorkspaceStore((state) => state.deleteWorkspace);
+  const repositoryList = useRepositoryStore((state) => state.repositoryList);
+  const createRepository = useRepositoryStore((state) => state.createRepository);
+  const openRepository = useRepositoryStore((state) => state.openRepository);
+  const deleteRepository = useRepositoryStore((state) => state.deleteRepository);
 
-  const handleOpenWorkspace = async (id: string) => {
+  const handleOpenRepository = async (id: string) => {
     try {
-      await openWorkspace(id);
+      await openRepository(id);
     } catch (error) {
       toast.error((error as Error).message);
     }
   };
 
-  const handleDeleteWorkspace = async (id: string, name: string) => {
+  const handleDeleteRepository = async (id: string, name: string) => {
     dialog.confirm({
-      title: t("common.workspace.deleteWorkspace"),
+      title: t("common.repository.deleteRepository"),
       content: (
         <p className="text-sm text-muted-foreground">
-          {t("common.workspace.deleteConfirm", { name })}
+          {t("common.repository.deleteConfirm", { name })}
         </p>
       ),
       variants: "destructive",
       okText: t("common.delete"),
       onOk: async () => {
         try {
-          await deleteWorkspace(id);
-          toast.success(t("common.workspace.workspaceDeleted"));
+          await deleteRepository(id);
+          toast.success(t("common.repository.repositoryDeleted"));
         } catch (error) {
           toast.error((error as Error).message);
         }
@@ -46,25 +46,25 @@ export const SidebarEmptyState = () => {
     });
   };
 
-  const handleCreateWorkspace = () => {
+  const handleCreateRepository = () => {
     let inputValue = "";
 
     dialog({
-      title: t("common.workspace.createWorkspace"),
+      title: t("common.repository.createRepository"),
       className: "max-w-[400px]",
       content: (close) => (
         <div className="space-y-4">
           <Input
-            placeholder={t("common.workspace.workspaceName")}
+            placeholder={t("common.repository.repositoryName")}
             onChange={(e) => {
               inputValue = e.target.value;
             }}
             onKeyDown={async (e) => {
               if (e.key === "Enter" && inputValue.trim()) {
                 try {
-                  const result = await createWorkspace(inputValue.trim());
+                  const result = await createRepository(inputValue.trim());
                   if (result) {
-                    toast.success(t("common.workspace.workspaceCreated"));
+                    toast.success(t("common.repository.repositoryCreated"));
                     close();
                   }
                 } catch (error) {
@@ -87,9 +87,9 @@ export const SidebarEmptyState = () => {
             onClick={async () => {
               if (!inputValue.trim()) return;
               try {
-                const result = await createWorkspace(inputValue.trim());
+                const result = await createRepository(inputValue.trim());
                 if (result) {
-                  toast.success(t("common.workspace.workspaceCreated"));
+                  toast.success(t("common.repository.repositoryCreated"));
                   close();
                 }
               } catch (error) {
@@ -110,16 +110,16 @@ export const SidebarEmptyState = () => {
       {/* 顶部新建按钮 */}
       <div className="flex items-center justify-between mb-4">
         <span className="text-sm font-medium text-muted-foreground">
-          {t("common.workspace.recentTitle")}
+          {t("common.repository.recentTitle")}
         </span>
         <Button
           variant="outline"
           size="sm"
-          onClick={handleCreateWorkspace}
+          onClick={handleCreateRepository}
           disabled={loading}
         >
           {loading ? <Loader2 className="animate-spin" /> : <Plus />}
-          {t("common.workspace.createWorkspace")}
+          {t("common.repository.createRepository")}
         </Button>
       </div>
 
@@ -129,22 +129,22 @@ export const SidebarEmptyState = () => {
           <div className="flex items-center justify-center py-8">
             <Loader2 className="animate-spin" />
           </div>
-        ) : workspaceList.length === 0 ? (
+        ) : repositoryList.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <FolderOpen className="mb-3" />
             <p className="text-sm text-muted-foreground">
-              {t("common.workspace.noHistory")}
+              {t("common.repository.noHistory")}
             </p>
           </div>
         ) : (
-          workspaceList.map((item) => (
+          repositoryList.map((item) => (
             <div
               key={item.id}
               className={cn(
                 "group flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer",
                 "hover:bg-muted/60 transition-colors"
               )}
-              onClick={() => void handleOpenWorkspace(item.id)}
+              onClick={() => void handleOpenRepository(item.id)}
             >
               <FolderOpen className="h-4 w-4 text-muted-foreground shrink-0" />
               <div className="flex-1 min-w-0">
@@ -156,7 +156,7 @@ export const SidebarEmptyState = () => {
                 className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
                 onClick={(e) => {
                   e.stopPropagation();
-                  void handleDeleteWorkspace(item.id, item.name);
+                  void handleDeleteRepository(item.id, item.name);
                 }}
               >
                 <Trash2 />

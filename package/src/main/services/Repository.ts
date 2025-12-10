@@ -1,6 +1,6 @@
 /**
  * 工作区服务
- * 管理 {docs_root}/{workspace_id}/ 下的工作区
+ * 管理 {docs_root}/{repository_id}/ 下的工作区
  */
 
 import fs from "fs";
@@ -8,21 +8,21 @@ import path from "path";
 import { nanoid } from "nanoid";
 import { dialog } from "electron";
 import {
-  type Workspace,
-  type WorkspaceConfig,
-  type WorkspaceEntry,
-  WORKSPACE_FILES,
-  createDefaultWorkspaceConfig,
-} from "@common/schema/workspace";
+  type Repository,
+  type RepositoryConfig,
+  type RepositoryEntry,
+  REPOSITORY_FILES,
+  createDefaultRepositoryConfig,
+} from "@common/schema/repository";
 import {
   getDocsRoot,
   setDocsRoot,
-  getCurrentWorkspaceId,
-  setCurrentWorkspaceId,
-  getRecentWorkspaces,
-  addRecentWorkspace,
-  removeRecentWorkspace,
-  updateRecentWorkspace,
+  getCurrentRepositoryId,
+  setCurrentRepositoryId,
+  getRecentRepositorys,
+  addRecentRepository,
+  removeRecentRepository,
+  updateRecentRepository,
 } from "./UserData";
 
 // ==================== 工具函数 ====================
@@ -35,7 +35,7 @@ function readJsonFile<T>(filePath: string, defaultValue: T): T {
     const content = fs.readFileSync(filePath, "utf-8");
     return JSON.parse(content) as T;
   } catch (error) {
-    console.error(`[Workspace] Failed to read ${filePath}:`, error);
+    console.error(`[Repository] Failed to read ${filePath}:`, error);
     return defaultValue;
   }
 }
@@ -52,22 +52,22 @@ function ensureDir(dirPath: string): void {
 
 // ==================== 路径构建 ====================
 
-function buildWorkspacePaths(docsRoot: string, id: string) {
-  const workspacePath = path.join(docsRoot, id);
+function buildRepositoryPaths(docsRoot: string, id: string) {
+  const repositoryPath = path.join(docsRoot, id);
   return {
     id,
-    path: workspacePath,
-    config_path: path.join(workspacePath, WORKSPACE_FILES.CONFIG),
-    docs_db_path: path.join(workspacePath, WORKSPACE_FILES.DOCS_DB),
-    chat_db_path: path.join(workspacePath, WORKSPACE_FILES.CHAT_DB),
-    llm_txt_path: path.join(workspacePath, WORKSPACE_FILES.LLM_TXT),
+    path: repositoryPath,
+    config_path: path.join(repositoryPath, REPOSITORY_FILES.CONFIG),
+    docs_db_path: path.join(repositoryPath, REPOSITORY_FILES.DOCS_DB),
+    chat_db_path: path.join(repositoryPath, REPOSITORY_FILES.CHAT_DB),
+    llm_txt_path: path.join(repositoryPath, REPOSITORY_FILES.LLM_TXT),
   };
 }
 
 // ==================== 工作区服务 ====================
 
-export class WorkspaceService {
-  private static currentWorkspace: Workspace | null = null;
+export class RepositoryService {
+  private static currentRepository: Repository | null = null;
 
   /**
    * 检查 docs_root 是否已配置
@@ -93,7 +93,7 @@ export class WorkspaceService {
 
     const docsRoot = result.filePaths[0];
     setDocsRoot(docsRoot);
-    console.log("[Workspace] docs_root set to:", docsRoot);
+    console.log("[Repository] docs_root set to:", docsRoot);
     return docsRoot;
   }
 
@@ -114,21 +114,21 @@ export class WorkspaceService {
   /**
    * 列出所有工作区
    */
-  static listWorkspaces(): WorkspaceEntry[] {
-    return getRecentWorkspaces();
+  static listRepositorys(): RepositoryEntry[] {
+    return getRecentRepositorys();
   }
 
   /**
    * 获取当前工作区
    */
-  static getCurrentWorkspace(): Workspace | null {
-    return this.currentWorkspace;
+  static getCurrentRepository(): Repository | null {
+    return this.currentRepository;
   }
 
   /**
    * 创建新工作区
    */
-  static async create(name: string): Promise<Workspace> {
+  static async create(name: string): Promise<Repository> {
     const docsRoot = getDocsRoot();
     if (!docsRoot) {
       throw new Error("docs_root 未配置，请先选择文档存储目录");
@@ -136,13 +136,13 @@ export class WorkspaceService {
 
     // 生成唯一 ID
     const id = nanoid(12);
-    const paths = buildWorkspacePaths(docsRoot, id);
+    const paths = buildRepositoryPaths(docsRoot, id);
 
     // 创建目录
     ensureDir(paths.path);
 
     // 创建配置文件
-    const config = createDefaultWorkspaceConfig(name);
+    const config = createDefaultRepositoryConfig(name);
     writeJsonFile(paths.config_path, config);
 
     // 创建 llm.txt
@@ -158,36 +158,36 @@ export class WorkspaceService {
     fs.writeFileSync(paths.llm_txt_path, llmContent, "utf-8");
 
     // 添加到最近工作区
-    const entry: WorkspaceEntry = {
+    const entry: RepositoryEntry = {
       id,
       name,
       last_opened_at: Date.now(),
     };
-    addRecentWorkspace(entry);
+    addRecentRepository(entry);
 
     // 设置为当前工作区
-    setCurrentWorkspaceId(id);
+    setCurrentRepositoryId(id);
 
-    const workspace: Workspace = {
+    const repository: Repository = {
       ...paths,
       config,
     };
-    this.currentWorkspace = workspace;
+    this.currentRepository = repository;
 
-    console.log("[Workspace] Created workspace:", id, name);
-    return workspace;
+    console.log("[Repository] Created repository:", id, name);
+    return repository;
   }
 
   /**
    * 打开工作区
    */
-  static async open(id: string): Promise<Workspace> {
+  static async open(id: string): Promise<Repository> {
     const docsRoot = getDocsRoot();
     if (!docsRoot) {
       throw new Error("docs_root 未配置");
     }
 
-    const paths = buildWorkspacePaths(docsRoot, id);
+    const paths = buildRepositoryPaths(docsRoot, id);
 
     // 检查工作区是否存在
     if (!fs.existsSync(paths.path)) {
@@ -195,34 +195,34 @@ export class WorkspaceService {
     }
 
     // 读取配置
-    const config = readJsonFile<WorkspaceConfig>(
+    const config = readJsonFile<RepositoryConfig>(
       paths.config_path,
-      createDefaultWorkspaceConfig("未命名")
+      createDefaultRepositoryConfig("未命名")
     );
 
     // 更新最近打开时间
-    updateRecentWorkspace(id, { last_opened_at: Date.now() });
+    updateRecentRepository(id, { last_opened_at: Date.now() });
 
     // 设置为当前工作区
-    setCurrentWorkspaceId(id);
+    setCurrentRepositoryId(id);
 
-    const workspace: Workspace = {
+    const repository: Repository = {
       ...paths,
       config,
     };
-    this.currentWorkspace = workspace;
+    this.currentRepository = repository;
 
-    console.log("[Workspace] Opened workspace:", id, config.name);
-    return workspace;
+    console.log("[Repository] Opened repository:", id, config.name);
+    return repository;
   }
 
   /**
    * 关闭当前工作区
    */
   static close(): void {
-    this.currentWorkspace = null;
-    setCurrentWorkspaceId(null);
-    console.log("[Workspace] Closed current workspace");
+    this.currentRepository = null;
+    setCurrentRepositoryId(null);
+    console.log("[Repository] Closed current repository");
   }
 
   /**
@@ -234,7 +234,7 @@ export class WorkspaceService {
       throw new Error("docs_root 未配置");
     }
 
-    const paths = buildWorkspacePaths(docsRoot, id);
+    const paths = buildRepositoryPaths(docsRoot, id);
 
     // 删除目录
     if (fs.existsSync(paths.path)) {
@@ -242,14 +242,14 @@ export class WorkspaceService {
     }
 
     // 从最近列表移除
-    removeRecentWorkspace(id);
+    removeRecentRepository(id);
 
     // 如果是当前工作区，清除
-    if (this.currentWorkspace?.id === id) {
-      this.currentWorkspace = null;
+    if (this.currentRepository?.id === id) {
+      this.currentRepository = null;
     }
 
-    console.log("[Workspace] Deleted workspace:", id);
+    console.log("[Repository] Deleted repository:", id);
   }
 
   /**
@@ -257,21 +257,21 @@ export class WorkspaceService {
    */
   static async updateConfig(
     id: string,
-    updates: Partial<WorkspaceConfig>
-  ): Promise<WorkspaceConfig> {
+    updates: Partial<RepositoryConfig>
+  ): Promise<RepositoryConfig> {
     const docsRoot = getDocsRoot();
     if (!docsRoot) {
       throw new Error("docs_root 未配置");
     }
 
-    const paths = buildWorkspacePaths(docsRoot, id);
-    const config = readJsonFile<WorkspaceConfig>(
+    const paths = buildRepositoryPaths(docsRoot, id);
+    const config = readJsonFile<RepositoryConfig>(
       paths.config_path,
-      createDefaultWorkspaceConfig("未命名")
+      createDefaultRepositoryConfig("未命名")
     );
 
     // 合并更新
-    const newConfig: WorkspaceConfig = {
+    const newConfig: RepositoryConfig = {
       ...config,
       ...updates,
     };
@@ -279,12 +279,12 @@ export class WorkspaceService {
 
     // 如果更新了名称，同步到 recent 列表
     if (updates.name) {
-      updateRecentWorkspace(id, { name: updates.name });
+      updateRecentRepository(id, { name: updates.name });
     }
 
     // 更新当前工作区缓存
-    if (this.currentWorkspace?.id === id) {
-      this.currentWorkspace.config = newConfig;
+    if (this.currentRepository?.id === id) {
+      this.currentRepository.config = newConfig;
     }
 
     return newConfig;
@@ -294,7 +294,7 @@ export class WorkspaceService {
    * 获取工作区的 llm.txt 内容
    */
   static getLlmTxt(id?: string): string {
-    const targetId = id ?? this.currentWorkspace?.id;
+    const targetId = id ?? this.currentRepository?.id;
     if (!targetId) {
       return "";
     }
@@ -304,7 +304,7 @@ export class WorkspaceService {
       return "";
     }
 
-    const llmPath = path.join(docsRoot, targetId, WORKSPACE_FILES.LLM_TXT);
+    const llmPath = path.join(docsRoot, targetId, REPOSITORY_FILES.LLM_TXT);
     if (!fs.existsSync(llmPath)) {
       return "";
     }
@@ -316,7 +316,7 @@ export class WorkspaceService {
    * 更新工作区的 llm.txt 内容
    */
   static setLlmTxt(content: string, id?: string): void {
-    const targetId = id ?? this.currentWorkspace?.id;
+    const targetId = id ?? this.currentRepository?.id;
     if (!targetId) {
       throw new Error("未指定工作区");
     }
@@ -326,15 +326,15 @@ export class WorkspaceService {
       throw new Error("docs_root 未配置");
     }
 
-    const llmPath = path.join(docsRoot, targetId, WORKSPACE_FILES.LLM_TXT);
+    const llmPath = path.join(docsRoot, targetId, REPOSITORY_FILES.LLM_TXT);
     fs.writeFileSync(llmPath, content, "utf-8");
   }
 
   /**
    * 恢复上次打开的工作区
    */
-  static async restoreLastWorkspace(): Promise<Workspace | null> {
-    const currentId = getCurrentWorkspaceId();
+  static async restoreLastRepository(): Promise<Repository | null> {
+    const currentId = getCurrentRepositoryId();
     if (!currentId) {
       return null;
     }
@@ -342,8 +342,8 @@ export class WorkspaceService {
     try {
       return await this.open(currentId);
     } catch (error) {
-      console.warn("[Workspace] Failed to restore last workspace:", error);
-      setCurrentWorkspaceId(null);
+      console.warn("[Repository] Failed to restore last repository:", error);
+      setCurrentRepositoryId(null);
       return null;
     }
   }

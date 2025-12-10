@@ -1,12 +1,12 @@
 import type { JSONContent } from "@tiptap/core";
 import type { DocTreeNode, DocData } from "@common/schema/docs";
-import type { Workspace, WorkspaceEntry } from "@common/schema/workspace";
+import type { Repository, RepositoryEntry } from "@common/schema/repository";
 
 export interface VibecapeAPI {
   // ==================== 工作区管理 ====================
 
   /** 获取当前工作区 */
-  getWorkspace: () => Promise<Workspace | null>;
+  getRepository: () => Promise<Repository | null>;
 
   /** 获取 docs_root */
   getDocsRoot: () => Promise<string>;
@@ -15,22 +15,22 @@ export interface VibecapeAPI {
   setDocsRoot: (path: string) => Promise<void>;
 
   /** 创建新工作区 */
-  createWorkspace: (name: string) => Promise<Workspace>;
+  createRepository: (name: string) => Promise<Repository>;
 
   /** 打开工作区 */
-  openWorkspace: (id: string) => Promise<Workspace>;
+  openRepository: (id: string) => Promise<Repository>;
 
   /** 关闭当前工作区 */
-  closeWorkspace: () => Promise<void>;
+  closeRepository: () => Promise<void>;
 
   /** 删除工作区 */
-  deleteWorkspace: (id: string) => Promise<void>;
+  deleteRepository: (id: string) => Promise<void>;
 
   /** 列出所有工作区 */
-  listWorkspaces: () => Promise<WorkspaceEntry[]>;
+  listRepositorys: () => Promise<RepositoryEntry[]>;
 
   /** 恢复上次打开的工作区 */
-  restoreLastWorkspace: () => Promise<Workspace | null>;
+  restoreLastRepository: () => Promise<Repository | null>;
 
   /** 获取 llm.txt 内容 */
   getLlmTxt: (id?: string) => Promise<string>;
@@ -39,13 +39,13 @@ export interface VibecapeAPI {
   setLlmTxt: (content: string, id?: string) => Promise<void>;
 
   /** 更新工作区配置 */
-  updateWorkspaceConfig: (
-    config: Partial<import("@common/schema/workspace").WorkspaceConfig>
-  ) => Promise<import("@common/schema/workspace").WorkspaceConfig>;
+  updateRepositoryConfig: (
+    config: Partial<import("@common/schema/repository").RepositoryConfig>
+  ) => Promise<import("@common/schema/repository").RepositoryConfig>;
 
   // 兼容旧 API
-  /** @deprecated 使用 listWorkspaces */
-  getWorkspaceHistory: () => Promise<WorkspaceEntry[]>;
+  /** @deprecated 使用 listRepositorys */
+  getRepositoryHistory: () => Promise<RepositoryEntry[]>;
 
   // ==================== 文档树 ====================
 

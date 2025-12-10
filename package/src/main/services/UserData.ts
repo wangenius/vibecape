@@ -13,17 +13,17 @@ import {
   DEFAULT_MCP_CONFIG,
 } from "@common/schema/config";
 import {
-  type WorkspacesIndex,
-  type WorkspaceEntry,
-  DEFAULT_WORKSPACES_INDEX,
-} from "@common/schema/workspace";
+  type RepositorysIndex,
+  type RepositoryEntry,
+  DEFAULT_REPOSITORYS_INDEX,
+} from "@common/schema/repository";
 
 // ==================== 路径常量 ====================
 
 const VIBECAPE_DIR = path.join(os.homedir(), "vibecape");
 const CONFIG_PATH = path.join(VIBECAPE_DIR, "config.json");
 const MCP_PATH = path.join(VIBECAPE_DIR, "mcp.json");
-const WORKSPACES_PATH = path.join(VIBECAPE_DIR, "workspaces.json");
+const REPOSITORYS_PATH = path.join(VIBECAPE_DIR, "repositorys.json");
 const CACHE_DIR = path.join(VIBECAPE_DIR, "cache");
 const DEFAULT_DOCS_ROOT = path.join(VIBECAPE_DIR, "root");
 
@@ -91,7 +91,7 @@ export function getUserDataPaths() {
     vibecapeDir: VIBECAPE_DIR,
     configPath: CONFIG_PATH,
     mcpPath: MCP_PATH,
-    workspacesPath: WORKSPACES_PATH,
+    repositorysPath: REPOSITORYS_PATH,
     cacheDir: CACHE_DIR,
   };
 }
@@ -131,71 +131,71 @@ export function updateAppConfig<K extends keyof AppConfig>(
   return config;
 }
 
-// ==================== WorkspacesIndex 操作 ====================
+// ==================== RepositorysIndex 操作 ====================
 
-export function getWorkspacesIndex(): WorkspacesIndex {
-  const stored = readJsonFile<Partial<WorkspacesIndex>>(WORKSPACES_PATH, {});
+export function getRepositorysIndex(): RepositorysIndex {
+  const stored = readJsonFile<Partial<RepositorysIndex>>(REPOSITORYS_PATH, {});
   return {
     // 如果没有配置 docs_root，使用默认路径
     docs_root: stored.docs_root || DEFAULT_DOCS_ROOT,
-    current: stored.current ?? DEFAULT_WORKSPACES_INDEX.current,
-    recent: stored.recent ?? DEFAULT_WORKSPACES_INDEX.recent,
+    current: stored.current ?? DEFAULT_REPOSITORYS_INDEX.current,
+    recent: stored.recent ?? DEFAULT_REPOSITORYS_INDEX.recent,
   };
 }
 
-export function setWorkspacesIndex(index: WorkspacesIndex): void {
-  writeJsonFile(WORKSPACES_PATH, index);
+export function setRepositorysIndex(index: RepositorysIndex): void {
+  writeJsonFile(REPOSITORYS_PATH, index);
 }
 
 export function getDocsRoot(): string {
-  return getWorkspacesIndex().docs_root;
+  return getRepositorysIndex().docs_root;
 }
 
 export function setDocsRoot(docsRoot: string): void {
-  const index = getWorkspacesIndex();
+  const index = getRepositorysIndex();
   index.docs_root = docsRoot;
-  setWorkspacesIndex(index);
+  setRepositorysIndex(index);
 }
 
-export function getCurrentWorkspaceId(): string | null {
-  return getWorkspacesIndex().current;
+export function getCurrentRepositoryId(): string | null {
+  return getRepositorysIndex().current;
 }
 
-export function setCurrentWorkspaceId(id: string | null): void {
-  const index = getWorkspacesIndex();
+export function setCurrentRepositoryId(id: string | null): void {
+  const index = getRepositorysIndex();
   index.current = id;
-  setWorkspacesIndex(index);
+  setRepositorysIndex(index);
 }
 
-export function getRecentWorkspaces(): WorkspaceEntry[] {
-  return getWorkspacesIndex().recent;
+export function getRecentRepositorys(): RepositoryEntry[] {
+  return getRepositorysIndex().recent;
 }
 
-export function addRecentWorkspace(entry: WorkspaceEntry): void {
-  const index = getWorkspacesIndex();
+export function addRecentRepository(entry: RepositoryEntry): void {
+  const index = getRepositorysIndex();
   // 移除已存在的同 ID 条目
   index.recent = index.recent.filter((e) => e.id !== entry.id);
   // 添加到开头
   index.recent.unshift(entry);
   // 保留最近 20 个
   index.recent = index.recent.slice(0, 20);
-  setWorkspacesIndex(index);
+  setRepositorysIndex(index);
 }
 
-export function removeRecentWorkspace(id: string): void {
-  const index = getWorkspacesIndex();
+export function removeRecentRepository(id: string): void {
+  const index = getRepositorysIndex();
   index.recent = index.recent.filter((e) => e.id !== id);
   if (index.current === id) {
     index.current = null;
   }
-  setWorkspacesIndex(index);
+  setRepositorysIndex(index);
 }
 
-export function updateRecentWorkspace(id: string, updates: Partial<WorkspaceEntry>): void {
-  const index = getWorkspacesIndex();
+export function updateRecentRepository(id: string, updates: Partial<RepositoryEntry>): void {
+  const index = getRepositorysIndex();
   const entry = index.recent.find((e) => e.id === id);
   if (entry) {
     Object.assign(entry, updates);
-    setWorkspacesIndex(index);
+    setRepositorysIndex(index);
   }
 }

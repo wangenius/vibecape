@@ -30,12 +30,6 @@ export async function initSettings() {
     if (settings) {
       useSettingsStore.getState().setSettings(settings);
 
-      // 同步更新 i18n 语言
-      const { default: i18n } = await import("@/lib/locales/i18n");
-      if (settings.ui.language && settings.ui.language !== i18n.language) {
-        await i18n.changeLanguage(settings.ui.language);
-      }
-
       // 同步应用主题
       const root = document.documentElement;
       if (settings.ui.mode === "dark") {

@@ -1,7 +1,7 @@
 /**
  * 文档数据库客户端
  * 支持动态路径的 SQLite 数据库
- * 位置: {docs_root}/{workspace_id}/docs.db
+ * 位置: {docs_root}/{repository_id}/docs.db
  */
 
 import { createClient, Client } from "@libsql/client";

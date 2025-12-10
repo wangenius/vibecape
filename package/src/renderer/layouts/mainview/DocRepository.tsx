@@ -21,7 +21,7 @@ type Props = {
   ) => Promise<void>;
 };
 
-export const DocWorkspace = ({ doc, onSave }: Props) => {
+export const DocRepository = ({ doc, onSave }: Props) => {
   const { t } = useTranslation();
   const [title, setTitle] = useState(doc.title);
   const [description, setDescription] = useState(

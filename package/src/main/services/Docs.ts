@@ -1,7 +1,7 @@
 /**
  * 文档服务
  * 处理文档 CRUD 操作
- * 使用 WorkspaceService 管理工作区
+ * 使用 RepositoryService 管理工作区
  * 使用 Repository 层进行数据访问
  */
 
@@ -10,7 +10,7 @@ import { dialog } from "electron";
 import { asc } from "drizzle-orm";
 import { docs, type DocTreeNode, type DocData } from "@common/schema/docs";
 import { getDocsDb } from "@main/db/docs";
-import { WorkspaceService } from "./Workspace";
+import { RepositoryService } from "./Repository";
 import { DocsRepository } from "@main/repositories";
 import type { JSONContent } from "@tiptap/core";
 import {
@@ -30,11 +30,11 @@ export class DocsService {
    * 获取当前工作区的数据库
    */
   private static async getDb() {
-    const workspace = WorkspaceService.getCurrentWorkspace();
-    if (!workspace) {
+    const repository = RepositoryService.getCurrentRepository();
+    if (!repository) {
       throw new Error("未打开工作区");
     }
-    return getDocsDb(workspace.docs_db_path);
+    return getDocsDb(repository.docs_db_path);
   }
 
   /**

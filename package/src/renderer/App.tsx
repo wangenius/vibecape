@@ -28,9 +28,7 @@ const App = () => {
   return (
     <TooltipProvider>
       <div className="w-screen h-screen relative flex bg-background overflow-hidden flex-col">
-        <div className="w-full h-8 z-50 pointer-events-auto">
-          <Header />
-        </div>
+        <Header />
         <div className="w-full h-full flex overflow-hidden">
           <Sidebar />
           <MainView />

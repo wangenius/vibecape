@@ -45,6 +45,12 @@
     @apply focus-visible:outline-none;
     @apply disabled:cursor-not-allowed disabled:opacity-50;
     @apply resize-none;
+    height: unset;
+    text-align: left;
+    width: 100%;
+    resize: none !important;
+    line-height: 1.5rem;
+    cursor: text;
   }
 
   /* ═══ Typography ═══ */

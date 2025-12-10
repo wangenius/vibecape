@@ -6,7 +6,7 @@ import {
   SettingItem,
 } from "@/layouts/settings/item/SettingComponents";
 import type { RepositoryConfig } from "@common/schema/repository";
-import { useDebounce } from "./hooks";
+import { useDebounce } from "@/hooks/util/useDebounce";
 
 interface BasicSettingsProps {
   config: RepositoryConfig;

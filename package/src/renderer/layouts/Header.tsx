@@ -52,7 +52,7 @@ export function Header() {
   return (
     <header
       id="body-header"
-      className="flex items-center bg-transparent pr-xs pl-20 h-size-md flex-none select-none border-b border-border"
+      className="flex items-center bg-transparent pr-xs pl-20 h-size-md flex-none select-none border-b border-border w-full h-8 z-50 pointer-events-auto"
     >
       <div className="flex-none flex items-center gap-xs">
         <Button

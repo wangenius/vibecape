@@ -51,7 +51,7 @@ const SettingsSidebar = () => {
   const repository = useRepositoryStore((state) => state.repository);
 
   return (
-    <div className="w-60 flex flex-col border-r overflow-hidden shrink-0 h-full">
+    <div className="w-80 flex flex-col border-r overflow-hidden shrink-0 h-full">
       <div className="flex-1 p-sm space-y-xs overflow-y-auto">
         {/* Repo Settings - 仅当有 repository 时显示 */}
         {repository && (

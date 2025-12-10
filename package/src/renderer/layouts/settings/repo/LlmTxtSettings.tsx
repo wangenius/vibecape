@@ -4,7 +4,7 @@ import {
   SettingSection,
   SettingCard,
 } from "@/layouts/settings/item/SettingComponents";
-import { useDebounce, updateLlmTxt } from "./hooks";
+import { useDebounce } from "@/hooks/util/useDebounce";
 
 export const LlmTxtSettings = () => {
   const { t } = useTranslation();
@@ -21,8 +21,8 @@ export const LlmTxtSettings = () => {
       .catch(console.error);
   }, []);
 
-  const debouncedChange = useDebounce((value: string) => {
-    void updateLlmTxt(value);
+  const debouncedChange = useDebounce(async (value: string) => {
+    await window.api.vibecape.setLlmTxt(value);
   }, 500);
 
   if (!loaded) {

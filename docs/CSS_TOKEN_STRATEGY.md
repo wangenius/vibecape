@@ -680,16 +680,53 @@ font-normal     font-medium     font-semibold     font-bold
 
 | 组件 | 更改 |
 |------|------|
-| `button.tsx` | `rounded-2xl` → `rounded-lg`, 移除 squircle |
-| `input.tsx` | `px-1.5` → `px-2` |
-| `dialog.tsx` | 添加 `border-border` |
-| `popover.tsx` | `rounded-xl` → `rounded-lg` |
-| `select.tsx` | `rounded-xl` → `rounded-lg`, item `rounded-lg` → `rounded-md` |
-| `dropdown.tsx` | `rounded-xl` → `rounded-lg`, `z-1000` → `z-50` |
-| `sheet.tsx` | 添加 `border-border` |
-| `toast.tsx` | `rounded-md` → `rounded-lg`, `p-6` → `p-4` |
+| `button.tsx` | `h-6` → `h-size-xs`, `h-10` → `h-size-lg`, `size-7` → `size-size-sm` |
+| `input.tsx` | `h-7` → `h-size-sm`, `px-2` → `px-sm` |
+| `dialog.tsx` | `right-4 top-4` → `right-md top-md`, `p-1` → `p-xs`, `h-4 w-4` → `size-icon-md` |
+| `popover.tsx` | 使用 `popover-content` CSS 类 |
+| `select.tsx` | `h-4 w-4` → `size-icon-md`, `py-1.5` → `py-xs`, `pl-8 pr-2` → `pl-8 pr-sm` |
+| `dropdown.tsx` | `h-7` → `h-size-sm`, `py-2` → `py-sm`, `py-1.5` → `py-xs`, 图标使用 `size-icon-*` |
+| `sheet.tsx` | `right-4 top-4` → `right-md top-md`, `h-4 w-4` → `size-icon-md` |
+| `components.css` | 全面使用 `p-sm`, `p-md`, `p-lg`, `gap-sm`, `h-size-sm` 等 Token |
+
+### 新增 Token
+
+```css
+/* 间距 Token */
+--spacing-xs: 0.25rem;    /* 4px */
+--spacing-sm: 0.5rem;     /* 8px */
+--spacing-md: 1rem;       /* 16px */
+--spacing-lg: 1.5rem;     /* 24px */
+--spacing-xl: 2rem;       /* 32px */
+
+/* 尺寸 Token */
+--size-xs: 1.5rem;        /* 24px */
+--size-sm: 1.75rem;       /* 28px */
+--size-md: 2rem;          /* 32px */
+--size-lg: 2.5rem;        /* 40px */
+--size-xl: 3rem;          /* 48px */
+
+/* 图标尺寸 Token */
+--icon-xs: 0.75rem;       /* 12px */
+--icon-sm: 0.875rem;      /* 14px */
+--icon-md: 1rem;          /* 16px */
+--icon-lg: 1.25rem;       /* 20px */
+--icon-xl: 1.5rem;        /* 24px */
+```
+
+### 新增 CSS 组件类
+
+```css
+/* 通用组件类 */
+.card              /* 卡片容器 */
+.list-item         /* 列表项 */
+.list-item-active  /* 激活的列表项 */
+.section-header    /* 分组标题 */
+.icon-btn          /* 图标按钮 */
+.icon-btn-sm       /* 小图标按钮 */
+```
 
 ---
 
-*文档版本: 1.1.0*
+*文档版本: 1.2.0*
 *最后更新: 2024-12*

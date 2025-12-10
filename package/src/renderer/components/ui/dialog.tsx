@@ -52,9 +52,9 @@ const DialogContent = React.forwardRef<
       {children}
       <DialogPrimitive.Close
         hidden={closeIconHide}
-        className="absolute right-4 top-4 rounded-full opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-0 disabled:pointer-events-none hover:bg-muted p-1"
+        className="absolute right-md top-md rounded-full opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-0 disabled:pointer-events-none hover:bg-muted p-xs"
       >
-        <PiX className="h-4 w-4" />
+        <PiX className="size-icon-md" />
         <span className="sr-only">Close</span>
       </DialogPrimitive.Close>
     </DialogPrimitive.Content>

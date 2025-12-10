@@ -1,23 +1,27 @@
-/* @styles/components.css - 组件基础样式 */
+/* @styles/components.css - 组件基础样式 (Token 化) */
 
+/* ═══════════════════════════════════════════════════════════════
+   BASE LAYER - 原生元素样式
+   使用语义化 Token: p-sm, h-size-sm, gap-sm 等
+   ═══════════════════════════════════════════════════════════════ */
 @layer base {
   /* ═══ Button ═══ */
   button {
     @apply inline-flex items-center justify-center whitespace-nowrap;
     @apply rounded-lg border border-transparent;
-    @apply text-sm gap-2 px-2 h-7;
+    @apply text-sm gap-sm px-sm h-size-sm;
     @apply text-muted-foreground bg-transparent;
     @apply ring-offset-background transition-colors;
     @apply hover:bg-muted-foreground/10;
     @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
     @apply disabled:pointer-events-none disabled:opacity-50;
-    @apply [&_svg]:size-4 flex-none;
+    @apply [&_svg]:size-icon-md flex-none;
   }
 
   /* ═══ Input ═══ */
   input {
-    @apply flex w-full h-7 rounded-md;
-    @apply border border-transparent px-2;
+    @apply flex w-full h-size-sm rounded-md;
+    @apply border border-transparent px-sm;
     @apply text-sm text-foreground bg-muted;
     @apply ring-offset-background transition-colors;
     @apply placeholder:text-muted-foreground/50;
@@ -28,7 +32,7 @@
 
   textarea {
     @apply w-full rounded-md;
-    @apply border border-transparent p-2;
+    @apply border border-transparent p-sm;
     @apply text-sm text-foreground bg-muted;
     @apply ring-offset-background transition-colors;
     @apply placeholder:text-muted-foreground/50;
@@ -48,26 +52,30 @@
   hr { @apply border-border; }
 }
 
-/* ═══ Popover/Dropdown 基础样式 ═══ */
+/* ═══════════════════════════════════════════════════════════════
+   COMPONENTS LAYER - 复合组件样式
+   ═══════════════════════════════════════════════════════════════ */
 @layer components {
+  /* ═══ Popover ═══ */
   .popover-content {
     @apply z-50 rounded-lg bg-popover text-popover-foreground;
     @apply border border-border overflow-hidden;
   }
 
+  /* ═══ Dropdown ═══ */
   .dropdown-content {
     @apply z-50 min-w-32 overflow-hidden rounded-lg;
-    @apply border border-border bg-popover p-1.5;
+    @apply border border-border bg-popover p-xs;
     @apply flex flex-col gap-0.5 text-popover-foreground;
   }
 
   .dropdown-item {
     @apply relative flex cursor-default select-none items-center;
-    @apply gap-2 rounded-md h-7 pl-2 pr-3;
+    @apply gap-sm rounded-md h-size-sm pl-sm pr-3;
     @apply text-xs text-muted-foreground;
     @apply outline-none transition-colors;
     @apply focus:bg-muted hover:bg-muted;
-    @apply [&_svg]:size-4 [&_svg]:text-muted-foreground;
+    @apply [&_svg]:size-icon-md [&_svg]:text-muted-foreground;
   }
 
   .dropdown-item-destructive {
@@ -86,28 +94,28 @@
     @apply flex flex-col overflow-hidden;
     @apply w-full max-w-[90vw] max-h-[90vh];
     @apply -translate-x-1/2 -translate-y-1/2;
-    @apply gap-4 border border-border bg-background p-4;
+    @apply gap-md border border-border bg-background p-md;
     @apply shadow-lg rounded-xl;
     @apply focus:outline-none;
   }
 
   /* ═══ Sheet ═══ */
   .sheet-content {
-    @apply fixed z-50 gap-4 bg-background p-6 shadow-lg border-border;
+    @apply fixed z-50 gap-md bg-background p-lg shadow-lg border-border;
   }
 
   /* ═══ Toast ═══ */
   .toast {
     @apply pointer-events-auto relative flex w-full;
-    @apply items-center justify-between gap-4;
+    @apply items-center justify-between gap-md;
     @apply overflow-hidden rounded-lg;
-    @apply border border-border p-4 shadow-lg;
+    @apply border border-border p-md shadow-lg;
   }
 
   /* ═══ Select ═══ */
   .select-trigger {
-    @apply flex h-7 items-center justify-between gap-2;
-    @apply rounded-md bg-muted px-2;
+    @apply flex h-size-sm items-center justify-between gap-sm;
+    @apply rounded-md bg-muted px-sm;
     @apply text-sm text-muted-foreground;
     @apply transition-all;
     @apply hover:bg-muted-foreground/10 focus:bg-muted-foreground/10;
@@ -116,13 +124,13 @@
 
   .select-content {
     @apply z-50 max-h-96 overflow-hidden rounded-lg;
-    @apply border border-border bg-popover p-1.5;
+    @apply border border-border bg-popover p-xs;
     @apply flex flex-col gap-0.5 text-popover-foreground;
   }
 
   .select-item {
     @apply relative flex w-full cursor-default select-none items-center;
-    @apply rounded-md py-1.5 pl-8 pr-3;
+    @apply rounded-md py-xs pl-8 pr-3;
     @apply text-xs outline-none transition-colors;
     @apply focus:bg-accent focus:text-accent-foreground;
     @apply hover:bg-accent/50;
@@ -131,13 +139,50 @@
   /* ═══ Badge ═══ */
   .badge {
     @apply inline-flex items-center rounded-full border;
-    @apply px-2.5 py-0.5 text-xs font-semibold;
+    @apply px-sm py-0.5 text-xs font-semibold;
     @apply transition-colors focus:outline-none;
   }
 
   /* ═══ Tooltip ═══ */
   .tooltip-content {
     @apply z-50 rounded-md border bg-popover;
-    @apply px-3 py-1.5 text-sm text-popover-foreground shadow-md;
+    @apply px-3 py-xs text-sm text-popover-foreground shadow-md;
+  }
+
+  /* ═══ Card ═══ */
+  .card {
+    @apply rounded-lg border border-border bg-card text-card-foreground;
+    @apply p-md shadow-sm;
+  }
+
+  /* ═══ List Item (通用列表项) ═══ */
+  .list-item {
+    @apply relative flex items-center gap-sm;
+    @apply rounded-lg px-sm py-xs;
+    @apply text-sm text-foreground;
+    @apply transition-colors cursor-pointer;
+    @apply hover:bg-muted-foreground/5;
+  }
+
+  .list-item-active {
+    @apply bg-primary/5 hover:bg-primary/8;
+  }
+
+  /* ═══ Section Header (设置页分组标题) ═══ */
+  .section-header {
+    @apply px-3 py-sm text-xs font-medium text-muted-foreground uppercase tracking-wider;
+  }
+
+  /* ═══ Icon Button (纯图标按钮) ═══ */
+  .icon-btn {
+    @apply size-size-sm p-0 flex items-center justify-center;
+    @apply rounded-md text-muted-foreground;
+    @apply hover:bg-muted-foreground/10 transition-colors;
+    @apply [&_svg]:size-icon-md;
+  }
+
+  .icon-btn-sm {
+    @apply size-size-xs p-0;
+    @apply [&_svg]:size-icon-sm;
   }
 }

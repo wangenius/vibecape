@@ -52,9 +52,9 @@ export function Header() {
   return (
     <header
       id="body-header"
-      className="flex items-center bg-transparent pr-1 pl-20 h-8 flex-none select-none border-b border-border"
+      className="flex items-center bg-transparent pr-xs pl-20 h-size-md flex-none select-none border-b border-border"
     >
-      <div className="flex-none flex items-center gap-1">
+      <div className="flex-none flex items-center gap-xs">
         <Button
           variant="ghost"
           size="icon"
@@ -69,7 +69,7 @@ export function Header() {
       {/* 中间：工作区名称 + 拖拽区域 */}
       <div
         id="viewport-header"
-        className="flex-1 flex items-center justify-center gap-2 min-w-0 overflow-hidden"
+        className="flex-1 flex items-center justify-center gap-sm min-w-0 overflow-hidden"
       >
         {/* 拖拽区域 */}
         <div id="header-drag-region" className="flex-1 h-full"></div>
@@ -79,13 +79,13 @@ export function Header() {
             <PopoverTrigger asChild>
               <Button>
                 <span className="truncate">{repositoryName}</span>
-                <TbChevronDown className="size-3 shrink-0" />
+                <TbChevronDown className="size-icon-xs shrink-0" />
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-60 p-1" align="center" sideOffset={8}>
-              <div className="max-h-[300px] overflow-y-auto space-y-1">
+            <PopoverContent className="w-60 p-xs" align="center" sideOffset={8}>
+              <div className="max-h-[300px] overflow-y-auto space-y-xs">
                 {repositoryList.length === 0 ? (
-                  <div className="py-4 text-center text-sm text-muted-foreground">
+                  <div className="py-md text-center text-sm text-muted-foreground">
                     暂无其他工作区
                   </div>
                 ) : (
@@ -96,7 +96,7 @@ export function Header() {
                       actived={repository?.id === item.id}
                       onClick={() => void handleSwitchRepository(item.id)}
                     >
-                      <TbFolder className="size-4 text-muted-foreground shrink-0" />
+                      <TbFolder className="size-icon-md text-muted-foreground shrink-0" />
                       <span className="text-sm truncate">{item.name}</span>
                     </Button>
                   ))
@@ -112,7 +112,7 @@ export function Header() {
       {/* 右侧：模型选择器 + AI对话 + 设置 */}
       <div
         id="baybar-header"
-        className="flex items-center gap-1 flex-none pr-1"
+        className="flex items-center gap-xs flex-none pr-xs"
       >
         <ModelSelector />
         <Button

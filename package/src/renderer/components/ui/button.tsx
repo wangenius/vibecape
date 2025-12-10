@@ -18,9 +18,9 @@ const buttonVariants = cva("", {
     },
     size: {
       default: "",
-      sm: "px-3 text-xs h-6",
-      lg: "h-10 px-6",
-      icon: "size-7 p-0",
+      sm: "px-3 text-xs h-size-xs",
+      lg: "h-size-lg px-lg",
+      icon: "size-size-sm p-0",
       full: "w-full justify-start",
     },
     actived: {

@@ -28,7 +28,7 @@ export const INDENT_WIDTH = 24;
 // 节点样式
 export const nodeBaseStyles = {
   base: cn(
-    "group relative flex items-center gap-2 py-1 pl-1 pr-1 rounded-lg mx-1",
+    "group relative flex items-center gap-sm py-xs pl-xs pr-xs rounded-lg mx-xs",
     "transition-all duration-200 ease-out",
     "cursor-pointer",
     "border border-transparent",
@@ -69,11 +69,11 @@ const SettingsSidebar = () => {
 
   return (
     <div className="w-60 flex flex-col border-r border-border overflow-hidden shrink-0">
-      <div className="flex-1 p-2 space-y-1 overflow-y-auto">
+      <div className="flex-1 p-sm space-y-xs overflow-y-auto">
         {/* Repo Settings - 仅当有 repository 时显示 */}
         {repository && (
           <>
-            <div className="px-3 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <div className="section-header">
               {t("common.settings.repoSettings")}
             </div>
             {REPOSITORY_NAV_ITEMS.map((item) => {
@@ -93,12 +93,12 @@ const SettingsSidebar = () => {
                 </Button>
               );
             })}
-            <div className="my-5 w-full" />
+            <div className="my-xl w-full" />
           </>
         )}
 
         {/* App Settings */}
-        <div className="px-3 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+        <div className="section-header">
           {t("common.settings.appSettings")}
         </div>
         {SETTINGS_NAV_ITEMS.map((item) => {
@@ -145,7 +145,7 @@ const SettingsDialogContent = () => {
   return (
     <div className="flex h-full">
       <SettingsSidebar />
-      <div className="flex-1 overflow-y-auto p-6">
+      <div className="flex-1 overflow-y-auto p-lg">
         <SettingsContent />
       </div>
     </div>

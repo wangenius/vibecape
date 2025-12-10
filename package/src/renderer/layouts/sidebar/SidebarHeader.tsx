@@ -74,8 +74,8 @@ export const SidebarHeader = () => {
     (selector) => selector.sidebarViewMode
   );
   return (
-    <div className="p-1 w-full shrink-0">
-      <div className="flex items-center gap-1 whitespace-nowrap">
+    <div className="p-xs w-full shrink-0">
+      <div className="flex items-center gap-xs whitespace-nowrap">
         {/* 视图模式切换（仅在有 repository 时显示） */}
         {repository && (
           <ViewModeSwitch

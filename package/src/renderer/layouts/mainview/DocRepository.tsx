@@ -143,9 +143,9 @@ export const DocRepository = ({ doc, onSave }: Props) => {
   return (
     <div className="flex-1 flex flex-col bg-background">
       <div className="max-w-3xl mx-auto w-full">
-        <div className="mb-6">
+        <div className="mb-lg">
           {/* 标题行 */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-sm">
             <div className="flex-1">
               <TitleInput
                 value={title}

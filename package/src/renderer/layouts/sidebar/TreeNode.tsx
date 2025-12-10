@@ -123,7 +123,7 @@ export const TreeNode = memo(
             {/* 节点标题 */}
             <div
               className={cn(
-                "flex-1 min-w-0 text-[13px] truncate",
+                "flex-1 min-w-0 text-sm truncate",
                 "text-foreground",
                 "transition-colors duration-200",
                 selected && "text-foreground",
@@ -169,7 +169,7 @@ export const TreeNode = memo(
                   className="text-destructive focus:text-destructive"
                   onClick={() => onDelete(node)}
                 >
-                  <Trash2 className="h-4 w-4 mr-2 stroke-destructive" />
+                  <Trash2 className="size-icon-md mr-sm stroke-destructive" />
                   {t("common.settings.delete")}
                 </DropdownMenuItem>
               </DropdownMenuContent>

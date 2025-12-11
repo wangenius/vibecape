@@ -43,7 +43,7 @@ const PromptItemCard = ({
       </div>
       <div className="flex items-center gap-xs hover-visible">
         <Button
-          variant="ghost"
+          
           size="icon"
           onClick={() => onEdit(prompt)}
           title={t("common.prompt.edit", "编辑")}
@@ -51,7 +51,7 @@ const PromptItemCard = ({
           <TbEdit />
         </Button>
         <Button
-          variant="ghost"
+          
           size="icon"
           className="text-destructive hover:text-destructive"
           onClick={() => onDelete(prompt.id)}
@@ -158,7 +158,7 @@ export const PromptSettings = () => {
           "创建和管理常用的 AI Prompt 模板，在编辑器中输入 # 可快速插入"
         )}
         action={
-          <Button size="sm" onClick={openAddDialog}>
+          <Button  onClick={openAddDialog}>
             <TbPlus className="size-4 mr-1" />
             {t("common.prompt.add", "添加 Prompt")}
           </Button>

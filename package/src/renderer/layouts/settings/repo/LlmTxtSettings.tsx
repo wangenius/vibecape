@@ -6,6 +6,7 @@ import {
   SettingsContainer,
 } from "@/layouts/settings/item/SettingComponents";
 import { useDebounce } from "@/hooks/util/useDebounce";
+import Textarea from "@/components/ui/textarea";
 
 export const LlmTxtSettings = () => {
   const { t } = useTranslation();
@@ -41,11 +42,12 @@ export const LlmTxtSettings = () => {
             <label className="text-sm font-medium">
               {t("common.repository.llmTxt")}
             </label>
-            <textarea
-              defaultValue={llmTxt}
-              onChange={(e) => debouncedChange(e.target.value)}
+            <Textarea
+              value={llmTxt}
+              onChange={(value) => debouncedChange(value)}
               placeholder={t("common.repository.llmTxtPlaceholder")}
-              className="min-h-[300px] font-mono text-sm"
+              hasError={false}
+              autoFocus={false}
             />
           </div>
         </SettingCard>

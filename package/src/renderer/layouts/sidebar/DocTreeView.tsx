@@ -142,8 +142,8 @@ export const DocTreeView = () => {
       <div className="flex-1 flex flex-col items-center justify-center text-sm text-muted-foreground px-4 text-center gap-3">
         <span>{t("common.settings.emptyDocs")}</span>
         <Button
-          size="sm"
-          variant="outline"
+          
+          
           onClick={() => handleCreateDoc(null)}
         >
           <FilePlus />

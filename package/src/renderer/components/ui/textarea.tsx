@@ -1,174 +1,73 @@
-import {
-  useEffect,
-  useRef,
-  useState,
-  ReactNode,
-  forwardRef,
-  useImperativeHandle,
-  KeyboardEventHandler,
-} from "react";
 import { cn } from "@/lib/utils";
+import { EditorContent, useEditor } from "@tiptap/react";
+import { useRef } from "react";
+import StarterKit from "@tiptap/starter-kit";
+import Placeholder from "@tiptap/extension-placeholder";
 
-export interface CustomTextAreaRef {
-  focus: () => void;
-  blur: () => void;
-  dom: HTMLTextAreaElement | null;
-}
-
-export interface TextareaProps {
-  defaultValue?: string;
+export const Textarea = ({
+  value,
+  onChange,
+  placeholder,
+  hasError,
+  autoFocus,
+}: {
   value?: string;
-  onValueChange?: (value: string) => void;
-  onKeyDown?: KeyboardEventHandler<HTMLTextAreaElement>;
-  variant?: "ghost" | "secondary";
-  className?: string;
-  autoFocus?: boolean;
-  minRow?: number;
-  footer?: ReactNode;
-  header?: ReactNode;
+  onChange?: (value: string) => void;
   placeholder?: string;
-}
+  hasError?: boolean;
+  autoFocus?: boolean;
+}) => {
+  const isInitialMount = useRef(true);
 
-export const Textarea = forwardRef<CustomTextAreaRef, TextareaProps>(
-  (
-    {
-      defaultValue,
-      value: controlledValue,
-      onValueChange: onChange,
-      variant,
-      className,
-      onKeyDown,
-      autoFocus,
-      minRow = 1,
-      footer,
-      header,
-      placeholder,
+  const editor = useEditor({
+    autofocus: autoFocus ? "end" : false,
+    extensions: [
+      StarterKit.configure({
+        heading: false,
+        codeBlock: false,
+        blockquote: false,
+        bulletList: false,
+        orderedList: false,
+        horizontalRule: false,
+      }),
+      Placeholder.configure({
+        placeholder: placeholder || "输入内容...",
+        emptyEditorClass: "is-editor-empty",
+      }),
+    ],
+    content:
+      value
+        ?.split("\n")
+        .map((line) => `<p>${line}</p>`)
+        .join("") || "",
+    editorProps: {
+      attributes: {
+        class: "rich-editor-content",
+        spellcheck: "false",
+      },
     },
-    ref
-  ) => {
-    const internalRef = useRef<HTMLTextAreaElement | null>(null);
-    const footerRef = useRef<HTMLDivElement>(null);
-    const [footerHeight, setFooterHeight] = useState(0);
-    const [minHeight, setMinHeight] = useState(0);
-    const [internalValue, setInternalValue] = useState(defaultValue || "");
-
-    const isControlled = controlledValue !== undefined;
-    const value = isControlled ? controlledValue : internalValue;
-
-    useImperativeHandle(ref, () => ({
-      focus: () => internalRef.current?.focus(),
-      blur: () => internalRef.current?.blur(),
-      dom: internalRef.current,
-    }));
-
-    // Footer height observer
-    useEffect(() => {
-      const updateFooterHeight = () => {
-        if (footerRef.current) {
-          const newHeight = footerRef.current.offsetHeight;
-          if (newHeight !== footerHeight) {
-            setFooterHeight(newHeight);
-          }
-        }
-      };
-
-      updateFooterHeight();
-
-      if (footerRef.current) {
-        const observer = new MutationObserver(updateFooterHeight);
-        observer.observe(footerRef.current, {
-          childList: true,
-          subtree: true,
-          attributes: true,
-        });
-        return () => observer.disconnect();
+    onUpdate: ({ editor: e }) => {
+      if (isInitialMount.current) {
+        isInitialMount.current = false;
+        return;
       }
-      return undefined;
-    }, [footer, footerHeight]);
+      onChange?.(e.getText({ blockSeparator: "\n" }));
+    },
+  });
 
-    // Calculate min height based on minRow
-    useEffect(() => {
-      if (internalRef.current) {
-        const style = window.getComputedStyle(internalRef.current);
-        const lineHeight = parseInt(style.lineHeight, 10);
-        const paddingTop = parseInt(style.paddingTop, 10);
-        const paddingBottom = parseInt(style.paddingBottom, 10);
-        setMinHeight(lineHeight * minRow + paddingTop + paddingBottom);
-      }
-    }, [minRow]);
-
-    // Auto resize height
-    const adjustHeight = () => {
-      const textarea = internalRef.current;
-      if (textarea) {
-        const scrollPos = window.scrollY;
-        textarea.style.height = "auto";
-        const newHeight = Math.max(textarea.scrollHeight, minHeight);
-        textarea.style.height = `${newHeight}px`;
-        window.scrollTo(0, scrollPos);
-      }
-    };
-
-    useEffect(() => {
-      adjustHeight();
-      const handleResize = () => adjustHeight();
-      window.addEventListener("resize", handleResize);
-      return () => window.removeEventListener("resize", handleResize);
-    }, [value, minHeight]);
-
-    useEffect(() => {
-      if (defaultValue !== undefined) {
-        setInternalValue(defaultValue);
-      }
-    }, [defaultValue]);
-
-    const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      e.stopPropagation();
-      const newValue = e.target.value;
-      if (!isControlled) {
-        setInternalValue(newValue);
-      }
-      adjustHeight();
-      onChange?.(newValue);
-    };
-
-    return (
-      <div className="relative">
-        {header && <div>{header}</div>}
-        <textarea
-          ref={internalRef}
-          value={value}
-          autoFocus={autoFocus}
-          placeholder={placeholder}
-          onKeyDown={(e) => {
-            e.stopPropagation();
-            onKeyDown?.(e);
-          }}
-          onChange={handleChange}
-          onInput={!onChange ? adjustHeight : undefined}
-          className={cn(
-            variant === "secondary" && "bg-secondary border-secondary",
-            variant === "ghost" && "bg-transparent border-transparent hover:bg-muted/50",
-            className
-          )}
-          style={{
-            resize: "none",
-            overflow: "hidden",
-            minHeight: `${minHeight}px`,
-            paddingBottom: footer ? `${footerHeight + 16}px` : undefined,
-          }}
-        />
-        {footer && (
-          <div
-            ref={footerRef}
-            className="absolute bottom-1 left-0 right-0 transition-all duration-200"
-          >
-            {footer}
-          </div>
-        )}
-      </div>
-    );
-  }
-);
+  return (
+    <div
+      className={cn(
+        "w-full rounded-md border border-input bg-muted px-3 py-2 text-sm ring-offset-background transition-colors",
+        "[&_.ProseMirror]:outline-none [&_.ProseMirror]:min-h-16",
+        "[&_.ProseMirror_p]:m-0",
+        "[&_.is-editor-empty]:before:content-[attr(data-placeholder)] [&_.is-editor-empty]:before:text-muted-foreground/50 [&_.is-editor-empty]:before:float-left [&_.is-editor-empty]:before:h-0 [&_.is-editor-empty]:before:pointer-events-none",
+        hasError && "border-destructive"
+      )}
+    >
+      <EditorContent editor={editor} />
+    </div>
+  );
+};
 
 export default Textarea;

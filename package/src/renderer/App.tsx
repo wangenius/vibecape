@@ -4,7 +4,6 @@ import { MainView } from "@/layouts/mainview";
 import { Header } from "@/layouts/Header";
 import { Baybar } from "@/layouts/baybar";
 import { bootstrap } from "@/hooks/stores";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { useTheme } from "@/hooks/app/useTheme";
 import { useChatInputFocus } from "@/hooks/shortcuts/useChatInputFocus";
 import { useSidebarToggle } from "@/hooks/shortcuts/useSidebarToggle";
@@ -26,18 +25,16 @@ const App = () => {
   }, [bootstrap]);
 
   return (
-    <TooltipProvider>
-      <div className="w-screen h-screen relative flex bg-background overflow-hidden flex-col">
-        <Header />
-        <div className="w-full h-full flex overflow-hidden">
-          <Sidebar />
-          <MainView />
-          <Baybar />
-        </div>
-        <CommandPalette />
-        <DocSearchPalette />
+    <div className="w-screen h-screen relative flex bg-background overflow-hidden flex-col">
+      <Header />
+      <div className="w-full h-full flex overflow-hidden">
+        <Sidebar />
+        <MainView />
+        <Baybar />
       </div>
-    </TooltipProvider>
+      <CommandPalette />
+      <DocSearchPalette />
+    </div>
   );
 };
 

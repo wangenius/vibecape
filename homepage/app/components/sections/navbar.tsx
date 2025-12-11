@@ -69,7 +69,7 @@ export function Navbar() {
               rel="noopener noreferrer"
             >
               <Button
-                variant="ghost"
+                
                 size="icon"
                 className="h-8 w-8 text-muted-foreground hover:text-foreground"
               >
@@ -89,7 +89,7 @@ export function Navbar() {
 
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-9 w-9">
+              <Button  size="icon" className="h-9 w-9">
                 <Menu className="h-4 w-4" />
               </Button>
             </SheetTrigger>
@@ -109,12 +109,12 @@ export function Navbar() {
               </SheetHeader>
               <div className="flex flex-col gap-2 mt-8">
                 <Link to="/docs">
-                  <Button variant="ghost" className="w-full justify-start">
+                  <Button  className="w-full justify-start">
                     文档
                   </Button>
                 </Link>
                 <Link to="https://github.com/wangenius/vibecape/releases/latest" target="_blank">
-                  <Button variant="ghost" className="w-full justify-start">
+                  <Button  className="w-full justify-start">
                     下载
                   </Button>
                 </Link>
@@ -123,7 +123,7 @@ export function Navbar() {
                     to="https://github.com/wangenius/vibecape"
                     target="_blank"
                   >
-                    <Button variant="ghost" size="icon" className="h-9 w-9">
+                    <Button  size="icon" className="h-9 w-9">
                       <GithubIcon className="h-4 w-4" />
                     </Button>
                   </Link>

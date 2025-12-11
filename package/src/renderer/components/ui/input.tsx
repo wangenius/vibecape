@@ -1,24 +1,24 @@
-import * as React from 'react';
-import { cva, type VariantProps } from 'class-variance-authority';
+import * as React from "react";
+import { cva, type VariantProps } from "class-variance-authority";
 
-import { cn } from '@/lib/utils';
+import { cn } from "@/lib/utils";
 
 /* 基础样式在 @styles/components.css @layer base input */
-const inputVariants = cva('', {
+const inputVariants = cva("", {
   variants: {
     variant: {
-      primary: '',
-      outline: 'bg-transparent border-input hover:border-muted-foreground/30 focus:border-primary',
-      ghost: 'bg-transparent hover:bg-muted/50 focus:bg-muted/50',
+      primary: "",
+      default: "bg-transparent hover:bg-muted/50 focus:bg-muted/50",
     },
   },
   defaultVariants: {
-    variant: 'primary',
+    variant: "default",
   },
 });
 
 export interface InputProps
-  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onValueChange'>,
+  extends
+    Omit<React.InputHTMLAttributes<HTMLInputElement>, "onValueChange">,
     VariantProps<typeof inputVariants> {
   onValueChange?: (data: string) => void;
 }
@@ -30,7 +30,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         type={type}
         autoComplete="off"
         className={cn(inputVariants({ variant, className }))}
-        onChange={e => {
+        onChange={(e) => {
           onChange?.(e.target.value);
         }}
         ref={ref}
@@ -39,6 +39,6 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     );
   }
 );
-Input.displayName = 'Input';
+Input.displayName = "Input";
 
 export { Input, inputVariants };

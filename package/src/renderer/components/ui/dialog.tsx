@@ -88,7 +88,7 @@ export function dialog({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-foreground/80"
+              className="absolute inset-0 bg-black/80"
               onClick={handleBackdropClick}
             />
             <motion.div
@@ -110,7 +110,7 @@ export function dialog({
                 }
               }}
               className={cn(
-                "relative flex flex-col gap border border-border bg-background shadow-lg rounded max-h-[90vh] max-w-[90vw] overflow-hidden",
+                "relative flex flex-col gap border bg-background shadow-lg rounded-xl max-h-[90vh] max-w-[90vw] overflow-hidden",
                 className
               )}
               {...props}
@@ -130,7 +130,7 @@ export function dialog({
                     </div>
                   )}
                   {!closeIconHide && (
-                    <Button variant="ghost" size="icon" onClick={handleClose}>
+                    <Button size="icon" onClick={handleClose}>
                       <TbX />
                     </Button>
                   )}
@@ -177,7 +177,6 @@ dialog.confirm = ({
   title = "确认",
   content,
   onOk,
-  variants = "default",
   okText = "确认",
   cancelText = "取消",
   onCancel,
@@ -204,8 +203,6 @@ dialog.confirm = ({
       return (
         <div className="flex justify-end gap">
           <Button
-            variant="ghost"
-            size="sm"
             onClick={() => {
               close();
               onCancel?.();
@@ -215,8 +212,7 @@ dialog.confirm = ({
             {cancelText}
           </Button>
           <Button
-            variant={variants}
-            size="sm"
+            variant={"primary"}
             onClick={() => {
               close();
               onOk?.();

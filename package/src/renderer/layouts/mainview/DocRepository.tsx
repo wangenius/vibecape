@@ -179,7 +179,7 @@ export const DocRepository = ({ doc, onSave }: Props) => {
                 <div className="bg-muted rounded-lg">
                   <Textarea
                     value={description}
-                    onValueChange={(value) => {
+                    onChange={(value) => {
                       setDescription(value);
                     }}
                     placeholder={t("common.settings.enterDesc")}

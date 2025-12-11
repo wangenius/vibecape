@@ -81,12 +81,12 @@ export const SidebarEmptyState = () => {
       ),
       footer: (close) => (
         <div className="btn-group">
-          <Button variant="ghost" size="sm" onClick={close}>
+          <Button   onClick={close}>
             <TbX />
             {t("common.cancel")}
           </Button>
           <Button
-            size="sm"
+            
             onClick={async () => {
               if (!inputValue.trim()) return;
               try {
@@ -116,8 +116,8 @@ export const SidebarEmptyState = () => {
           {t("common.repository.recentTitle")}
         </span>
         <Button
-          variant="outline"
-          size="sm"
+          
+          
           onClick={handleCreateRepository}
           disabled={loading}
         >
@@ -151,7 +151,7 @@ export const SidebarEmptyState = () => {
                 <div className="text-truncate">{item.name}</div>
               </div>
               <Button
-                variant="ghost"
+                
                 size="icon"
                 className="hover-visible shrink-0"
                 onClick={(e) => {

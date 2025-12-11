@@ -207,11 +207,7 @@ export const GeneralSettings = () => {
           >
             <div className="flex items-center gap-2">
               <Input value={docsRoot} readOnly className="w-60 text-sm" />
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={handleSelectDocsRoot}
-              >
+              <Button size="icon" onClick={handleSelectDocsRoot}>
                 <FolderOpen className="h-4 w-4" />
               </Button>
             </div>

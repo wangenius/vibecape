@@ -117,7 +117,7 @@ export const TreeNode = memo(
             {...attributes}
           >
             {/* 展开/折叠图标 */}
-            <Button variant="ghost" size="icon">
+            <Button  size="icon">
               {hasChildren ? (
                 <TbChevronRight
                   className={cn(isExpanded && "transform rotate-90")}
@@ -142,7 +142,7 @@ export const TreeNode = memo(
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
-                  variant="ghost"
+                  
                   size="icon"
                   className="hover-visible hover:bg-primary/10 data-[state=open]:opacity-100"
                   onClick={(e) => e.stopPropagation()}

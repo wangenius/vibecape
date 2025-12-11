@@ -125,8 +125,8 @@ const MentionComponent = ({ node }: NodeViewProps) => {
                 </p>
               </div>
               <Button
-                variant="ghost"
-                size="sm"
+                
+                
                 className="m-1 justify-start gap-2"
                 onClick={handleNavigate}
               >

@@ -5,25 +5,29 @@ import * as SwitchPrimitives from "@radix-ui/react-switch";
 
 import { cn } from "@/lib/utils";
 
+export interface SwitchProps extends React.ComponentPropsWithoutRef<
+  typeof SwitchPrimitives.Root
+> {}
+
 const Switch = React.forwardRef<
   React.ElementRef<typeof SwitchPrimitives.Root>,
-  React.ComponentPropsWithoutRef<typeof SwitchPrimitives.Root>
+  SwitchProps
 >(({ className, ...props }, ref) => (
   <SwitchPrimitives.Root
     className={cn(
-      "inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-sm focus-visible:ring-ring focus-visible:ring-offset-sm focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=unchecked]:bg-input",
+      "inline-flex shrink-0 cursor-pointer items-center justify-start rounded-full border-none transition-colors focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=unchecked]:bg-muted-foreground/20 h-5 w-9 p-0.5",
       className
     )}
-    {...props}
     ref={ref}
+    {...props}
   >
     <SwitchPrimitives.Thumb
-      className={cn(
-        "pointer-events-none block size-sm rounded-full bg-background shadow-lg ring-0 transition-transform data-[state=checked]:translate-x-md data-[state=unchecked]:translate-x-0"
-      )}
+      className={
+        "pointer-events-none block shrink-0 rounded-full border-none bg-background transition-transform duration-200 data-[state=unchecked]:translate-x-0 data-[state=checked]:bg-primary-foreground size-4 data-[state=checked]:translate-x-4"
+      }
     />
   </SwitchPrimitives.Root>
 ));
-Switch.displayName = SwitchPrimitives.Root.displayName;
+Switch.displayName = "Switch";
 
 export { Switch };

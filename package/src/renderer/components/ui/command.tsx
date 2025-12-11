@@ -67,7 +67,7 @@ const CommandGroup = React.forwardRef<
   <CommandPrimitive.Group
     ref={ref}
     className={cn(
-      "text-foreground [&_[cmdk-group-heading]]:text-muted-foreground overflow-hidden p-xs [&_[cmdk-group-heading]]:px-sm [&_[cmdk-group-heading]]:py-xs [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium",
+      "text-foreground **[[cmdk-group-heading]]:text-muted-foreground overflow-hidden p-xs **[[cmdk-group-heading]]:px-sm **[[cmdk-group-heading]]:py-xs **[[cmdk-group-heading]]:text-xs **[[cmdk-group-heading]]:font-medium",
       className
     )}
     {...props}

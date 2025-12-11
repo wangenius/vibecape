@@ -8,21 +8,14 @@ import { cn } from "@/lib/utils";
 const buttonVariants = cva("", {
   variants: {
     variant: {
-      default: "bg-primary text-primary-foreground hover:bg-primary/90",
       primary:
         "bg-muted text-muted-foreground hover:bg-primary/90 hover:text-primary-foreground",
       destructive: "bg-destructive/10 text-destructive hover:bg-destructive/20",
-      outline:
-        "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
-      secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-      ghost: "",
-      link: "text-primary underline-offset-4 hover:underline bg-transparent",
+      default: "",
     },
     size: {
-      default: "",
-      sm: "px-sm text-xs h-size-xs",
-      lg: "h-size-lg px-lg",
-      icon: "size-sm p-0",
+      default: "w-auto",
+      icon: "",
       full: "w-full justify-start",
     },
     actived: {
@@ -31,7 +24,7 @@ const buttonVariants = cva("", {
     },
   },
   defaultVariants: {
-    variant: "ghost",
+    variant: "default",
     size: "default",
     actived: false,
   },

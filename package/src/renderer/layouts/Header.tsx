@@ -53,7 +53,7 @@ export function Header() {
     <header className="flex items-center bg-transparent pr-xs pl-20 h-size-md flex-none select-none border-b w-full h-8 z-50 pointer-events-auto">
       <div className="flex-none flex items-center gap-xs">
         <Button
-          variant="ghost"
+          
           size="icon"
           onClick={toggleSidebar}
           actived={isSidebarCollapsed}
@@ -113,7 +113,7 @@ export function Header() {
       >
         <ModelSelector />
         <Button
-          variant="ghost"
+          
           size="icon"
           onClick={() => openSettingsDialog()}
           title="设置"
@@ -121,7 +121,7 @@ export function Header() {
           <TbSettings />
         </Button>
         <Button
-          variant="ghost"
+          
           size="icon"
           aria-label="AI 对话"
           onClick={() => toggleBayBar()}

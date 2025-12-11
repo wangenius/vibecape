@@ -30,7 +30,7 @@ export const HistoryPopover: React.FC<HistoryPopoverProps> = ({
   return (
     <Popover open={open} onOpenChange={onOpenChange}>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" title="历史会话">
+        <Button  size="icon" title="历史会话">
           <TbHistory />
         </Button>
       </PopoverTrigger>

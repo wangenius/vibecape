@@ -124,8 +124,8 @@ export const RemoteModelsDialogContent = ({
           />
         </div>
         <Button
-          variant="outline"
-          size="sm"
+          
+          
           className="h-8 px-3"
           onClick={handleFetch}
           disabled={loading}
@@ -165,8 +165,8 @@ export const RemoteModelsDialogContent = ({
                 )}
               </div>
               <Button
-                variant="ghost"
-                size="sm"
+                
+                
                 className="hover-visible"
                 onClick={() => handleAddModel(model)}
               >

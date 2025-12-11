@@ -127,7 +127,7 @@ export const LinkSettings = ({ config }: LinkSettingsProps) => {
                     className="flex-1 text-sm"
                   />
                   <Button
-                    variant="outline"
+                    
                     size="icon"
                     onClick={handleSelectDocsPath}
                   >
@@ -151,7 +151,7 @@ export const LinkSettings = ({ config }: LinkSettingsProps) => {
                     className="flex-1 text-sm"
                   />
                   <Button
-                    variant="outline"
+                    
                     size="icon"
                     onClick={handleSelectAssetsPath}
                   >

@@ -4,16 +4,18 @@ type AnyFunction = (...args: any[]) => any;
 
 export function useDebounce<T>(value: T, delay: number): T {
   const isFunction = typeof value === 'function';
-  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+  const [debouncedValue, setDebouncedValue] = useState<T>(() => value);
   const timerRef = useRef<NodeJS.Timeout>();
+  const valueRef = useRef(value);
+  valueRef.current = value;
 
   // 函数防抖
   const debouncedFn = useCallback(
     (...args: any[]) => {
       if (timerRef.current) clearTimeout(timerRef.current);
-      timerRef.current = setTimeout(() => (value as AnyFunction)(...args), delay);
+      timerRef.current = setTimeout(() => (valueRef.current as AnyFunction)(...args), delay);
     },
-    [value, delay]
+    [delay]
   );
 
   // 值防抖

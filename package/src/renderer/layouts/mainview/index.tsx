@@ -1,6 +1,9 @@
 import { ReactNode, useEffect } from "react";
-import { useRepositoryStore, useDocumentStore, bootstrap } from "@/hooks/stores";
-import { EmptyDocState } from "../../components/ui/EmptyState";
+import {
+  useRepositoryStore,
+  useDocumentStore,
+  bootstrap,
+} from "@/hooks/stores";
 import { DocRepository } from "./DocRepository";
 
 const MainContainer = ({ children }: { children: ReactNode }) => {
@@ -39,7 +42,9 @@ export const MainView = () => {
   if (!repository || !activeDoc) {
     return (
       <MainContainer>
-        <EmptyDocState />
+        <div>
+          <div>VIBECAPE</div>
+        </div>
       </MainContainer>
     );
   }

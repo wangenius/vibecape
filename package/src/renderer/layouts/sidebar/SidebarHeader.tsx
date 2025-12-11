@@ -86,7 +86,7 @@ export const SidebarHeader = () => {
         <div className="flex-1"></div>
         {/* 右侧：新建 + 更多操作 */}
         <Button
-          variant="ghost"
+          
           size="icon"
           onClick={() => {}}
           title={t("common.settings.newDoc")}
@@ -96,7 +96,7 @@ export const SidebarHeader = () => {
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" disabled={loading}>
+            <Button  size="icon" disabled={loading}>
               {loading ? <Loader2 className="animate-spin" /> : <TbDots />}
             </Button>
           </DropdownMenuTrigger>

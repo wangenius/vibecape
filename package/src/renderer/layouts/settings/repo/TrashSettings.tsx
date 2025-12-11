@@ -80,8 +80,8 @@ export const TrashSettings = () => {
       >
         <div className="flex justify-between items-center mb-4">
           <Button
-            variant="outline"
-            size="sm"
+            
+            
             onClick={loadTrash}
             disabled={loading}
           >
@@ -92,7 +92,7 @@ export const TrashSettings = () => {
           </Button>
           <Button
             variant="destructive"
-            size="sm"
+            
             onClick={handleEmptyTrash}
             disabled={trashItems.length === 0 || loading}
           >
@@ -122,7 +122,7 @@ export const TrashSettings = () => {
                   </div>
                   <div className="flex items-center gap-2">
                     <Button
-                      variant="ghost"
+                      
                       size="icon"
                       onClick={() => handleRestore(item.id)}
                       title={t("common.repository.restore")}
@@ -130,7 +130,7 @@ export const TrashSettings = () => {
                       <TbRotateClockwise />
                     </Button>
                     <Button
-                      variant="ghost"
+                      
                       size="icon"
                       className="text-destructive hover:text-destructive"
                       onClick={() => handleDeletePermanently(item.id)}

@@ -266,7 +266,7 @@ export const ModelSettings = () => {
         title={t("common.settings.apiProvider")}
         description={t("common.settings.apiProviderDesc")}
         action={
-          <Button size="sm" onClick={startCreateProvider}>
+          <Button onClick={startCreateProvider}>
             <Plus />
             {t("common.settings.addProvider")}
           </Button>
@@ -291,8 +291,6 @@ export const ModelSettings = () => {
                 </div>
                 <div className="flex items-center gap-1">
                   <Button
-                    variant="ghost"
-                    size="sm"
                     onClick={() => {
                       dialog({
                         title: (
@@ -317,11 +315,7 @@ export const ModelSettings = () => {
                   </Button>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="hover-visible"
-                      >
+                      <Button className="hover-visible">
                         <MoreVertical />
                       </Button>
                     </DropdownMenuTrigger>
@@ -356,8 +350,6 @@ export const ModelSettings = () => {
         action={
           <div className="flex gap-2">
             <Button
-              variant="outline"
-              size="sm"
               onClick={() => {
                 setRefreshing(true);
                 void refreshModels().finally(() => setRefreshing(false));
@@ -368,7 +360,7 @@ export const ModelSettings = () => {
                 ? t("common.settings.refreshing")
                 : t("common.settings.refresh")}
             </Button>
-            <Button size="sm" onClick={startCreate}>
+            <Button onClick={startCreate}>
               {t("common.settings.addModel")}
             </Button>
           </div>
@@ -405,12 +397,7 @@ export const ModelSettings = () => {
                 </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="hover-visible"
-                      disabled={deletingId === model.id}
-                    >
+                    <Button disabled={deletingId === model.id}>
                       <MoreVertical />
                     </Button>
                   </DropdownMenuTrigger>
@@ -420,7 +407,6 @@ export const ModelSettings = () => {
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
-                      className="text-destructive focus:text-destructive"
                       onClick={() => handleDelete(model.id, model.name)}
                     >
                       {t("common.settings.delete")}

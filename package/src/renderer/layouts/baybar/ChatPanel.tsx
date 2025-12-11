@@ -64,7 +64,7 @@ export const ChatPanel = () => {
         {/* 右侧：操作按钮 */}
         <div className="flex items-center gap-1">
           <Button
-            variant="ghost"
+            
             size="icon"
             onClick={() => void handleSelectThread(undefined)}
             title={t("chat.thread.newChat")}

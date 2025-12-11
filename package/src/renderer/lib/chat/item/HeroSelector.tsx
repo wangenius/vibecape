@@ -43,8 +43,8 @@ export const HeroSelector: React.FC<HeroSelectorProps> = ({
     <Popover open={open} onOpenChange={onOpenChange}>
       <PopoverTrigger asChild>
         <Button
-          variant="ghost"
-          size="sm"
+          
+          
           className="h-6 gap-1.5 pl-0 pr-2 text-xs rounded-full"
           title={t("chat.agent.switchAgent")}
         >
@@ -118,7 +118,7 @@ export const HeroSelector: React.FC<HeroSelectorProps> = ({
                           </div>
                           <Button
                             className="w-full"
-                            size="sm"
+                            
                             onClick={() => {
                               handleSelectAgent(agent.id);
                               close();

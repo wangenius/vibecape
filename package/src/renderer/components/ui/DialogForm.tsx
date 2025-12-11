@@ -204,7 +204,9 @@ function AutoField<T extends FieldValues>({
             <div>
               <Label>{label}</Label>
               {config.description && (
-                <p className="text-xs text-muted-foreground mt-1">{config.description}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {config.description}
+                </p>
               )}
             </div>
             <Switch
@@ -235,10 +237,14 @@ function AutoField<T extends FieldValues>({
               </SelectContent>
             </Select>
             {config.description && (
-              <p className="text-xs text-muted-foreground mt-1">{config.description}</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {config.description}
+              </p>
             )}
             {error && (
-              <p className="text-xs text-destructive mt-1">{error.message as string}</p>
+              <p className="text-xs text-destructive mt-1">
+                {error.message as string}
+              </p>
             )}
           </div>
         );
@@ -255,10 +261,14 @@ function AutoField<T extends FieldValues>({
               hasError={!!error}
             />
             {config.description && (
-              <p className="text-xs text-muted-foreground mt-1">{config.description}</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {config.description}
+              </p>
             )}
             {error && (
-              <p className="text-xs text-destructive mt-1">{error.message as string}</p>
+              <p className="text-xs text-destructive mt-1">
+                {error.message as string}
+              </p>
             )}
           </div>
         );
@@ -273,10 +283,14 @@ function AutoField<T extends FieldValues>({
               placeholder={config.placeholder}
             />
             {config.description && (
-              <p className="text-xs text-muted-foreground mt-1">{config.description}</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {config.description}
+              </p>
             )}
             {error && (
-              <p className="text-xs text-destructive mt-1">{error.message as string}</p>
+              <p className="text-xs text-destructive mt-1">
+                {error.message as string}
+              </p>
             )}
           </div>
         );
@@ -291,10 +305,14 @@ function AutoField<T extends FieldValues>({
               placeholder={config.placeholder}
             />
             {config.description && (
-              <p className="text-xs text-muted-foreground mt-1">{config.description}</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {config.description}
+              </p>
             )}
             {error && (
-              <p className="text-xs text-destructive mt-1">{error.message as string}</p>
+              <p className="text-xs text-destructive mt-1">
+                {error.message as string}
+              </p>
             )}
           </div>
         );
@@ -309,10 +327,14 @@ function AutoField<T extends FieldValues>({
               placeholder={config.placeholder}
             />
             {config.description && (
-              <p className="text-xs text-muted-foreground mt-1">{config.description}</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {config.description}
+              </p>
             )}
             {error && (
-              <p className="text-xs text-destructive mt-1">{error.message as string}</p>
+              <p className="text-xs text-destructive mt-1">
+                {error.message as string}
+              </p>
             )}
           </div>
         );
@@ -370,7 +392,6 @@ function DialogFormContent<T extends FieldValues>({
       <div className="flex justify-end gap-2">
         <Button
           type="button"
-          variant="ghost"
           onClick={() => {
             options.onCancel?.();
             onClose();

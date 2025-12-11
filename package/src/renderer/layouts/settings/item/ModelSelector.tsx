@@ -50,7 +50,7 @@ export function ModelSelector() {
         <Button
           aria-expanded={open}
           aria-label="选择主模型"
-          variant="ghost"
+          
           className={cn(
             "relative h-7 px-2 gap-1.5",
             modelInfo?.json
@@ -77,7 +77,7 @@ export function ModelSelector() {
                 onClick={() => {
                   void updateDefaultModel("primary", model.id);
                 }}
-                variant="ghost"
+                
                 className={cn(
                   "w-full h-7 px-2 justify-start gap-2",
                   model.id === currentModelId &&
@@ -103,7 +103,7 @@ export function ModelSelector() {
           })
         )}
         <Button
-          variant="ghost"
+          
           className="w-full justify-start gap-2 h-6 text-xs"
           onClick={() => {
             setOpen(false);

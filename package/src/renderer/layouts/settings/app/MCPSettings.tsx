@@ -301,12 +301,7 @@ export const MCPSettings = () => {
           description={t("common.settings.mcpServersDesc")}
           action={
             <div className="flex gap-2">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={handleReload}
-                disabled={loading}
-              >
+              <Button onClick={handleReload} disabled={loading}>
                 {loading ? (
                   <Loader2 className="h-4 w-4 mr-1 animate-spin" />
                 ) : (
@@ -314,7 +309,7 @@ export const MCPSettings = () => {
                 )}
                 {t("common.settings.mcpReload")}
               </Button>
-              <Button size="sm" onClick={openAddDialog}>
+              <Button onClick={openAddDialog}>
                 <Plus />
                 {t("common.settings.mcpAddServer")}
               </Button>
@@ -322,9 +317,7 @@ export const MCPSettings = () => {
           }
         >
           {servers.length === 0 ? (
-            <div className="empty-placeholder">
-              {t("common.settings.mcpNoServers")}
-            </div>
+            <div>{t("common.settings.mcpNoServers")}</div>
           ) : (
             <div className="space-y-2">
               {servers.map((server, index) => {
@@ -368,7 +361,6 @@ export const MCPSettings = () => {
                         {/* 连接按钮 */}
                         {server.enabled && !isConnected && !isConnecting && (
                           <Button
-                            variant="ghost"
                             size="icon"
                             onClick={() => handleConnect(server.name)}
                             disabled={loading}
@@ -383,19 +375,12 @@ export const MCPSettings = () => {
                           }
                         />
                         <Button
-                          variant="ghost"
                           size="icon"
-                          className="hover-visible"
                           onClick={() => openEditDialog(index)}
                         >
                           <Pencil />
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="hover-visible text-destructive hover:text-destructive"
-                          onClick={() => handleDelete(index)}
-                        >
+                        <Button size="icon" onClick={() => handleDelete(index)}>
                           <Trash2 />
                         </Button>
                       </div>

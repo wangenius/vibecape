@@ -47,24 +47,12 @@ export function ModelSelector() {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button
-          aria-expanded={open}
-          aria-label="选择主模型"
-          
-          className={cn(
-            "relative h-7 px-2 gap-1.5",
-            modelInfo?.json
-              ? "text-purple-600 hover:text-purple-700 hover:bg-purple-100/80"
-              : ""
-          )}
-        >
-          <BsStars
-            className={cn("size-3", modelInfo?.json ? "text-purple-600" : "")}
-          />
-          <span className="text-[10px]">{modelInfo?.name || "未配置"}</span>
+        <Button>
+          <BsStars />
+          <span>{modelInfo?.name || "未配置"}</span>
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-60 p-1.5 space-y-0.5">
+      <PopoverContent align="end">
         {availableModels.length === 0 ? (
           <div className="text-xs text-muted-foreground text-center py-4">
             暂无可用模型
@@ -77,25 +65,20 @@ export function ModelSelector() {
                 onClick={() => {
                   void updateDefaultModel("primary", model.id);
                 }}
-                
                 className={cn(
                   "w-full h-7 px-2 justify-start gap-2",
                   model.id === currentModelId &&
                     "bg-muted-foreground/10 hover:bg-muted-foreground/10"
                 )}
               >
-                <BsStars className="size-icon-sm shrink-0" />
+                <BsStars />
                 <div className="flex flex-col gap-0.5 min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5 ">
-                    <span className="text-xs font-medium truncate">
+                  <div className="flex items-center gap-1.5 justify-start">
+                    <span className="text-xs truncate flex-1 text-start">
                       {model.name}
                     </span>
-                    {Boolean(model.json) && (
-                      <span className="badge badge-success">JSON</span>
-                    )}
-                    {Boolean(model.reasoner) && (
-                      <span className="badge badge-info">推理</span>
-                    )}
+                    {Boolean(model.json) && <small>JSON</small>}
+                    {Boolean(model.reasoner) && <small>推理</small>}
                   </div>
                 </div>
               </Button>
@@ -103,14 +86,12 @@ export function ModelSelector() {
           })
         )}
         <Button
-          
-          className="w-full justify-start gap-2 h-6 text-xs"
           onClick={() => {
             setOpen(false);
             openSettingsDialog("models");
           }}
         >
-          <TbSettings className="h-3 w-3" />
+          <TbSettings />
           配置模型
         </Button>
       </PopoverContent>

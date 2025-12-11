@@ -14,9 +14,9 @@ const buttonVariants = cva("", {
       default: "",
     },
     size: {
-      default: "w-auto",
+      default: "w-auto [&_svg]:size-4 p-1.5 text-xs flex items-center gap-1.5",
       icon: "",
-      full: "w-full justify-start",
+      full: "w-full justify-start w-auto [&_svg]:size-3.5 p-2 text-xs flex items-center gap-1.5",
     },
     actived: {
       true: "bg-muted-foreground/10",

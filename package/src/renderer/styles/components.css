@@ -13,16 +13,16 @@
   /* ═══ Button ═══ */
   button {
     @apply inline-flex items-center justify-center whitespace-nowrap;
-    @apply rounded-xl border-none;
+    @apply rounded-lg border-none;
     @apply text-muted-foreground bg-transparent;
     @apply hover:bg-muted-foreground/10;
     @apply flex-none;
-    @apply h-7 [&_svg]:size-5 p-1;
+    @apply size-7 [&_svg]:size-5 p-1.5;
   }
 
   /* ═══ Input ═══ */
   input {
-    @apply flex w-full  rounded-md;
+    @apply flex w-full rounded-lg;
     @apply border border-transparent;
     @apply text-foreground bg-muted;
     @apply ring-offset-background transition-colors;
@@ -30,10 +30,11 @@
     @apply hover:bg-muted/80 focus:bg-muted/80;
     @apply focus-visible:outline-none;
     @apply disabled:cursor-not-allowed disabled:opacity-50;
+    @apply h-7 [&_svg]:size-5 p-1.5;
   }
 
   textarea {
-    @apply w-full rounded-md;
+    @apply w-full rounded-lg;
     @apply border border-transparent;
     @apply text-sm text-foreground bg-muted;
     @apply ring-offset-background transition-colors;

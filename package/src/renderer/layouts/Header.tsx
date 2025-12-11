@@ -53,10 +53,9 @@ export function Header() {
     <header className="flex items-center bg-transparent pr-xs pl-20 h-size-md flex-none select-none border-b w-full h-8 z-50 pointer-events-auto">
       <div className="flex-none flex items-center gap-xs">
         <Button
-          
           size="icon"
           onClick={toggleSidebar}
-          actived={isSidebarCollapsed}
+          actived={!isSidebarCollapsed}
           title={isSidebarCollapsed ? "展开侧边栏" : "折叠侧边栏"}
         >
           {isSidebarCollapsed ? <BsLayoutSidebar /> : <BsLayoutSidebarInset />}
@@ -107,23 +106,13 @@ export function Header() {
       </div>
 
       {/* 右侧：模型选择器 + AI对话 + 设置 */}
-      <div
-        id="baybar-header"
-        className="flex items-center gap-xs flex-none pr-xs"
-      >
+      <div className="flex items-center gap-1 flex-none pr-2">
         <ModelSelector />
-        <Button
-          
-          size="icon"
-          onClick={() => openSettingsDialog()}
-          title="设置"
-        >
+        <Button size="icon" onClick={() => openSettingsDialog()}>
           <TbSettings />
         </Button>
         <Button
-          
           size="icon"
-          aria-label="AI 对话"
           onClick={() => toggleBayBar()}
           actived={isBayBarOpen}
         >

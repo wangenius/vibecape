@@ -8,7 +8,7 @@ interface SettingSectionProps {
 }
 
 export const SettingsContainer = ({ children }: { children: ReactNode }) => {
-  return <div className="space-y-6">{children}</div>;
+  return <div className="space-y-8">{children}</div>;
 };
 
 export const SettingSection = ({
@@ -17,15 +17,19 @@ export const SettingSection = ({
   action,
   children,
 }: SettingSectionProps) => (
-  <section className="space-y-2">
-    <div>
-      <header>
-        <h2>{title}</h2>
-        {description && <small>{description}</small>}
-      </header>
-      {action}
-    </div>
-    {children}
+  <section className="space-y-4">
+    <header className="flex items-start justify-between gap-4">
+      <div className="space-y-1">
+        <h2 className="text-base font-medium text-foreground">{title}</h2>
+        {description && (
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            {description}
+          </p>
+        )}
+      </div>
+      {action && <div className="shrink-0">{action}</div>}
+    </header>
+    <div className="space-y-3">{children}</div>
   </section>
 );
 
@@ -40,12 +44,14 @@ export const SettingItem = ({
   description,
   children,
 }: SettingItemProps) => (
-  <div className="flex items-center gap-2 justify-between">
-    <div className="flex flex-col gap-2">
-      <span className="text-label">{label}</span>
-      {description && <p className="text-hint">{description}</p>}
+  <div className="flex items-center justify-between gap-4 py-3 px-4 transition-colors">
+    <div className="flex flex-col gap-0.5 min-w-0">
+      <span className="text-sm font-medium text-foreground">{label}</span>
+      {description && (
+        <p className="text-xs text-muted-foreground truncate">{description}</p>
+      )}
     </div>
-    {children}
+    <div className="shrink-0">{children}</div>
   </div>
 );
 
@@ -54,5 +60,7 @@ interface SettingCardProps {
 }
 
 export const SettingCard = ({ children }: SettingCardProps) => (
-  <div className="p-4 border border-border rounded-lg">{children}</div>
+  <div className="p-5 bg-card border border-border/50 rounded-xl space-y-3">
+    {children}
+  </div>
 );

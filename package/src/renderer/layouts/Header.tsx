@@ -49,6 +49,8 @@ export function Header() {
     setViewManager({ isSidebarCollapsed: !isSidebarCollapsed });
   };
 
+  console.log(repositoryName);
+
   return (
     <header className="flex items-center bg-transparent pr-xs pl-20 h-size-md flex-none select-none border-b w-full h-8 z-50 pointer-events-auto">
       <div className="flex-none flex items-center gap-xs">
@@ -62,48 +64,42 @@ export function Header() {
         </Button>
       </div>
 
-      {/* 中间：工作区名称 + 拖拽区域 */}
-      <div
-        id="viewport-header"
-        className="flex-1 flex items-center justify-center gap-sm min-w-0 overflow-hidden"
-      >
-        {/* 拖拽区域 */}
-        <div id="header-drag-region" className="flex-1 h-full"></div>
-        {/* 工作区名称 - 点击切换 */}
-        {repositoryName && (
-          <Popover open={isRepoPopoverOpen} onOpenChange={setIsRepoPopoverOpen}>
-            <PopoverTrigger asChild>
-              <Button>
-                <span className="truncate">{repositoryName}</span>
-                <TbChevronDown className="size-icon-xs shrink-0" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-60 p-xs" align="center" sideOffset={8}>
-              <div className="max-h-[300px] overflow-y-auto space-y-xs">
-                {repositoryList.length === 0 ? (
-                  <div className="py-md text-center text-sm text-muted-foreground">
-                    暂无其他工作区
-                  </div>
-                ) : (
-                  repositoryList.map((item) => (
-                    <Button
-                      key={item.id}
-                      size="full"
-                      actived={repository?.id === item.id}
-                      onClick={() => void handleSwitchRepository(item.id)}
-                    >
-                      <TbFolder className="size-icon-md text-muted-foreground shrink-0" />
-                      <span className="text-sm truncate">{item.name}</span>
-                    </Button>
-                  ))
-                )}
+      {/* 中间：拖拽区域 */}
+      <div className="header-drag-region flex-1 h-full" />
+
+      {/* 工作区名称 */}
+      {repositoryName && (
+        <Popover open={isRepoPopoverOpen} onOpenChange={setIsRepoPopoverOpen}>
+          <PopoverTrigger asChild>
+            <Button>
+              <span className="truncate">{repositoryName}</span>
+              <TbChevronDown className="size-icon-xs shrink-0" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-60 p-xs" align="center" sideOffset={8}>
+            {repositoryList.length === 0 ? (
+              <div className="py-md text-center text-sm text-muted-foreground">
+                暂无其他工作区
               </div>
-            </PopoverContent>
-          </Popover>
-        )}
-        {/* 拖拽区域 */}
-        <div id="header-drag-region-right" className="flex-1 h-full"></div>
-      </div>
+            ) : (
+              repositoryList.map((item) => (
+                <Button
+                  key={item.id}
+                  size="full"
+                  actived={repository?.id === item.id}
+                  onClick={() => void handleSwitchRepository(item.id)}
+                >
+                  <TbFolder />
+                  <span>{item.name}</span>
+                </Button>
+              ))
+            )}
+          </PopoverContent>
+        </Popover>
+      )}
+
+      {/* 拖拽区域 */}
+      <div className="header-drag-region flex-1 h-full" />
 
       {/* 右侧：模型选择器 + AI对话 + 设置 */}
       <div className="flex items-center gap-1 flex-none pr-2">

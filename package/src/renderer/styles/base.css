@@ -74,3 +74,20 @@
     transparent
   );
 }
+
+/* Electron 窗口拖拽区域 */
+.header-drag-region {
+  -webkit-app-region: drag;
+}
+
+/* 确保所有交互元素不被拖拽区域影响 */
+button,
+input,
+select,
+textarea,
+a,
+[role="button"],
+[role="combobox"],
+[data-radix-collection-item] {
+  -webkit-app-region: no-drag;
+}

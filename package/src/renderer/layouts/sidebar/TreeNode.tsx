@@ -16,7 +16,7 @@ export const INDENT_WIDTH = 24;
 
 const nodeBaseStyles = {
   base: cn(
-    "group relative flex items-center gap-sm py-xs pl-xs pr-xs rounded-lg mx-xs",
+    "group relative flex items-center gap-1 p-0.5 rounded-lg",
     "transition-all duration-200 ease-out",
     "cursor-pointer",
     "border border-transparent",
@@ -100,15 +100,7 @@ export const TreeNode = memo(
 
     return (
       <div style={{ paddingLeft: level * INDENT_WIDTH }} className="relative">
-        {/* 树形连接线 */}
-        {level > 0 && (
-          <div
-            className="tree-line"
-            style={{ left: level * INDENT_WIDTH - 12 }}
-          />
-        )}
-
-        <div className="relative">
+        <div className="relative group">
           <div
             ref={setNodeRef}
             className={nodeStyles}
@@ -117,7 +109,7 @@ export const TreeNode = memo(
             {...attributes}
           >
             {/* 展开/折叠图标 */}
-            <Button  size="icon">
+            <Button size="icon">
               {hasChildren ? (
                 <TbChevronRight
                   className={cn(isExpanded && "transform rotate-90")}
@@ -131,8 +123,8 @@ export const TreeNode = memo(
             {/* 节点标题 */}
             <div
               className={cn(
-                "flex-1 min-w-0 text-sm truncate text-foreground",
-                !node.title && "text-placeholder"
+                "flex-1 min-w-0 text-xs truncate text-foreground",
+                !node.title && "italic"
               )}
             >
               {node.title || t("common.settings.untitledDoc")}
@@ -142,9 +134,8 @@ export const TreeNode = memo(
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
-                  
                   size="icon"
-                  className="hover-visible hover:bg-primary/10 data-[state=open]:opacity-100"
+                  className="opacity-0 hover:bg-primary/10 data-[state=open]:opacity-100 group-hover:opacity-100"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <TbDots />
@@ -166,10 +157,7 @@ export const TreeNode = memo(
                   <FileDown />
                   {t("common.settings.exportPdf")}
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  className="text-destructive focus:text-destructive"
-                  onClick={() => onDelete(node)}
-                >
+                <DropdownMenuItem onClick={() => onDelete(node)}>
                   <Trash2 />
                   {t("common.settings.delete")}
                 </DropdownMenuItem>

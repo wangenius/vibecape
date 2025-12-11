@@ -86,7 +86,6 @@ export const SidebarHeader = () => {
         <div className="flex-1"></div>
         {/* 右侧：新建 + 更多操作 */}
         <Button
-          
           size="icon"
           onClick={() => {}}
           title={t("common.settings.newDoc")}
@@ -96,7 +95,7 @@ export const SidebarHeader = () => {
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button  size="icon" disabled={loading}>
+            <Button size="icon" disabled={loading}>
               {loading ? <Loader2 className="animate-spin" /> : <TbDots />}
             </Button>
           </DropdownMenuTrigger>
@@ -128,10 +127,7 @@ export const SidebarHeader = () => {
               <FolderOpen />
               {t("common.settings.openInFinder")}
             </DropdownMenuItem>
-            <DropdownMenuItem
-              variant="destructive"
-              onClick={() => void closeRepository()}
-            >
+            <DropdownMenuItem onClick={() => void closeRepository()}>
               <X />
               {t("common.settings.closeRepository")}
             </DropdownMenuItem>

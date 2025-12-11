@@ -6,7 +6,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
 import {
   updateDefaultModel,
   useDefaultModels,
@@ -65,27 +64,17 @@ export function ModelSelector() {
                 onClick={() => {
                   void updateDefaultModel("primary", model.id);
                 }}
-                className={cn(
-                  "w-full h-7 px-2 justify-start gap-2",
-                  model.id === currentModelId &&
-                    "bg-muted-foreground/10 hover:bg-muted-foreground/10"
-                )}
+                size="full"
+                actived={model.id === currentModelId}
               >
                 <BsStars />
-                <div className="flex flex-col gap-0.5 min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5 justify-start">
-                    <span className="text-xs truncate flex-1 text-start">
-                      {model.name}
-                    </span>
-                    {Boolean(model.json) && <small>JSON</small>}
-                    {Boolean(model.reasoner) && <small>推理</small>}
-                  </div>
-                </div>
+                {model.name}
               </Button>
             );
           })
         )}
         <Button
+          size="full"
           onClick={() => {
             setOpen(false);
             openSettingsDialog("models");

@@ -104,26 +104,24 @@ export const DocTocView = () => {
   };
 
   return (
-    <div className="flex-1 overflow-auto py-2">
-      <div className="space-y-0.5 px-2">
-        {headings.map((heading, index) => (
-          <Button
-            key={heading.id}
-            onClick={() => scrollToHeading(index)}
-            className={cn(
-              "w-full text-left px-2 py-1.5 rounded-md text-sm transition-colors",
-              "hover:bg-muted-foreground/10 text-muted-foreground hover:text-foreground",
-              "truncate block"
-            )}
-            style={{
-              paddingLeft: `${(heading.level - 1) * 12 + 8}px`,
-            }}
-            title={heading.text}
-          >
-            {heading.text}
-          </Button>
-        ))}
-      </div>
+    <div className="flex-1 overflow-auto space-y-0.5">
+      {headings.map((heading, index) => (
+        <Button
+          key={heading.id}
+          onClick={() => scrollToHeading(index)}
+          className={cn(
+            "w-full text-left px-2 rounded-lg text-xs transition-colors",
+            "hover:bg-muted-foreground/10 text-muted-foreground hover:text-foreground",
+            "truncate block"
+          )}
+          style={{
+            paddingLeft: `${(heading.level - 1) * 12 + 8}px`,
+          }}
+          title={heading.text}
+        >
+          {heading.text}
+        </Button>
+      ))}
     </div>
   );
 };

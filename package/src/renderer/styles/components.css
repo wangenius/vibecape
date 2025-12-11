@@ -17,7 +17,7 @@
     @apply text-muted-foreground bg-transparent;
     @apply hover:bg-muted-foreground/10;
     @apply flex-none;
-    @apply size-7 [&_svg]:size-5 p-1.5;
+    @apply size-7 [&_svg]:size-5 [&_svg]:pointer-events-none p-1.5;
   }
 
   /* ═══ Input ═══ */

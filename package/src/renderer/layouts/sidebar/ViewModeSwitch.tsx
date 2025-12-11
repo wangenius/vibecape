@@ -18,7 +18,7 @@ export const ViewModeSwitch = ({ mode, onModeChange }: ViewModeSwitchProps) => {
   const { t } = useTranslation();
 
   return (
-    <div className="flex items-center gap-xs">
+    <div className="flex items-center gap-1">
       {tabs.map((tab) => {
         const isActive = mode === tab.id;
         const Icon = tab.icon;

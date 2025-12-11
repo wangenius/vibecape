@@ -22,7 +22,7 @@ const SidebarContainer = ({ children }: { children: React.ReactNode }) => {
       }}
       className="h-full flex select-none overflow-hidden whitespace-nowrap"
     >
-      <div className="h-full w-[360px] flex flex-col border-r border-border overflow-hidden">
+      <div className="h-full p-1 w-[360px] flex flex-col border-r border-border overflow-hidden gap-2">
         {children}
       </div>
     </motion.div>

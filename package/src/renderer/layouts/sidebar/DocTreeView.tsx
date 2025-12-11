@@ -141,11 +141,7 @@ export const DocTreeView = () => {
     return (
       <div className="flex-1 flex flex-col items-center justify-center text-sm text-muted-foreground px-4 text-center gap-3">
         <span>{t("common.settings.emptyDocs")}</span>
-        <Button
-          
-          
-          onClick={() => handleCreateDoc(null)}
-        >
+        <Button onClick={() => handleCreateDoc(null)}>
           <FilePlus />
           {t("common.settings.newDoc")}
         </Button>
@@ -154,8 +150,8 @@ export const DocTreeView = () => {
   }
 
   return (
-    <div className="flex-1 overflow-auto py-2">
-      <div className="space-y-0.5">{renderDocTree(tree, 0, null)}</div>
+    <div className="flex-1 overflow-auto space-y-0.5">
+      {renderDocTree(tree, 0, null)}
     </div>
   );
 };

@@ -52,7 +52,7 @@ const SettingsSidebar = () => {
 
   return (
     <div className="w-80 flex flex-col border-r overflow-hidden shrink-0 h-full">
-      <div className="flex-1 p-sm space-y-xs overflow-y-auto">
+      <div className="flex-1 p-2 space-y-2 overflow-y-auto">
         {/* Repo Settings - 仅当有 repository 时显示 */}
         {repository && (
           <>
@@ -81,7 +81,7 @@ const SettingsSidebar = () => {
         )}
 
         {/* App Settings */}
-        <div className="section-header">{t("common.settings.appSettings")}</div>
+        <div>{t("common.settings.appSettings")}</div>
         {SETTINGS_NAV_ITEMS.map((item) => {
           const Icon = item.icon;
           const isActive = currentSection === item.key;

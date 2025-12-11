@@ -960,11 +960,7 @@ ${
       }
     } else {
       // 没有 diff，直接移除节点
-      if (isPolishMode && markId) {
-        editor.commands.removeDocAIPrompt(nodeId);
-      } else {
-        deleteNode();
-      }
+      editor.commands.removeDocAIPrompt(nodeId);
     }
 
     // 将光标移动到原文末尾
@@ -1142,6 +1138,15 @@ ${
               },
               // Shift + Backspace: 没有内容时关闭
               "Shift-Backspace": () => {
+                const currentPrompt = promptRef.current;
+                if (!currentPrompt.trim()) {
+                  handleCancelRef.current();
+                  return true;
+                }
+                return false;
+              },
+              // Mod + Backspace: 没有内容时关闭
+              "Mod-Backspace": () => {
                 const currentPrompt = promptRef.current;
                 if (!currentPrompt.trim()) {
                   handleCancelRef.current();

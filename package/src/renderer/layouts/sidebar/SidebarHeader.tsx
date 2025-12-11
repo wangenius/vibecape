@@ -33,6 +33,8 @@ export const SidebarHeader = () => {
   const repository = useRepositoryStore((state) => state.repository);
   const closeRepository = useRepositoryStore((state) => state.closeRepository);
   const refreshTree = useDocumentStore((state) => state.refreshTree);
+  const createDoc = useDocumentStore((state) => state.createDoc);
+  const openDoc = useDocumentStore((state) => state.openDoc);
   const loading = useUIStore((state) => state.loading);
 
   // 未打开工作区时不显示头部
@@ -87,7 +89,14 @@ export const SidebarHeader = () => {
         {/* 右侧：新建 + 更多操作 */}
         <Button
           size="icon"
-          onClick={() => {}}
+          onClick={async () => {
+            try {
+              const doc = await createDoc({ parent_id: null, title: "" });
+              await openDoc(doc.id);
+            } catch (error: any) {
+              toast.error(error?.message ?? t("common.settings.createFailed"));
+            }
+          }}
           title={t("common.settings.newDoc")}
         >
           <Plus />

@@ -9,14 +9,16 @@ const buttonVariants = cva("", {
   variants: {
     variant: {
       primary:
-        "bg-muted text-muted-foreground hover:bg-primary/90 hover:text-primary-foreground",
+        "bg-primary/90 text-primary-foreground/80 hover:bg-primary hover:text-primary-foreground",
       destructive: "bg-destructive/10 text-destructive hover:bg-destructive/20",
       default: "",
     },
     size: {
-      default: "w-auto [&_svg]:size-4 p-1.5 text-xs flex items-center gap-1.5",
+      default: "w-auto [&_svg]:size-4 p-1.5 px-3 text-xs flex items-center gap-1.5",
       icon: "",
       full: "w-full justify-start [&_svg]:size-3.5 p-2 text-xs flex items-center gap-1.5",
+      sidebar:
+        "w-full justify-start h-9 [&_svg]:size-4 p-2 text-sm flex items-center gap-3",
     },
     actived: {
       true: "bg-muted-foreground/10",

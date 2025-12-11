@@ -110,27 +110,37 @@ export function dialog({
                 }
               }}
               className={cn(
-                "relative flex flex-col gap border bg-background shadow-lg rounded-xl max-h-[90vh] max-w-[90vw] overflow-hidden",
+                "relative flex flex-col gap-4 border border-border/50 bg-background shadow-xl rounded-xl max-h-[90vh] max-w-[90vw] overflow-hidden",
                 className
               )}
               {...props}
             >
               {(title || !closeIconHide) && (
-                <div>
+                <div className="flex items-start justify-between gap-4">
                   {title && (
-                    <div>
+                    <div className="flex flex-col gap-1">
                       {typeof title === "string" ? (
-                        <div>
-                          <h2>{title}</h2>
-                          {description && <p>{description}</p>}
-                        </div>
+                        <>
+                          <h2 className="text-base font-medium text-foreground">
+                            {title}
+                          </h2>
+                          {description && (
+                            <p className="text-sm text-muted-foreground">
+                              {description}
+                            </p>
+                          )}
+                        </>
                       ) : (
                         title
                       )}
                     </div>
                   )}
                   {!closeIconHide && (
-                    <Button size="icon" onClick={handleClose}>
+                    <Button
+                      size="icon"
+                      onClick={handleClose}
+                      className="shrink-0 -mt-1 -mr-1"
+                    >
                       <TbX />
                     </Button>
                   )}
@@ -201,7 +211,7 @@ dialog.confirm = ({
     content,
     footer: (close) => {
       return (
-        <div className="flex justify-end gap">
+        <div className="flex justify-end gap-2">
           <Button
             onClick={() => {
               close();

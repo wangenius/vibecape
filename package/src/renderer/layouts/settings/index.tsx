@@ -51,8 +51,8 @@ const SettingsSidebar = () => {
   const repository = useRepositoryStore((state) => state.repository);
 
   return (
-    <div className="w-80 flex flex-col border-r overflow-hidden shrink-0 h-full">
-      <div className="flex-1 p-2 space-y-2 overflow-y-auto">
+    <div className="w-80 flex flex-col p-2 border-r overflow-hidden shrink-0 h-full">
+      <div className="flex-1 p-2 space-y-1 overflow-y-auto">
         {/* Repo Settings - 仅当有 repository 时显示 */}
         {repository && (
           <>
@@ -68,7 +68,7 @@ const SettingsSidebar = () => {
                   onClick={() => {
                     setViewManager({ previewCosmosId: item.key });
                   }}
-                  size="full"
+                  size="sidebar"
                   actived={isActive}
                 >
                   <Icon />
@@ -97,7 +97,7 @@ const SettingsSidebar = () => {
               onClick={() => {
                 setViewManager({ previewCosmosId: item.key });
               }}
-              size={"full"}
+              size={"sidebar"}
               actived={isActive}
             >
               <Icon />
@@ -117,7 +117,7 @@ const SettingsDialogContent = () => {
   return (
     <div className="flex h-full">
       <SettingsSidebar />
-      <div className="flex-1 overflow-auto p-4">
+      <div className="flex-1 overflow-auto p-8">
         {repository && REPO_SETTINGS_KEYS.includes(settingsSection || "") ? (
           <RepositorySettingsPanel />
         ) : (

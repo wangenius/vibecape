@@ -2,6 +2,8 @@ import { useTranslation } from "react-i18next";
 import {
   SettingsContainer,
   SettingSection,
+  FeatureCard,
+  ShortcutItem,
 } from "@/layouts/settings/item/SettingComponents";
 import { Sparkles, MessageSquare, Search, FileEdit, Wand2 } from "lucide-react";
 
@@ -63,50 +65,24 @@ export const AISettings = () => {
           "编辑器支持的 AI 辅助功能列表"
         )}
       >
-        <div className="space-y-3">
+        <div className="flex flex-col gap-2">
           {AI_FEATURES.map((feature) => {
             const Icon = feature.icon;
             return (
-              <div
+              <FeatureCard
                 key={feature.titleKey}
-                className="flex items-start gap-4 p-4 rounded-lg border border-border bg-muted/30"
-              >
-                <div className="shrink-0 p-2 rounded-md bg-primary/10 text-primary">
-                  <Icon className="size-5" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <h4 className="text-sm font-medium">
-                      {t(
-                        `common.settings.ai.${feature.titleKey}`,
-                        feature.title
-                      )}
-                    </h4>
-                    {feature.shortcut && (
-                      <kbd className="px-1.5 py-0.5 text-xs rounded bg-muted border border-border font-mono">
-                        {feature.shortcut}
-                      </kbd>
-                    )}
-                    <span
-                      className={`px-1.5 py-0.5 text-xs rounded ${
-                        feature.status === "available"
-                          ? "bg-green-500/10 text-green-600"
-                          : "bg-yellow-500/10 text-yellow-600"
-                      }`}
-                    >
-                      {feature.status === "available"
-                        ? t("common.settings.ai.available", "可用")
-                        : t("common.settings.ai.planned", "计划中")}
-                    </span>
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {t(
-                      `common.settings.ai.${feature.titleKey}Desc`,
-                      feature.description
-                    )}
-                  </p>
-                </div>
-              </div>
+                icon={<Icon className="size-5" />}
+                title={t(
+                  `common.settings.ai.${feature.titleKey}`,
+                  feature.title
+                )}
+                description={t(
+                  `common.settings.ai.${feature.titleKey}Desc`,
+                  feature.description
+                )}
+                shortcut={feature.shortcut ?? undefined}
+                status={feature.status}
+              />
             );
           })}
         </div>
@@ -119,7 +95,7 @@ export const AISettings = () => {
           "AI 编辑相关的键盘快捷键"
         )}
       >
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-2">
           {[
             { key: "⌘K", label: "触发 AI 编辑" },
             { key: "⌘L", label: "引用到 Chat" },
@@ -128,20 +104,14 @@ export const AISettings = () => {
             { key: "⌘Z", label: "撤销更改" },
             { key: "Enter", label: "提交指令" },
           ].map((shortcut) => (
-            <div
+            <ShortcutItem
               key={shortcut.key}
-              className="flex items-center gap-3 p-2 rounded-lg border border-border bg-background"
-            >
-              <kbd className="px-2 py-1 text-sm rounded bg-muted border border-border font-mono min-w-12 text-center">
-                {shortcut.key}
-              </kbd>
-              <span className="text-sm text-muted-foreground">
-                {t(
-                  `common.settings.ai.shortcut.${shortcut.key}`,
-                  shortcut.label
-                )}
-              </span>
-            </div>
+              shortcut={shortcut.key}
+              label={t(
+                `common.settings.ai.shortcut.${shortcut.key}`,
+                shortcut.label
+              )}
+            />
           ))}
         </div>
       </SettingSection>
@@ -153,19 +123,19 @@ export const AISettings = () => {
           "AI Agent 可调用的文档编辑工具"
         )}
       >
-        <div className="overflow-hidden rounded-lg border border-border">
+        <div className="overflow-hidden rounded-lg border border-border/50">
           <table className="w-full text-sm">
-            <thead className="bg-muted/50">
+            <thead className="bg-muted/30">
               <tr>
-                <th className="text-left p-3 font-medium">
+                <th className="text-left p-3 text-xs font-medium text-muted-foreground">
                   {t("common.settings.ai.toolName", "工具名称")}
                 </th>
-                <th className="text-left p-3 font-medium">
+                <th className="text-left p-3 text-xs font-medium text-muted-foreground">
                   {t("common.settings.ai.toolDesc", "功能描述")}
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
+            <tbody className="divide-y divide-border/50">
               {[
                 {
                   name: "readDocumentContent",
@@ -191,11 +161,13 @@ export const AISettings = () => {
                   desc: "使用 Markdown 设置文档",
                 },
               ].map((tool) => (
-                <tr key={tool.name} className="hover:bg-muted/30">
+                <tr key={tool.name} className="hover:bg-muted/20">
                   <td className="p-3 font-mono text-xs text-primary">
                     {tool.name}
                   </td>
-                  <td className="p-3 text-muted-foreground">{tool.desc}</td>
+                  <td className="p-3 text-xs text-muted-foreground">
+                    {tool.desc}
+                  </td>
                 </tr>
               ))}
             </tbody>

@@ -41,6 +41,9 @@ import {
   SettingsContainer,
   SettingSection,
   SettingItem,
+  SettingList,
+  ListItem,
+  Badge,
 } from "@/layouts/settings/item/SettingComponents";
 
 import { dialog } from "@/components/ui/dialog";
@@ -272,30 +275,21 @@ export const ModelSettings = () => {
           </Button>
         }
       >
-        {providers.length === 0 ? (
-          <div className="empty-placeholder">
-            {t("common.settings.noProviders")}
-          </div>
-        ) : (
-          <div className="space-y-1">
-            {providers.map((provider) => (
-              <div key={provider.id} className="item-card">
-                <div className="flex items-center gap-3">
-                  <Server className="icon-primary" />
-                  <div className="flex flex-col">
-                    <span className="text-sm font-medium">{provider.name}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {provider.base_url}
-                    </span>
-                  </div>
-                </div>
+        <SettingList empty={t("common.settings.noProviders")}>
+          {providers.map((provider) => (
+            <ListItem
+              key={provider.id}
+              icon={<Server className="size-4" />}
+              title={provider.name}
+              subtitle={provider.base_url}
+              actions={
                 <div className="flex items-center gap-1">
                   <Button
                     onClick={() => {
                       dialog({
                         title: (
-                          <span className="flex items-center gap">
-                            <Server />
+                          <span className="flex items-center gap-2">
+                            <Server className="size-4" />
                             {provider.name} 可用模型
                           </span>
                         ),
@@ -310,12 +304,12 @@ export const ModelSettings = () => {
                       });
                     }}
                   >
-                    <Server className="h-3 w-3 mr-1" />
-                    {"获取模型"}
+                    <Server className="size-3" />
+                    获取模型
                   </Button>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button className="hover-visible">
+                      <Button>
                         <MoreVertical />
                       </Button>
                     </DropdownMenuTrigger>
@@ -337,10 +331,10 @@ export const ModelSettings = () => {
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
+              }
+            />
+          ))}
+        </SettingList>
       </SettingSection>
 
       {/* 模型管理 */}
@@ -366,35 +360,28 @@ export const ModelSettings = () => {
           </div>
         }
       >
-        {modelList.length === 0 ? (
-          <div className="empty-placeholder">
-            {t("common.settings.noModels")}
-          </div>
-        ) : (
-          <div className="space-y-1">
-            {modelList.map((model) => (
-              <div key={model.id} className="item-card">
-                <div className="flex items-center gap-3">
-                  <BsStars className="icon-primary" />
-                  <div className="flex flex-col">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium">{model.name}</span>
-                      {model.json && (
-                        <span className="badge badge-success">
-                          {t("common.settings.jsonMode")}
-                        </span>
-                      )}
-                      {model.reasoner && (
-                        <span className="badge badge-info">
-                          {t("common.settings.reasoner")}
-                        </span>
-                      )}
-                    </div>
-                    <span className="text-xs text-muted-foreground">
-                      {model.model}
-                    </span>
-                  </div>
-                </div>
+        <SettingList empty={t("common.settings.noModels")}>
+          {modelList.map((model) => (
+            <ListItem
+              key={model.id}
+              icon={<BsStars className="size-4" />}
+              title={model.name}
+              subtitle={model.model}
+              badges={
+                <>
+                  {model.json && (
+                    <Badge variant="success">
+                      {t("common.settings.jsonMode")}
+                    </Badge>
+                  )}
+                  {model.reasoner && (
+                    <Badge variant="info">
+                      {t("common.settings.reasoner")}
+                    </Badge>
+                  )}
+                </>
+              }
+              actions={
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button disabled={deletingId === model.id}>
@@ -413,10 +400,10 @@ export const ModelSettings = () => {
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-              </div>
-            ))}
-          </div>
-        )}
+              }
+            />
+          ))}
+        </SettingList>
       </SettingSection>
 
       {/* 默认模型配置 */}
@@ -424,48 +411,46 @@ export const ModelSettings = () => {
         title={t("common.settings.defaultModelConfig")}
         description={t("common.settings.defaultModelConfigDesc")}
       >
-        <div className="space-y-2">
-          {categories.map((category) => {
-            const currentModelId = defaultModels[category.key]?.model_id || "";
-            const currentModel = currentModelId ? models[currentModelId] : null;
+        {categories.map((category) => {
+          const currentModelId = defaultModels[category.key]?.model_id || "";
+          const currentModel = currentModelId ? models[currentModelId] : null;
 
-            return (
-              <SettingItem
-                key={category.key}
-                label={category.label}
-                description={category.description}
+          return (
+            <SettingItem
+              key={category.key}
+              label={category.label}
+              description={category.description}
+            >
+              <Select
+                value={currentModelId || "__none__"}
+                onValueChange={(value) =>
+                  void updateDefaultModel(
+                    category.key,
+                    value === "__none__" ? "" : value
+                  )
+                }
               >
-                <Select
-                  value={currentModelId || "__none__"}
-                  onValueChange={(value) =>
-                    void updateDefaultModel(
-                      category.key,
-                      value === "__none__" ? "" : value
-                    )
-                  }
-                >
-                  <SelectTrigger className="w-[200px]">
-                    <SelectValue>
-                      {currentModel
-                        ? currentModel.name
-                        : t("common.settings.selectModel")}
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent align="end">
-                    <SelectItem value="__none__">
-                      {t("common.settings.selectModel")}
+                <SelectTrigger className="w-48">
+                  <SelectValue>
+                    {currentModel
+                      ? currentModel.name
+                      : t("common.settings.selectModel")}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent align="end">
+                  <SelectItem value="__none__">
+                    {t("common.settings.selectModel")}
+                  </SelectItem>
+                  {modelList.map((model) => (
+                    <SelectItem key={model.id} value={model.id}>
+                      {model.name}
                     </SelectItem>
-                    {modelList.map((model) => (
-                      <SelectItem key={model.id} value={model.id}>
-                        {model.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </SettingItem>
-            );
-          })}
-        </div>
+                  ))}
+                </SelectContent>
+              </Select>
+            </SettingItem>
+          );
+        })}
       </SettingSection>
     </SettingsContainer>
   );

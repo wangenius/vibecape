@@ -8,7 +8,8 @@ const inputVariants = cva("", {
   variants: {
     variant: {
       primary: "",
-      default: "bg-transparent hover:bg-muted/50 focus:bg-muted/50",
+      default:
+        "bg-muted hover:bg-muted-foreground/10 focus:bg-muted-foreground/10 text-sm",
     },
   },
   defaultVariants: {

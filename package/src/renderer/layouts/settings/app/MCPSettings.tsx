@@ -15,6 +15,8 @@ import {
   SettingsContainer,
   SettingSection,
   SettingItem,
+  SettingList,
+  ListItem,
 } from "@/layouts/settings/item/SettingComponents";
 import {
   CheckCircle,
@@ -316,49 +318,40 @@ export const MCPSettings = () => {
             </div>
           }
         >
-          {servers.length === 0 ? (
-            <div>{t("common.settings.mcpNoServers")}</div>
-          ) : (
-            <div className="space-y-2">
-              {servers.map((server, index) => {
-                const status = serverStatus[server.name];
-                const isConnected = status?.status === "connected";
-                const isConnecting = status?.status === "connecting";
-                const hasError = status?.status === "error";
-                const toolCount = status?.toolCount || 0;
+          <SettingList empty={t("common.settings.mcpNoServers")}>
+            {servers.map((server, index) => {
+              const status = serverStatus[server.name];
+              const isConnected = status?.status === "connected";
+              const isConnecting = status?.status === "connecting";
+              const hasError = status?.status === "error";
+              const toolCount = status?.toolCount || 0;
 
-                return (
-                  <div key={server.name} className="item-card flex-col!">
-                    <div className="flex items-center justify-between gap-4">
-                      <div className="flex items-center gap-3 min-w-0">
-                        {/* 状态图标 */}
-                        {isConnecting ? (
-                          <Loader2 className="size-icon-md text-yellow-500 animate-spin shrink-0" />
-                        ) : isConnected ? (
-                          <CheckCircle className="size-icon-md text-green-500 shrink-0" />
-                        ) : hasError ? (
-                          <XCircle className="size-icon-md text-destructive shrink-0" />
-                        ) : (
-                          <Terminal className="icon-muted shrink-0" />
-                        )}
-                        <div className="flex flex-col min-w-0">
-                          <span className="text-sm font-medium truncate">
-                            {server.name}
-                          </span>
-                          <span className="text-xs text-muted-foreground truncate">
-                            {server.command} {server.args.join(" ")}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2 shrink-0">
-                        {/* 工具数量 */}
-                        {isConnected && toolCount > 0 && (
-                          <span className="text-xs text-muted-foreground flex items-center gap-1">
-                            <Wrench className="size-icon-sm" />
-                            {toolCount}
-                          </span>
-                        )}
-                        {/* 连接按钮 */}
+              return (
+                <div key={server.name} className="flex flex-col gap-2">
+                  <ListItem
+                    icon={
+                      isConnecting ? (
+                        <Loader2 className="size-4 text-yellow-500 animate-spin" />
+                      ) : isConnected ? (
+                        <CheckCircle className="size-4 text-green-500" />
+                      ) : hasError ? (
+                        <XCircle className="size-4 text-destructive" />
+                      ) : (
+                        <Terminal className="size-4" />
+                      )
+                    }
+                    title={server.name}
+                    subtitle={`${server.command} ${server.args.join(" ")}`}
+                    status={
+                      isConnected && toolCount > 0 ? (
+                        <span className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Wrench className="size-3" />
+                          {toolCount}
+                        </span>
+                      ) : null
+                    }
+                    actions={
+                      <div className="flex items-center gap-1">
                         {server.enabled && !isConnected && !isConnecting && (
                           <Button
                             size="icon"
@@ -384,18 +377,17 @@ export const MCPSettings = () => {
                           <Trash2 />
                         </Button>
                       </div>
+                    }
+                  />
+                  {hasError && status?.error && (
+                    <div className="ml-10 text-xs text-red-500 bg-red-500/10 px-3 py-1.5 rounded">
+                      {status.error}
                     </div>
-                    {/* 错误信息 */}
-                    {hasError && status?.error && (
-                      <div className="mt-sm text-xs badge-error px-sm py-xs rounded">
-                        {status.error}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          )}
+                  )}
+                </div>
+              );
+            })}
+          </SettingList>
         </SettingSection>
       )}
 
@@ -405,29 +397,21 @@ export const MCPSettings = () => {
           title={t("common.settings.mcpTools")}
           description={t("common.settings.mcpToolsDesc")}
         >
-          <div className="space-y-1">
+          <SettingList>
             {allTools.map((tool) => (
-              <div
+              <ListItem
                 key={`${tool.serverName}-${tool.name}`}
-                className="flex items-start gap-sm p-sm rounded-lg bg-muted/20"
-              >
-                <Wrench className="icon-primary mt-0.5 shrink-0" />
-                <div className="min-w-0">
-                  <div className="text-sm font-medium">
-                    {tool.name}
-                    <span className="text-xs text-muted-foreground ml-2">
-                      ({tool.serverName})
-                    </span>
-                  </div>
-                  {tool.description && (
-                    <div className="text-xs text-muted-foreground mt-0.5">
-                      {tool.description}
-                    </div>
-                  )}
-                </div>
-              </div>
+                icon={<Wrench className="size-4 text-primary" />}
+                title={tool.name}
+                subtitle={tool.description || undefined}
+                badges={
+                  <span className="text-xs text-muted-foreground">
+                    {tool.serverName}
+                  </span>
+                }
+              />
             ))}
-          </div>
+          </SettingList>
         </SettingSection>
       )}
     </SettingsContainer>

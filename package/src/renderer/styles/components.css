@@ -30,7 +30,7 @@
     @apply hover:bg-muted/80 focus:bg-muted/80;
     @apply focus-visible:outline-none;
     @apply disabled:cursor-not-allowed disabled:opacity-50;
-    @apply h-7 [&_svg]:size-5 p-1.5;
+    @apply h-9 [&_svg]:size-5 p-2;
   }
 
   textarea {

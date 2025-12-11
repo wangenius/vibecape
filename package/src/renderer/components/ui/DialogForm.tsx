@@ -7,12 +7,8 @@ import {
 } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { type ZodObject, type ZodRawShape, type ZodTypeAny } from "zod";
-import { useEditor, EditorContent } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import Placeholder from "@tiptap/extension-placeholder";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import {
   Select,
@@ -23,10 +19,10 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { dialog } from "./dialog";
+import { Loader2 } from "lucide-react";
 
 // ============ 类型定义 ============
 
-/** 字段 UI 配置 */
 export interface FieldConfig {
   label?: string;
   placeholder?: string;
@@ -36,47 +32,7 @@ export interface FieldConfig {
   hidden?: boolean;
 }
 
-/** 字段配置映射 */
 export type FieldsConfig = Record<string, FieldConfig>;
-
-/** 从 Zod schema 推断字段类型 */
-function inferFieldType(
-  zodType: ZodTypeAny,
-  fieldConfig?: FieldConfig
-): "text" | "number" | "switch" | "select" | "textarea" | "password" {
-  if (fieldConfig?.type) return fieldConfig.type;
-  const typeName = zodType._def.typeName;
-  if (typeName === "ZodBoolean") return "switch";
-  if (typeName === "ZodNumber") return "number";
-  if (typeName === "ZodEnum") return "select";
-  if (fieldConfig?.options) return "select";
-  return "text";
-}
-
-/** 获取 ZodEnum 的选项 */
-function getEnumOptions(
-  zodType: ZodTypeAny,
-  fieldConfig?: FieldConfig
-): Array<{ value: string; label: string }> {
-  if (fieldConfig?.options) return fieldConfig.options;
-  if (zodType._def.typeName === "ZodEnum") {
-    return zodType._def.values.map((v: string) => ({ value: v, label: v }));
-  }
-  return [];
-}
-
-/** 解包 Zod 类型 */
-function unwrapZodType(zodType: ZodTypeAny): ZodTypeAny {
-  const typeName = zodType._def.typeName;
-  if (
-    typeName === "ZodOptional" ||
-    typeName === "ZodNullable" ||
-    typeName === "ZodDefault"
-  ) {
-    return unwrapZodType(zodType._def.innerType);
-  }
-  return zodType;
-}
 
 interface DialogFormOptions<T extends FieldValues> {
   title?: string | ReactNode;
@@ -92,61 +48,95 @@ interface DialogFormOptions<T extends FieldValues> {
   renderField?: (name: string, form: UseFormReturn<T>) => ReactNode;
 }
 
-// ============ 富文本编辑器组件 ============
+// ============ 工具函数 ============
 
-const RichTextEditor = ({
-  value,
-  onChange,
-  placeholder,
-  hasError,
-}: {
-  value?: string;
-  onChange?: (value: string) => void;
-  placeholder?: string;
-  hasError?: boolean;
-}) => {
-  const editor = useEditor({
-    extensions: [
-      StarterKit.configure({
-        heading: false,
-        codeBlock: false,
-        blockquote: false,
-        bulletList: false,
-        orderedList: false,
-        horizontalRule: false,
-      }),
-      Placeholder.configure({
-        placeholder: placeholder || "输入内容...",
-        emptyEditorClass: "is-editor-empty",
-      }),
-    ],
-    content: value || "",
-    editorProps: {
-      attributes: {
-        class: "rich-editor-content",
-      },
-    },
-    onUpdate: ({ editor: e }) => {
-      onChange?.(e.getText());
-    },
-  });
+function inferFieldType(
+  zodType: ZodTypeAny,
+  fieldConfig?: FieldConfig
+): "text" | "number" | "switch" | "select" | "textarea" | "password" {
+  if (fieldConfig?.type) return fieldConfig.type;
+  const typeName = zodType._def.typeName;
+  if (typeName === "ZodBoolean") return "switch";
+  if (typeName === "ZodNumber") return "number";
+  if (typeName === "ZodEnum") return "select";
+  if (fieldConfig?.options) return "select";
+  return "text";
+}
+
+function getEnumOptions(
+  zodType: ZodTypeAny,
+  fieldConfig?: FieldConfig
+): Array<{ value: string; label: string }> {
+  if (fieldConfig?.options) return fieldConfig.options;
+  if (zodType._def.typeName === "ZodEnum") {
+    return zodType._def.values.map((v: string) => ({ value: v, label: v }));
+  }
+  return [];
+}
+
+function unwrapZodType(zodType: ZodTypeAny): ZodTypeAny {
+  const typeName = zodType._def.typeName;
+  if (
+    typeName === "ZodOptional" ||
+    typeName === "ZodNullable" ||
+    typeName === "ZodDefault"
+  ) {
+    return unwrapZodType(zodType._def.innerType);
+  }
+  return zodType;
+}
+
+// ============ 表单字段组件 ============
+
+interface FormFieldProps {
+  label: string;
+  description?: string;
+  error?: string;
+  required?: boolean;
+  children: ReactNode;
+  horizontal?: boolean;
+}
+
+const FormField = ({
+  label,
+  description,
+  error,
+  required,
+  children,
+  horizontal,
+}: FormFieldProps) => {
+  if (horizontal) {
+    return (
+      <div className="flex items-center justify-between gap-4 py-2 px-3 rounded-lg hover:bg-muted/30 transition-colors">
+        <div className="flex flex-col gap-0.5 min-w-0">
+          <span className="text-sm text-foreground">{label}</span>
+          {description && (
+            <span className="text-xs text-muted-foreground">{description}</span>
+          )}
+        </div>
+        <div className="shrink-0">{children}</div>
+      </div>
+    );
+  }
 
   return (
-    <div
-      className={cn(
-        "w-full rounded-md border border-input bg-muted px-3 py-2 text-sm ring-offset-background transition-colors",
-        "[&_.ProseMirror]:outline-none [&_.ProseMirror]:min-h-20",
-        "[&_.ProseMirror_p]:m-0 [&_.ProseMirror_p]:leading-relaxed",
-        "[&_.is-editor-empty]:before:content-[attr(data-placeholder)] [&_.is-editor-empty]:before:text-muted-foreground/50 [&_.is-editor-empty]:before:float-left [&_.is-editor-empty]:before:h-0 [&_.is-editor-empty]:before:pointer-events-none",
-        hasError && "border-destructive"
-      )}
-    >
-      <EditorContent editor={editor} />
+    <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-0.5 px-1">
+        <span className="text-sm text-foreground">
+          {label}
+          {required && <span className="text-destructive ml-0.5">*</span>}
+        </span>
+        {description && (
+          <span className="text-xs text-muted-foreground">{description}</span>
+        )}
+      </div>
+      {children}
+      {error && <span className="text-xs text-destructive px-1">{error}</span>}
     </div>
   );
 };
 
-// ============ 自动表单字段渲染 ============
+// ============ 自动字段渲染 ============
 
 interface AutoFieldProps<T extends FieldValues> {
   name: string;
@@ -177,174 +167,128 @@ function AutoField<T extends FieldValues>({
   const unwrapped = unwrapZodType(zodType);
   const fieldType = inferFieldType(unwrapped, config);
   const label = config.label ?? name;
-
-  // 检查是否为必填字段
   const isRequired =
     zodType._def.typeName !== "ZodOptional" &&
     zodType._def.typeName !== "ZodNullable";
-
-  // 渲染标签（带必填标记）
-  const renderLabel = () => (
-    <Label>
-      {label}
-      {isRequired && <span className="text-destructive ml-1">*</span>}
-    </Label>
-  );
 
   if (renderCustom) {
     const custom = renderCustom(name, form);
     if (custom) return <>{custom}</>;
   }
 
-  const renderInput = () => {
-    switch (fieldType) {
-      case "switch":
-        return (
-          <div className="flex items-center justify-between">
-            <div>
-              <Label>{label}</Label>
-              {config.description && (
-                <p className="text-xs text-muted-foreground mt-1">
-                  {config.description}
-                </p>
-              )}
-            </div>
-            <Switch
-              checked={value as boolean}
-              onCheckedChange={(v) => setValue(name as any, v as any)}
-            />
-          </div>
-        );
+  switch (fieldType) {
+    case "switch":
+      return (
+        <FormField label={label} description={config.description} horizontal>
+          <Switch
+            checked={value as boolean}
+            onCheckedChange={(v) => setValue(name as any, v as any)}
+          />
+        </FormField>
+      );
 
-      case "select": {
-        const options = getEnumOptions(unwrapped, config);
-        return (
-          <div className="flex flex-col gap-1.5">
-            {renderLabel()}
-            <Select
-              value={value as string}
-              onValueChange={(v) => setValue(name as any, v as any)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder={config.placeholder} />
-              </SelectTrigger>
-              <SelectContent>
-                {options.map((opt) => (
-                  <SelectItem key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {config.description && (
-              <p className="text-xs text-muted-foreground mt-1">
-                {config.description}
-              </p>
-            )}
-            {error && (
-              <p className="text-xs text-destructive mt-1">
-                {error.message as string}
-              </p>
-            )}
-          </div>
-        );
-      }
-
-      case "textarea":
-        return (
-          <div className="flex flex-col gap-1.5">
-            {renderLabel()}
-            <RichTextEditor
-              value={value as string}
-              onChange={(v) => setValue(name as any, v as any)}
-              placeholder={config.placeholder}
-              hasError={!!error}
-            />
-            {config.description && (
-              <p className="text-xs text-muted-foreground mt-1">
-                {config.description}
-              </p>
-            )}
-            {error && (
-              <p className="text-xs text-destructive mt-1">
-                {error.message as string}
-              </p>
-            )}
-          </div>
-        );
-
-      case "number":
-        return (
-          <div className="flex flex-col gap-1.5">
-            {renderLabel()}
-            <Input
-              {...register(name as any, { valueAsNumber: true })}
-              type="number"
-              placeholder={config.placeholder}
-            />
-            {config.description && (
-              <p className="text-xs text-muted-foreground mt-1">
-                {config.description}
-              </p>
-            )}
-            {error && (
-              <p className="text-xs text-destructive mt-1">
-                {error.message as string}
-              </p>
-            )}
-          </div>
-        );
-
-      case "password":
-        return (
-          <div className="flex flex-col gap-1.5">
-            {renderLabel()}
-            <Input
-              {...register(name as any)}
-              type="password"
-              placeholder={config.placeholder}
-            />
-            {config.description && (
-              <p className="text-xs text-muted-foreground mt-1">
-                {config.description}
-              </p>
-            )}
-            {error && (
-              <p className="text-xs text-destructive mt-1">
-                {error.message as string}
-              </p>
-            )}
-          </div>
-        );
-
-      default:
-        return (
-          <div className="flex flex-col gap-1.5">
-            {renderLabel()}
-            <Input
-              {...register(name as any)}
-              type="text"
-              placeholder={config.placeholder}
-            />
-            {config.description && (
-              <p className="text-xs text-muted-foreground mt-1">
-                {config.description}
-              </p>
-            )}
-            {error && (
-              <p className="text-xs text-destructive mt-1">
-                {error.message as string}
-              </p>
-            )}
-          </div>
-        );
+    case "select": {
+      const options = getEnumOptions(unwrapped, config);
+      return (
+        <FormField
+          label={label}
+          description={config.description}
+          error={error?.message as string}
+          required={isRequired}
+        >
+          <Select
+            value={value as string}
+            onValueChange={(v) => setValue(name as any, v as any)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder={config.placeholder} />
+            </SelectTrigger>
+            <SelectContent>
+              {options.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value}>
+                  {opt.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </FormField>
+      );
     }
-  };
 
-  return renderInput();
+    case "textarea":
+      return (
+        <FormField
+          label={label}
+          description={config.description}
+          error={error?.message as string}
+          required={isRequired}
+        >
+          <textarea
+            className={cn(
+              "min-h-24 p-3 resize-none",
+              error && "border-destructive"
+            )}
+            value={(value as string) || ""}
+            onChange={(e) => setValue(name as any, e.target.value as any)}
+            placeholder={config.placeholder}
+          />
+        </FormField>
+      );
+
+    case "number":
+      return (
+        <FormField
+          label={label}
+          description={config.description}
+          error={error?.message as string}
+          required={isRequired}
+        >
+          <Input
+            {...register(name as any, { valueAsNumber: true })}
+            type="number"
+            placeholder={config.placeholder}
+            className={cn(error && "border-destructive")}
+          />
+        </FormField>
+      );
+
+    case "password":
+      return (
+        <FormField
+          label={label}
+          description={config.description}
+          error={error?.message as string}
+          required={isRequired}
+        >
+          <Input
+            {...register(name as any)}
+            type="password"
+            placeholder={config.placeholder}
+            className={cn(error && "border-destructive")}
+          />
+        </FormField>
+      );
+
+    default:
+      return (
+        <FormField
+          label={label}
+          description={config.description}
+          error={error?.message as string}
+          required={isRequired}
+        >
+          <Input
+            {...register(name as any)}
+            type="text"
+            placeholder={config.placeholder}
+            className={cn(error && "border-destructive")}
+          />
+        </FormField>
+      );
+  }
 }
 
-// ============ Dialog Form 内容组件 ============
+// ============ Dialog Form 内容 ============
 
 function DialogFormContent<T extends FieldValues>({
   options,
@@ -375,8 +319,8 @@ function DialogFormContent<T extends FieldValues>({
   const schemaFields = Object.entries(options.schema.shape);
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-lg">
-      <div className="space-y-md">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+      <div className="flex flex-col gap-4">
         {schemaFields.map(([name, zodType]) => (
           <AutoField
             key={name}
@@ -389,7 +333,7 @@ function DialogFormContent<T extends FieldValues>({
         ))}
       </div>
 
-      <div className="flex justify-end gap-2">
+      <div className="flex justify-end gap-2 pt-2 border-t border-border/50">
         <Button
           type="button"
           onClick={() => {
@@ -401,7 +345,8 @@ function DialogFormContent<T extends FieldValues>({
           {options.cancelText ?? "取消"}
         </Button>
         <Button type="submit" variant="primary" disabled={isSubmitting}>
-          {isSubmitting ? "..." : (options.submitText ?? "保存")}
+          {isSubmitting && <Loader2 className="size-4 animate-spin" />}
+          {options.submitText ?? "保存"}
         </Button>
       </div>
     </form>
@@ -412,35 +357,13 @@ function DialogFormContent<T extends FieldValues>({
 
 type CloseDialog = () => void;
 
-/**
- * 打开一个表单对话框 - 自动从 schema 推断字段
- *
- * @example
- * ```tsx
- * const schema = z.object({
- *   name: z.string().min(1, "名称不能为空").describe("名称"),
- *   email: z.string().email().describe('{"label":"邮箱","placeholder":"请输入邮箱"}'),
- *   type: z.enum(["admin", "user"]).describe("类型"),
- *   enabled: z.boolean().describe("启用"),
- * });
- *
- * dialogForm({
- *   title: "添加用户",
- *   schema,
- *   defaultValues: { name: "", email: "", type: "user", enabled: true },
- *   onSubmit: async (data) => {
- *     await createUser(data);
- *   },
- * });
- * ```
- */
 export function dialogForm<T extends FieldValues>(
   options: DialogFormOptions<T>
 ): CloseDialog {
   return dialog({
     title: options.title,
     description: options.description,
-    className: options.className,
+    className: cn("w-96 p-5", options.className),
     onClose: options.onCancel,
     content: (close) => <DialogFormContent options={options} onClose={close} />,
   });

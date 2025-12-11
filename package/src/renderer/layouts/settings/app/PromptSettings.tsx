@@ -6,7 +6,9 @@ import { dialogForm } from "@/components/ui/DialogForm";
 import {
   SettingsContainer,
   SettingSection,
-  SettingCard,
+  SettingList,
+  ListItem,
+  ShortcutItem,
 } from "@/layouts/settings/item/SettingComponents";
 import { usePromptStore, type PromptItem } from "@/hooks/stores/usePromptStore";
 import { TbPlus, TbTrash, TbEdit } from "react-icons/tb";
@@ -34,33 +36,29 @@ const PromptItemCard = ({
   const bodyText = getPromptText(prompt.id);
 
   return (
-    <div className="item-card-border items-start!">
-      <div className="flex-1 min-w-0">
-        <h4 className="text-label truncate">{prompt.title}</h4>
-        <p className="text-hint mt-xs line-clamp-2">
-          {bodyText || t("common.prompt.noContent", "无内容")}
-        </p>
-      </div>
-      <div className="flex items-center gap-xs hover-visible">
-        <Button
-          
-          size="icon"
-          onClick={() => onEdit(prompt)}
-          title={t("common.prompt.edit", "编辑")}
-        >
-          <TbEdit />
-        </Button>
-        <Button
-          
-          size="icon"
-          className="text-destructive hover:text-destructive"
-          onClick={() => onDelete(prompt.id)}
-          title={t("common.prompt.delete", "删除")}
-        >
-          <TbTrash />
-        </Button>
-      </div>
-    </div>
+    <ListItem
+      title={prompt.title}
+      subtitle={bodyText || t("common.prompt.noContent", "无内容")}
+      actions={
+        <div className="flex items-center gap-1">
+          <Button
+            size="icon"
+            onClick={() => onEdit(prompt)}
+            title={t("common.prompt.edit", "编辑")}
+          >
+            <TbEdit />
+          </Button>
+          <Button
+            size="icon"
+            className="text-destructive hover:text-destructive"
+            onClick={() => onDelete(prompt.id)}
+            title={t("common.prompt.delete", "删除")}
+          >
+            <TbTrash />
+          </Button>
+        </div>
+      }
+    />
   );
 };
 
@@ -158,41 +156,34 @@ export const PromptSettings = () => {
           "创建和管理常用的 AI Prompt 模板，在编辑器中输入 # 可快速插入"
         )}
         action={
-          <Button  onClick={openAddDialog}>
-            <TbPlus className="size-4 mr-1" />
+          <Button onClick={openAddDialog}>
+            <TbPlus className="size-4" />
             {t("common.prompt.add", "添加 Prompt")}
           </Button>
         }
       >
-        <div className="space-y-3">
-          {/* Prompt 列表 */}
-          {prompts.length === 0 ? (
-            <SettingCard>
-              <div className="text-center py-8 text-muted-foreground">
-                <p className="text-sm">
-                  {t("common.prompt.empty", "还没有创建任何 Prompt")}
-                </p>
-                <p className="text-xs mt-1">
-                  {t(
-                    "common.prompt.emptyHint",
-                    "点击上方按钮添加常用的 AI 指令模板"
-                  )}
-                </p>
-              </div>
-            </SettingCard>
-          ) : (
-            <div className="space-y-2">
-              {prompts.map((prompt) => (
-                <PromptItemCard
-                  key={prompt.id}
-                  prompt={prompt}
-                  onEdit={openEditDialog}
-                  onDelete={handleDelete}
-                />
-              ))}
+        <SettingList
+          empty={
+            <div className="flex flex-col items-center gap-1">
+              <p>{t("common.prompt.empty", "还没有创建任何 Prompt")}</p>
+              <p className="text-xs">
+                {t(
+                  "common.prompt.emptyHint",
+                  "点击上方按钮添加常用的 AI 指令模板"
+                )}
+              </p>
             </div>
-          )}
-        </div>
+          }
+        >
+          {prompts.map((prompt) => (
+            <PromptItemCard
+              key={prompt.id}
+              prompt={prompt}
+              onEdit={openEditDialog}
+              onDelete={handleDelete}
+            />
+          ))}
+        </SettingList>
       </SettingSection>
 
       {/* 使用说明 */}
@@ -200,34 +191,26 @@ export const PromptSettings = () => {
         title={t("common.prompt.usage", "使用方法")}
         description={t("common.prompt.usageDesc", "如何在编辑器中使用 Prompt")}
       >
-        <SettingCard>
-          <div className="space-y-3 text-sm">
-            <div className="flex items-start gap-3">
-              <kbd className="kbd shrink-0">#</kbd>
-              <p className="text-muted-foreground">
-                {t(
-                  "common.prompt.usageStep1",
-                  "在 AI 编辑输入框中输入 # 触发 Prompt 选择菜单"
-                )}
-              </p>
-            </div>
-            <div className="flex items-start gap-3">
-              <kbd className="kbd shrink-0">↑↓</kbd>
-              <p className="text-muted-foreground">
-                {t(
-                  "common.prompt.usageStep2",
-                  "使用方向键选择 Prompt，按 Enter 插入"
-                )}
-              </p>
-            </div>
-            <div className="flex items-start gap-3">
-              <kbd className="kbd shrink-0">Esc</kbd>
-              <p className="text-muted-foreground">
-                {t("common.prompt.usageStep3", "按 Esc 关闭菜单")}
-              </p>
-            </div>
-          </div>
-        </SettingCard>
+        <div className="flex flex-col gap-2">
+          <ShortcutItem
+            shortcut="#"
+            label={t(
+              "common.prompt.usageStep1",
+              "在 AI 编辑输入框中输入 # 触发 Prompt 选择菜单"
+            )}
+          />
+          <ShortcutItem
+            shortcut="↑↓"
+            label={t(
+              "common.prompt.usageStep2",
+              "使用方向键选择 Prompt，按 Enter 插入"
+            )}
+          />
+          <ShortcutItem
+            shortcut="Esc"
+            label={t("common.prompt.usageStep3", "按 Esc 关闭菜单")}
+          />
+        </div>
       </SettingSection>
     </SettingsContainer>
   );

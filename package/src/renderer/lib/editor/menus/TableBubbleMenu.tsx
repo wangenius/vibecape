@@ -28,21 +28,24 @@ interface TableBubbleMenuProps {
   containerRef?: React.RefObject<HTMLElement>;
 }
 
-// 操作触发器 - 简洁的小圆点
-const HandleDot = React.forwardRef<
+// 操作触发器 - 简洁的短线
+const HandleLine = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, onMouseDown, ...props }, ref) => (
+  React.HTMLAttributes<HTMLDivElement> & {
+    orientation?: "horizontal" | "vertical";
+  }
+>(({ className, orientation = "horizontal", onMouseDown, ...props }, ref) => (
   <div
     ref={ref}
     className={cn(
       "absolute z-50 cursor-pointer",
-      "flex items-center justify-center",
-      // 小圆点样式 - 柔和的灰色系
-      "size-2.5 rounded-full",
+      // 短线样式 - 柔和的灰色系
+      "rounded-full",
       "bg-muted-foreground/30",
-      "hover:bg-muted-foreground/60 hover:scale-150",
-      "transition-all duration-150",
+      "hover:bg-muted-foreground/70",
+      "transition-colors duration-150",
+      // 根据方向设置尺寸
+      orientation === "horizontal" ? "h-0.5 w-4" : "w-0.5 h-4",
       className
     )}
     onMouseDown={(e) => {
@@ -52,7 +55,7 @@ const HandleDot = React.forwardRef<
     {...props}
   />
 ));
-HandleDot.displayName = "HandleDot";
+HandleLine.displayName = "HandleLine";
 
 // 表格全局操作按钮
 const TableButton = React.forwardRef<
@@ -308,30 +311,29 @@ export const TableBubbleMenu = ({
       {/* 1. 列操作 - 表格顶部，对应当前列 */}
       <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
-          <HandleDot
+          <HandleLine
+            orientation="horizontal"
             style={{
-              top: table.top - 16, // 表格顶部上方
-              left: cell.left + cell.width / 2 - 6, // 当前列中心
+              top: table.top - 8, // 表格顶部上方
+              left: cell.left + cell.width / 2 - 8, // 当前列中心
             }}
-            title={t("editor:table.columnActions")}
+            title={t("table.columnActions")}
           />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="center">
-          <DropdownMenuLabel>
-            {t("editor:table.columnActions")}
-          </DropdownMenuLabel>
+          <DropdownMenuLabel>{t("table.columnActions")}</DropdownMenuLabel>
           <DropdownMenuGroup>
             <DropdownMenuItem
               onClick={() => editor.chain().focus().addColumnBefore().run()}
             >
               <ArrowLeft className="mr-2 size-4" />
-              {t("editor:table.addColBefore")}
+              {t("table.addColBefore")}
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => editor.chain().focus().addColumnAfter().run()}
             >
               <ArrowRight className="mr-2 size-4" />
-              {t("editor:table.addColAfter")}
+              {t("table.addColAfter")}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
@@ -339,7 +341,7 @@ export const TableBubbleMenu = ({
               className="text-destructive focus:text-destructive"
             >
               <Trash2 className="mr-2 size-4" />
-              {t("editor:table.deleteCol")}
+              {t("table.deleteCol")}
             </DropdownMenuItem>
           </DropdownMenuGroup>
         </DropdownMenuContent>
@@ -348,28 +350,29 @@ export const TableBubbleMenu = ({
       {/* 2. 行操作 - 表格左侧，对应当前行 */}
       <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
-          <HandleDot
+          <HandleLine
+            orientation="vertical"
             style={{
-              top: cell.top + cell.height / 2 - 6, // 当前行中心
-              left: table.left - 16, // 表格左侧
+              top: cell.top + cell.height / 2 - 8, // 当前行中心
+              left: table.left - 8, // 表格左侧
             }}
-            title={t("editor:table.rowActions")}
+            title={t("table.rowActions")}
           />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" side="left">
-          <DropdownMenuLabel>{t("editor:table.rowActions")}</DropdownMenuLabel>
+          <DropdownMenuLabel>{t("table.rowActions")}</DropdownMenuLabel>
           <DropdownMenuGroup>
             <DropdownMenuItem
               onClick={() => editor.chain().focus().addRowBefore().run()}
             >
               <ArrowUp className="mr-2 size-4" />
-              {t("editor:table.addRowBefore")}
+              {t("table.addRowBefore")}
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => editor.chain().focus().addRowAfter().run()}
             >
               <ArrowDown className="mr-2 size-4" />
-              {t("editor:table.addRowAfter")}
+              {t("table.addRowAfter")}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
@@ -377,7 +380,7 @@ export const TableBubbleMenu = ({
               className="text-destructive focus:text-destructive"
             >
               <Trash2 className="mr-2 size-4" />
-              {t("editor:table.deleteRow")}
+              {t("table.deleteRow")}
             </DropdownMenuItem>
           </DropdownMenuGroup>
         </DropdownMenuContent>
@@ -386,28 +389,29 @@ export const TableBubbleMenu = ({
       {/* 3. 单元格操作 - 选中区域右侧 */}
       <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
-          <HandleDot
+          <HandleLine
+            orientation="vertical"
             style={{
-              top: selection.top + selection.height / 2 - 6,
+              top: selection.top + selection.height / 2 - 8,
               left: selection.left + selection.width + 4, // 选中区域右侧外
             }}
-            title={t("editor:table.cellActions")}
+            title={t("table.cellActions")}
           />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" side="right">
-          <DropdownMenuLabel>{t("editor:table.cellActions")}</DropdownMenuLabel>
+          <DropdownMenuLabel>{t("table.cellActions")}</DropdownMenuLabel>
           <DropdownMenuGroup>
             <DropdownMenuItem
               onClick={() => editor.chain().focus().mergeCells().run()}
             >
               <Merge className="mr-2 size-4" />
-              {t("editor:table.mergeCells")}
+              {t("table.mergeCells")}
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => editor.chain().focus().splitCell().run()}
             >
               <Split className="mr-2 size-4" />
-              {t("editor:table.splitCell")}
+              {t("table.splitCell")}
             </DropdownMenuItem>
           </DropdownMenuGroup>
 
@@ -419,7 +423,7 @@ export const TableBubbleMenu = ({
             }}
           >
             <Eraser className="mr-2 size-4" />
-            {t("editor:table.clearCell")}
+            {t("table.clearCell")}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -432,21 +436,19 @@ export const TableBubbleMenu = ({
               top: table.top - 10,
               left: table.left - 20,
             }}
-            title={t("editor:table.tableActions")}
+            title={t("table.tableActions")}
           >
             <TableIcon className="size-3" />
           </TableButton>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start">
-          <DropdownMenuLabel>
-            {t("editor:table.tableActions")}
-          </DropdownMenuLabel>
+          <DropdownMenuLabel>{t("table.tableActions")}</DropdownMenuLabel>
           <DropdownMenuItem
             onClick={() => editor.chain().focus().deleteTable().run()}
             className="text-destructive focus:text-destructive"
           >
             <Trash2 className="mr-2 size-4" />
-            {t("editor:table.deleteTable")}
+            {t("table.deleteTable")}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

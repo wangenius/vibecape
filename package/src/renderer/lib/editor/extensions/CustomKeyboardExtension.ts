@@ -2,7 +2,7 @@
  * 自定义键盘快捷键扩展
  * - Cmd+A: 渐进式选择（先选段落，再选全文）
  * - Alt+Backspace: 删除到上一个标点符号
- * 
+ *
  * 注意：Cmd+W 由 useExpandRegion hook 通过 IPC 处理
  */
 
@@ -42,7 +42,7 @@ export const CustomKeyboardExtension = Extension.create({
           selection.from === paragraphStart && selection.to === paragraphEnd;
 
         const lastParagraphRange = this.storage.lastParagraphRange;
-        
+
         // 只有当上次选中的段落范围与当前段落完全一致，
         // 且当前选区也是这个段落时，才认为是连续按 Cmd+A
         const wasLastSelectSameParagraph =
@@ -52,12 +52,23 @@ export const CustomKeyboardExtension = Extension.create({
 
         if (wasLastSelectSameParagraph) {
           // 第二次按 Cmd+A：全选文档
-          editor.chain().focus().setTextSelection({ from: docStart, to: docEnd }).run();
+          editor
+            .chain()
+            .focus()
+            .setTextSelection({ from: docStart, to: docEnd })
+            .run();
           this.storage.lastParagraphRange = null;
         } else {
           // 第一次按 Cmd+A：选中当前段落
-          editor.chain().focus().setTextSelection({ from: paragraphStart, to: paragraphEnd }).run();
-          this.storage.lastParagraphRange = { from: paragraphStart, to: paragraphEnd };
+          editor
+            .chain()
+            .focus()
+            .setTextSelection({ from: paragraphStart, to: paragraphEnd })
+            .run();
+          this.storage.lastParagraphRange = {
+            from: paragraphStart,
+            to: paragraphEnd,
+          };
         }
 
         return true;
@@ -77,10 +88,14 @@ export const CustomKeyboardExtension = Extension.create({
         if (!textBefore) return false;
 
         const lastChar = textBefore[textBefore.length - 1];
-        
+
         // 如果光标前一位是标点，删除这个标点
         if (isPunctuation(lastChar)) {
-          editor.chain().focus().deleteRange({ from: from - 1, to: from }).run();
+          editor
+            .chain()
+            .focus()
+            .deleteRange({ from: from - 1, to: from })
+            .run();
           return true;
         }
 
@@ -95,10 +110,85 @@ export const CustomKeyboardExtension = Extension.create({
 
         // 删除从标点符号后到光标的内容
         if (deleteStart < from) {
-          editor.chain().focus().deleteRange({ from: deleteStart, to: from }).run();
+          editor
+            .chain()
+            .focus()
+            .deleteRange({ from: deleteStart, to: from })
+            .run();
           return true;
         }
 
+        return false;
+      },
+
+      // Backspace: 当光标在标题开头时的特殊处理
+      Backspace: ({ editor }) => {
+        const { state } = editor;
+        const { selection, doc } = state;
+        const { $from, empty } = selection;
+
+        // 必须是光标选区（没有选中内容）
+        if (!empty) return false;
+
+        // 检查当前节点是否是标题
+        const parent = $from.parent;
+        if (parent.type.name !== "heading") return false;
+
+        // 检查光标是否在节点最开始位置
+        const isAtStart = $from.parentOffset === 0;
+        if (!isAtStart) return false;
+
+        // 获取当前节点在文档中的位置
+        const pos = $from.before();
+
+        // 检查是否是文档第一个节点
+        if (pos <= 0) {
+          // 是第一个节点，将标题转换为段落
+          editor.chain().focus().setNode("paragraph").run();
+          return true;
+        }
+
+        // 获取上一个节点
+        const $before = doc.resolve(pos);
+        const nodeBefore = $before.nodeBefore;
+
+        // 如果没有上一个节点，将标题转换为段落
+        if (!nodeBefore) {
+          editor.chain().focus().setNode("paragraph").run();
+          return true;
+        }
+
+        // 检查上一个节点的类型和状态
+        const isNodeBeforeEmpty = nodeBefore.content.size === 0;
+        const isNodeBeforeEmptyParagraph =
+          nodeBefore.type.name === "paragraph" && isNodeBeforeEmpty;
+
+        // 检查当前标题是否为空
+        const isCurrentHeadingEmpty = parent.content.size === 0;
+
+        // 情况1: 上一个节点是空段落 -> 使用默认行为（删除空段落）
+        if (isNodeBeforeEmptyParagraph) {
+          return false;
+        }
+
+        // 情况2: 当前标题为空，上一个节点有内容 -> 将标题转换为段落
+        if (isCurrentHeadingEmpty && !isNodeBeforeEmpty) {
+          editor.chain().focus().setNode("paragraph").run();
+          return true;
+        }
+
+        // 情况3: 当前标题为空，上一个节点也为空（非段落，如空标题）-> 使用默认行为
+        if (isCurrentHeadingEmpty && isNodeBeforeEmpty) {
+          return false;
+        }
+
+        // 情况4: 当前标题有内容，上一个节点为空（非段落，如空标题）-> 将当前标题转换为段落
+        if (!isCurrentHeadingEmpty && isNodeBeforeEmpty) {
+          editor.chain().focus().setNode("paragraph").run();
+          return true;
+        }
+
+        // 其他情况，使用默认行为（合并到上一个有内容的节点）
         return false;
       },
     };

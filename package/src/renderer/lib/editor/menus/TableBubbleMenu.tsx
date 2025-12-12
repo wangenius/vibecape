@@ -45,7 +45,7 @@ const HandleLine = React.forwardRef<
       "hover:bg-muted-foreground/70",
       "transition-colors duration-150",
       // 根据方向设置尺寸
-      orientation === "horizontal" ? "h-0.5 w-4" : "w-0.5 h-4",
+      orientation === "horizontal" ? "h-1 w-4" : "w-1 h-4",
       className
     )}
     onMouseDown={(e) => {
@@ -314,7 +314,7 @@ export const TableBubbleMenu = ({
           <HandleLine
             orientation="horizontal"
             style={{
-              top: table.top - 8, // 表格顶部上方
+              top: table.top - 7, // 表格顶部上方
               left: cell.left + cell.width / 2 - 8, // 当前列中心
             }}
             title={t("table.columnActions")}
@@ -354,7 +354,7 @@ export const TableBubbleMenu = ({
             orientation="vertical"
             style={{
               top: cell.top + cell.height / 2 - 8, // 当前行中心
-              left: table.left - 8, // 表格左侧
+              left: table.left - 7, // 表格左侧
             }}
             title={t("table.rowActions")}
           />

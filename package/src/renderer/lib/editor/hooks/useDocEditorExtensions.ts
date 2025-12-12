@@ -141,9 +141,29 @@ export const useDocEditorExtensions = ({
       ImageNode,
       LinkNode,
       Placeholder.configure({
-        placeholder: t("common.settings.slashPlaceholder"),
+        placeholder: ({ node, editor }) => {
+          if (node.type.name === "heading") {
+            const level = node.attrs.level;
+            return t(`common.settings.headingPlaceholder.h${level}`);
+          }
+          // 普通段落只在编辑器为空时显示 placeholder
+          if (node.type.name === "paragraph") {
+            // 检查是否是编辑器的第一个也是唯一一个空段落
+            const { doc } = editor.state;
+            const isEditorEmpty =
+              doc.childCount === 1 &&
+              doc.firstChild?.isTextblock &&
+              doc.firstChild.content.size === 0;
+            if (isEditorEmpty) {
+              return t("common.settings.slashPlaceholder");
+            }
+            return "";
+          }
+          return "";
+        },
         showOnlyWhenEditable: true,
-        showOnlyCurrent: true,
+        showOnlyCurrent: false,
+        includeChildren: true,
       }),
       Underline,
       Highlight.configure({

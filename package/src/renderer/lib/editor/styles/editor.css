@@ -1,5 +1,42 @@
 /* Editor 样式 */
 
+/* ========== Placeholder 样式 ========== */
+/* 普通段落的 placeholder */
+.tiptap p.is-empty:first-child::before,
+.tiptap p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: var(--muted-foreground);
+  opacity: 0.5;
+  pointer-events: none;
+  float: left;
+  height: 0;
+}
+
+/* 当前聚焦的空节点显示 placeholder */
+.tiptap .is-empty.has-focus::before {
+  content: attr(data-placeholder);
+  color: var(--muted-foreground);
+  opacity: 0.5;
+  pointer-events: none;
+  float: left;
+  height: 0;
+}
+
+/* 标题的 placeholder */
+.tiptap h1.is-empty::before,
+.tiptap h2.is-empty::before,
+.tiptap h3.is-empty::before,
+.tiptap h4.is-empty::before,
+.tiptap h5.is-empty::before,
+.tiptap h6.is-empty::before {
+  content: attr(data-placeholder);
+  color: var(--muted-foreground);
+  opacity: 0.5;
+  pointer-events: none;
+  float: left;
+  height: 0;
+}
+
 /* ========== 标题样式 ========== */
 .tiptap h1,
 .tiptap h2,

@@ -165,16 +165,24 @@ export const TreeNode = memo(
             </DropdownMenu>
           </div>
 
-          {/* Drop 指示器 */}
-          {isOver && !isDragging && (
-            <>
-              {isDraggingOver === node.id ? (
-                <div className="drop-area" />
-              ) : (
-                <div className="drop-line" />
-              )}
-            </>
-          )}
+          {/* Drop 指示器 - 移动为子节点 */}
+          <div
+            className={cn(
+              "absolute inset-0 rounded-lg border-2 border-dashed pointer-events-none transition-all duration-200",
+              isOver && !isDragging && isDraggingOver === node.id
+                ? "border-primary/50 bg-primary/10 opacity-100"
+                : "border-transparent bg-transparent opacity-0"
+            )}
+          />
+          {/* Drop 指示器 - 排序线 */}
+          <div
+            className={cn(
+              "absolute bottom-0 left-0 right-0 h-0.5 rounded-full pointer-events-none transition-all duration-150",
+              isOver && !isDragging && isDraggingOver !== node.id
+                ? "bg-primary opacity-100 scale-x-100"
+                : "bg-transparent opacity-0 scale-x-0"
+            )}
+          />
         </div>
       </div>
     );

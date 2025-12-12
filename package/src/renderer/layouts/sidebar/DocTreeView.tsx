@@ -11,13 +11,27 @@ import {
   useSensor,
   useSensors,
   type DragEndEvent,
+  type DropAnimation,
+  defaultDropAnimationSideEffects,
 } from "@dnd-kit/core";
 import { toast } from "sonner";
 import { TreeNode } from "./TreeNode";
 import { useTranslation } from "react-i18next";
 export const DRAG_HOVER_DELAY = 800;
+
+const dropAnimationConfig: DropAnimation = {
+  sideEffects: defaultDropAnimationSideEffects({
+    styles: {
+      active: {
+        opacity: "0.5",
+      },
+    },
+  }),
+  duration: 200,
+  easing: "cubic-bezier(0.18, 0.67, 0.6, 1.22)",
+};
 // 文档树视图
-export const DocTreeView = () => {
+export const DocTreeView = ({ hoveredFolderId }: { hoveredFolderId: string | null }) => {
   const { t } = useTranslation();
   const tree = useDocumentStore((state) => state.tree);
   const activeDocId = useDocumentStore((state) => state.activeDocId);
@@ -116,7 +130,7 @@ export const DocTreeView = () => {
               onDelete={handleDelete}
               onExportMarkdown={handleExportMarkdown}
               onExportPdf={handleExportPdf}
-              isDraggingOver={isDraggingOver}
+              isDraggingOver={hoveredFolderId}
             />
             {isExpanded &&
               children.length > 0 &&
@@ -134,6 +148,7 @@ export const DocTreeView = () => {
       handleDelete,
       handleExportMarkdown,
       handleExportPdf,
+      hoveredFolderId,
     ]
   );
 
@@ -151,7 +166,7 @@ export const DocTreeView = () => {
 
   return (
     <div className="flex-1 overflow-auto space-y-0.5">
-      {renderDocTree(tree, 0, null)}
+      {renderDocTree(tree, 0, hoveredFolderId)}
     </div>
   );
 };
@@ -192,16 +207,10 @@ export const DocTreeWithDnd = () => {
         return;
       }
 
-      const overData = over.data.current as
-        | { hasChildren?: boolean }
-        | undefined;
-      if (overData?.hasChildren) {
-        hoverTimerRef.current = setTimeout(() => {
-          setHoveredFolderId(over.id as string);
-        }, DRAG_HOVER_DELAY);
-      } else {
-        setHoveredFolderId(null);
-      }
+      // 任何节点都可以成为父节点，hover 停留一段时间后触发
+      hoverTimerRef.current = setTimeout(() => {
+        setHoveredFolderId(over.id as string);
+      }, DRAG_HOVER_DELAY);
     },
     [hoverTimerRef]
   );
@@ -220,11 +229,7 @@ export const DocTreeWithDnd = () => {
       const { active, over } = event;
       if (!over || active.id === over.id) return;
 
-      const overData = over.data.current as
-        | { hasChildren?: boolean }
-        | undefined;
-      const isMovingToFolder =
-        overData?.hasChildren && savedHoveredId === over.id;
+      const isMovingToFolder = savedHoveredId === over.id;
 
       try {
         if (isMovingToFolder) {
@@ -254,10 +259,12 @@ export const DocTreeWithDnd = () => {
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
     >
-      <DocTreeView />
-      <DragOverlay>
+      <DocTreeView hoveredFolderId={hoveredFolderId} />
+      <DragOverlay dropAnimation={dropAnimationConfig}>
         {draggingNode ? (
-          <div className="drag-overlay">{draggingNode.title}</div>
+          <div className="px-3 py-1.5 text-xs bg-background border border-border rounded-lg shadow-lg backdrop-blur-sm">
+            {draggingNode.title}
+          </div>
         ) : null}
       </DragOverlay>
     </DndContext>

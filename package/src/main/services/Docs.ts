@@ -254,7 +254,11 @@ export class DocsService {
     if (activeIndex === -1 || overIndex === -1) return;
 
     const [removed] = siblings.splice(activeIndex, 1);
-    siblings.splice(overIndex, 0, removed);
+    // 插入到目标之后（视觉指示器显示在底部）
+    // 如果 activeIndex < overIndex，移除后 overIndex 已经减 1，所以直接用 overIndex
+    // 如果 activeIndex > overIndex，需要 +1 插入到目标之后
+    const insertIndex = activeIndex < overIndex ? overIndex : overIndex + 1;
+    siblings.splice(insertIndex, 0, removed);
 
     // 批量更新所有顺序
     const updates = siblings.map((doc, i) => ({ id: doc.id, order: i }));

@@ -129,6 +129,10 @@
     "uploadSuccess": "图片上传成功"
   },
   "table": {
+    "columnActions": "列",
+    "rowActions": "行",
+    "cellActions": "单元格",
+    "tableActions": "表格",
     "addRowBefore": "在上方插入行",
     "addRowAfter": "在下方插入行",
     "addColBefore": "在左侧插入列",
@@ -138,6 +142,7 @@
     "deleteTable": "删除表格",
     "mergeCells": "合并单元格",
     "splitCell": "拆分单元格",
+    "clearCell": "清除内容",
     "toggleHeaderRow": "切换表头行"
   }
 }

@@ -434,17 +434,17 @@
 [class*="prose"] table {
   all: unset !important;
   display: table !important;
-  border-collapse: collapse !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
   width: 100% !important;
   table-layout: fixed !important;
   box-sizing: border-box !important;
   font-size: 0.875rem !important;
   line-height: 1.5 !important;
   border: 1px solid var(--border) !important;
-  border-radius: 0.375rem !important;
+  border-radius: 0.5rem !important;
   overflow: hidden !important;
   background: var(--background) !important;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
 }
 
 /* tbody/thead 重置 */
@@ -519,23 +519,19 @@
   transition: background-color 0.15s ease !important;
 }
 
-/* 移除最后一列的右边框 */
+/* 移除最后一列的右边框（表格边框会处理） */
 .tiptap table tr td:last-child,
 .tiptap table tr th:last-child,
 .ProseMirror table tr td:last-child,
-.ProseMirror table tr th:last-child,
-.prose table tr td:last-child,
-.prose table tr th:last-child {
+.ProseMirror table tr th:last-child {
   border-right: none !important;
 }
 
-/* 移除最后一行的底边框 */
+/* 移除最后一行的底边框（表格边框会处理） */
 .tiptap table tbody tr:last-child td,
-.tiptap table thead tr:last-child th,
+.tiptap table tbody tr:last-child th,
 .ProseMirror table tbody tr:last-child td,
-.ProseMirror table thead tr:last-child th,
-.prose table tbody tr:last-child td,
-.prose table thead tr:last-child th {
+.ProseMirror table tbody tr:last-child th {
   border-bottom: none !important;
 }
 
@@ -614,7 +610,7 @@
   border-bottom-right-radius: 0.375rem !important;
 }
 
-/* 列宽度调整拉柄 - Notion 风格 */
+/* 列宽度调整拉柄 - 使用灰色系 */
 .tiptap .column-resize-handle,
 .ProseMirror .column-resize-handle {
   position: absolute !important;
@@ -622,7 +618,7 @@
   top: 0 !important;
   bottom: 0 !important;
   width: 4px !important;
-  background-color: rgb(59, 130, 246) !important;
+  background-color: var(--muted-foreground) !important;
   cursor: col-resize !important;
   opacity: 0 !important;
   transition: opacity 0.2s ease !important;

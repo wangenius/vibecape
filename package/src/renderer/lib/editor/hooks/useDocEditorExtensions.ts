@@ -24,6 +24,7 @@ import { ImageNode } from "../extensions/ImageNode";
 import { LinkNode } from "../extensions/LinkNode";
 import { CustomKeyboardExtension } from "../extensions/CustomKeyboardExtension";
 import { TableExtension } from "../extensions/TableExtension";
+import { HeadingPlaceholder } from "../extensions/HeadingPlaceholder";
 import { TFunction } from "i18next";
 import { dispatchQuoteEvent } from "@/lib/events/quoteEvent";
 import { useDocumentStore } from "@/hooks/stores/useDocumentStore";
@@ -141,29 +142,25 @@ export const useDocEditorExtensions = ({
       ImageNode,
       LinkNode,
       Placeholder.configure({
-        placeholder: ({ node, editor }) => {
+        placeholder: ({ node }) => {
           if (node.type.name === "heading") {
             const level = node.attrs.level;
             return t(`common.settings.headingPlaceholder.h${level}`);
           }
-          // 普通段落只在编辑器为空时显示 placeholder
           if (node.type.name === "paragraph") {
-            // 检查是否是编辑器的第一个也是唯一一个空段落
-            const { doc } = editor.state;
-            const isEditorEmpty =
-              doc.childCount === 1 &&
-              doc.firstChild?.isTextblock &&
-              doc.firstChild.content.size === 0;
-            if (isEditorEmpty) {
-              return t("common.settings.slashPlaceholder");
-            }
-            return "";
+            return t("common.settings.slashPlaceholder");
           }
           return "";
         },
         showOnlyWhenEditable: true,
-        showOnlyCurrent: false,
+        showOnlyCurrent: true,
         includeChildren: true,
+        emptyNodeClass: "is-empty",
+        emptyEditorClass: "is-editor-empty",
+      }),
+      HeadingPlaceholder.configure({
+        getPlaceholder: (level: number) =>
+          t(`common.settings.headingPlaceholder.h${level}`),
       }),
       Underline,
       Highlight.configure({

@@ -191,6 +191,28 @@ export const CustomKeyboardExtension = Extension.create({
         // 其他情况，使用默认行为（合并到上一个有内容的节点）
         return false;
       },
+
+      // Enter: 当空标题按回车时，将其转换为普通段落
+      Enter: ({ editor }) => {
+        const { state } = editor;
+        const { selection } = state;
+        const { $from, empty } = selection;
+
+        // 必须是光标选区（没有选中内容）
+        if (!empty) return false;
+
+        // 检查当前节点是否是标题
+        const parent = $from.parent;
+        if (parent.type.name !== "heading") return false;
+
+        // 检查标题是否为空
+        const isHeadingEmpty = parent.content.size === 0;
+        if (!isHeadingEmpty) return false;
+
+        // 空标题按回车，转换为普通段落
+        editor.chain().focus().setNode("paragraph").run();
+        return true;
+      },
     };
   },
 });

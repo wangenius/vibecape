@@ -35,29 +35,60 @@ export const CustomKeyboardExtension = Extension.create({
         const { selection, doc } = state;
         const { $from } = selection;
 
-        const paragraphStart = $from.start($from.depth);
-        const paragraphEnd = $from.end($from.depth);
-        const docStart = 0;
+        // 检查是否有 title 节点，确定正文起始位置
+        const firstChild = doc.firstChild;
+        const hasTitle = firstChild && firstChild.type.name === "title";
+
+        // 如果光标在 title 节点内（即在 React NodeView 的 input 中），不处理
+        // 因为 title 使用的是 input 元素，ProseMirror 的光标不会在里面
+        // 所以这里主要是防御性检查
+        if (hasTitle && $from.pos <= firstChild.nodeSize) {
+          // 额外检查：如果 $from 的父节点是 title，不处理
+          if ($from.parent.type.name === "title") {
+            return false;
+          }
+        }
+
+        // 计算正文起始位置（跳过 title 节点）
+        const contentStart = hasTitle ? firstChild.nodeSize : 0;
         const docEnd = doc.content.size;
 
+        // 检查是否已经是全文选中状态
+        // 使用宽松的比较（允许 1 的误差，处理边界情况）
+        const isFullDocSelected =
+          selection.from <= contentStart + 1 &&
+          selection.to >= docEnd - 1 &&
+          selection.to - selection.from > 10; // 确保选中了足够多的内容
+
+        if (isFullDocSelected) {
+          return true; // 保持当前选区，不做任何操作
+        }
+
+        // 获取当前段落的范围
+        const paragraphStart = $from.start($from.depth);
+        const paragraphEnd = $from.end($from.depth);
+
+        // 确保段落范围在 title 之后
+        const safeParagraphStart = Math.max(paragraphStart, contentStart);
+
         const isCurrentParagraphSelected =
-          selection.from === paragraphStart && selection.to === paragraphEnd;
+          selection.from === safeParagraphStart &&
+          selection.to === paragraphEnd;
 
         const lastParagraphRange = this.storage.lastParagraphRange;
 
-        // 只有当上次选中的段落范围与当前段落完全一致，
-        // 且当前选区也是这个段落时，才认为是连续按 Cmd+A
+        // 检查是否是连续按 Cmd+A
         const wasLastSelectSameParagraph =
-          lastParagraphRange?.from === paragraphStart &&
+          lastParagraphRange?.from === safeParagraphStart &&
           lastParagraphRange?.to === paragraphEnd &&
           isCurrentParagraphSelected;
 
         if (wasLastSelectSameParagraph) {
-          // 第二次按 Cmd+A：全选文档
+          // 第二次按 Cmd+A：全选文档（跳过 title 节点）
           editor
             .chain()
             .focus()
-            .setTextSelection({ from: docStart, to: docEnd })
+            .setTextSelection({ from: contentStart, to: docEnd })
             .run();
           this.storage.lastParagraphRange = null;
         } else {
@@ -65,10 +96,10 @@ export const CustomKeyboardExtension = Extension.create({
           editor
             .chain()
             .focus()
-            .setTextSelection({ from: paragraphStart, to: paragraphEnd })
+            .setTextSelection({ from: safeParagraphStart, to: paragraphEnd })
             .run();
           this.storage.lastParagraphRange = {
-            from: paragraphStart,
+            from: safeParagraphStart,
             to: paragraphEnd,
           };
         }

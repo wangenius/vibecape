@@ -1,13 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ChevronUp, Text } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 import type { JSONContent } from "@tiptap/core";
 import type { DocData } from "@common/schema/docs";
 import { DocEditor } from "@/lib/editor";
-import { Textarea } from "@/components/ui/textarea";
-import { useTranslation } from "react-i18next";
-import { TitleInput } from "@/layouts/mainview/TitleInput";
-import { Button } from "@/components/ui/button";
+import { getTitleFromDocument } from "@/lib/editor/extensions/TitleNode";
 
 type Props = {
   doc: DocData;
@@ -22,12 +17,9 @@ type Props = {
 };
 
 export const DocRepository = ({ doc, onSave }: Props) => {
-  const { t } = useTranslation();
-  const [title, setTitle] = useState(doc.title);
   const [description, setDescription] = useState(
     doc.metadata?.description ?? ""
   );
-  const [descExpanded, setDescExpanded] = useState(false);
 
   // 用于存储编辑器内容的 ref
   const editorContentRef = useRef<JSONContent | null>(null);
@@ -40,7 +32,6 @@ export const DocRepository = ({ doc, onSave }: Props) => {
 
   // 仅当切换文档时或外部更新时同步状态
   const prevDocIdRef = useRef<string | null>(null);
-  const prevDocTitleRef = useRef<string | null>(null);
   const prevDocDescRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -49,46 +40,39 @@ export const DocRepository = ({ doc, onSave }: Props) => {
     // 切换文档时完全重置
     if (doc.id && doc.id !== prevDocIdRef.current) {
       prevDocIdRef.current = doc.id;
-      prevDocTitleRef.current = doc.title;
       prevDocDescRef.current = currentDesc;
-      setTitle(doc.title);
       setDescription(currentDesc);
       editorContentRef.current = null;
       return;
     }
 
-    // 同一文档但数据变化（外部更新，如 AI 重命名）
-    // 只有当用户没有主动修改时才同步
-    if (doc.title !== prevDocTitleRef.current) {
-      // 如果当前 title 等于之前记录的外部值，说明用户没有修改，可以更新
-      if (title === prevDocTitleRef.current) {
-        setTitle(doc.title);
-      }
-      prevDocTitleRef.current = doc.title;
-    }
-
+    // 同一文档但描述变化（外部更新）
     if (currentDesc !== prevDocDescRef.current) {
       if (description === prevDocDescRef.current) {
         setDescription(currentDesc);
       }
       prevDocDescRef.current = currentDesc;
     }
-  }, [doc.id, doc.title, doc.metadata?.description, title, description]);
+  }, [doc.id, doc.metadata?.description, description]);
 
-  // 保存函数 - 接受显式 docId 以防止竞态条件
+  // 保存函数 - 从编辑器内容中提取标题
   const createSaveHandler = useCallback(
     (docIdToSave: string) => async () => {
       try {
+        const content = editorContentRef.current ?? doc.content;
+        // 从编辑器内容中提取标题
+        const title = getTitleFromDocument(content);
+
         await onSave(docIdToSave, {
-          title,
-          content: editorContentRef.current ?? doc.content,
+          title, // 直接使用提取到的标题，包括空字符串
+          content,
           metadata: { ...doc.metadata, description },
         });
       } catch (error) {
         console.error("保存失败:", error);
       }
     },
-    [description, title, onSave, doc.content, doc.metadata]
+    [description, onSave, doc.content, doc.metadata, doc.title]
   );
 
   // 编辑器内容变化回调
@@ -138,60 +122,12 @@ export const DocRepository = ({ doc, onSave }: Props) => {
         clearTimeout(autoSaveTimerRef.current);
       }
     };
-  }, [title, description, contentVersion, createSaveHandler, doc.id]);
+  }, [description, contentVersion, createSaveHandler, doc.id]);
 
   return (
     <div className="flex-1 flex flex-col bg-background">
       <div className="max-w-3xl mx-auto w-full">
-        <div className="mb-lg">
-          {/* 标题行 */}
-          <div className="flex items-center gap-sm">
-            <div className="flex-1">
-              <TitleInput
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-              />
-            </div>
-            <Button
-              type="button"
-              onClick={() => setDescExpanded(!descExpanded)}
-              size="icon"
-              title={
-                descExpanded
-                  ? t("common.settings.collapseDesc")
-                  : t("common.settings.expandDesc")
-              }
-            >
-              {descExpanded ? <ChevronUp /> : <Text />}
-            </Button>
-          </div>
-
-          {/* 描述 */}
-          <AnimatePresence>
-            {descExpanded && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.2, ease: "easeInOut" }}
-                className="overflow-hidden"
-              >
-                <div className="bg-muted rounded-lg">
-                  <Textarea
-                    value={description}
-                    onChange={(value) => {
-                      setDescription(value);
-                    }}
-                    placeholder={t("common.settings.enterDesc")}
-                    autoFocus
-                  />
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-
-        {/* 编辑器 */}
+        {/* 编辑器 - 标题现在嵌入在编辑器内部 */}
         <DocEditor
           doc={doc}
           onChange={handleEditorChange}

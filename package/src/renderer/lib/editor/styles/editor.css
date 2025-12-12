@@ -1,5 +1,54 @@
 /* Editor 样式 */
 
+/* ========== Title Node 样式 ========== */
+.title-node-wrapper {
+  margin-bottom: 1rem;
+}
+
+.title-node-input {
+  width: 100%;
+  font-size: 2.25rem;
+  font-weight: 500;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 0;
+  height: 5rem;
+  color: var(--foreground);
+}
+
+.title-node-input::placeholder {
+  color: var(--muted-foreground);
+  opacity: 0.3;
+}
+
+.title-node-input:focus {
+  background: transparent;
+}
+
+.title-node-input:hover {
+  background: transparent;
+}
+
+/* 如果使用 ProseMirror 原生渲染而非 React NodeView */
+.title-node {
+  font-size: 2.25rem;
+  font-weight: 500;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+  margin-bottom: 1rem;
+  outline: none;
+}
+
+.title-node:empty::before {
+  content: attr(data-placeholder);
+  color: var(--muted-foreground);
+  opacity: 0.3;
+  pointer-events: none;
+}
+
 /* ========== Placeholder 样式 ========== */
 /* 标题的 placeholder - 始终显示 */
 .tiptap h1.is-empty::before,

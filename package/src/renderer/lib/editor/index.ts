@@ -5,3 +5,9 @@ import "./styles/index.css";
 
 // Main components
 export * from "./DocEditor";
+
+// Title utilities
+export {
+  createDocumentWithTitle,
+  getTitleFromDocument,
+} from "./extensions/TitleNode";

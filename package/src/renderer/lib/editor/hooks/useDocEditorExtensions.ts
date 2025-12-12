@@ -25,6 +25,7 @@ import { LinkNode } from "../extensions/LinkNode";
 import { CustomKeyboardExtension } from "../extensions/CustomKeyboardExtension";
 import { TableExtension } from "../extensions/TableExtension";
 import { HeadingPlaceholder } from "../extensions/HeadingPlaceholder";
+import { TitleNode, CustomDocument } from "../extensions/TitleNode";
 import { TFunction } from "i18next";
 import { dispatchQuoteEvent } from "@/lib/events/quoteEvent";
 import { useDocumentStore } from "@/hooks/stores/useDocumentStore";
@@ -126,7 +127,12 @@ export const useDocEditorExtensions = ({
 
   const extensions = useMemo(
     () => [
+      // 使用自定义 Document 节点，强制 title 节点在顶部
+      CustomDocument,
+      TitleNode,
       StarterKit.configure({
+        // 禁用 document，使用我们的 CustomDocument
+        document: false,
         hardBreak: false,
         codeBlock: false,
         code: false,

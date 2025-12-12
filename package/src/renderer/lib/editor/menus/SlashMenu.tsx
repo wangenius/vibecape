@@ -28,7 +28,6 @@ import {
   Code,
   Minus,
   Wand2,
-  Sparkles,
   MessageCircle,
   Lightbulb,
   Info,
@@ -83,19 +82,6 @@ export const getSlashMenuItems = (t: any): SlashMenuItem[] => [
     category: "ai",
     command: ({ editor }) => {
       editor.chain().focus().insertDocAIPrompt().run();
-    },
-  },
-  {
-    title: t("common.slashMenu.aiContinue"),
-    description: t("common.slashMenu.aiContinueDesc"),
-    icon: <Sparkles className="size-4" />,
-    category: "ai",
-    command: ({ editor }) => {
-      editor.chain().focus().run();
-      const event = new CustomEvent("tiptap:ai-continue", {
-        detail: { editor },
-      });
-      window.dispatchEvent(event);
     },
   },
   {
@@ -248,7 +234,11 @@ export const getSlashMenuItems = (t: any): SlashMenuItem[] => [
     icon: <Table className="size-4" />,
     category: "insert",
     command: ({ editor }) => {
-      editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
+      editor
+        .chain()
+        .focus()
+        .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
+        .run();
     },
   },
 ];

@@ -140,6 +140,15 @@ export const EditorBubbleMenu = ({ editor }: EditorBubbleMenuProps) => {
         const { from, to, empty } = state.selection;
         if (empty) return false;
 
+        // 检查选区是否包含 title 节点（避免定位问题）
+        const doc = state.doc;
+        const firstChild = doc.firstChild;
+        if (firstChild && firstChild.type.name === "title") {
+          const titleEnd = firstChild.nodeSize;
+          // 如果选区起始位置在 title 节点范围内，不显示
+          if (from < titleEnd) return false;
+        }
+
         // 检查是否有非空白文本
         const text = state.doc.textBetween(from, to, "\n");
         if (!text.trim()) return false;

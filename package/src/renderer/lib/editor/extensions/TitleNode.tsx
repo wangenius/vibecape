@@ -220,7 +220,17 @@ export const TitleNode = Node.create<TitleNodeOptions>({
             try {
               const nodeBeforePos = $from.before($from.depth);
               if (nodeBeforePos === afterTitlePos) {
-                // 移动到 title 节点的末尾
+                // 对于多行节点（如 codeBlock），检查光标是否在第一行
+                // 通过检查光标前的文本是否包含换行符来判断
+                const nodeStart = $from.start($from.depth);
+                const textBeforeCursor = doc.textBetween(nodeStart, $from.pos);
+
+                // 如果光标前有换行符，说明不在第一行，让默认行为处理
+                if (textBeforeCursor.includes("\n")) {
+                  return false;
+                }
+
+                // 在第一行，移动到 title 节点的末尾
                 editor.commands.focus(titleNode.nodeSize - 1);
                 return true;
               }

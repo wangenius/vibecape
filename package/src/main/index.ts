@@ -1,4 +1,13 @@
-import { app, shell, BrowserWindow, ipcMain, nativeImage, protocol, net } from "electron";
+import {
+  app,
+  shell,
+  BrowserWindow,
+  ipcMain,
+  nativeImage,
+  protocol,
+  net,
+  session,
+} from "electron";
 import { join, normalize, sep } from "path";
 import { pathToFileURL } from "url";
 import icon from "../../resources/new-macOS-Default-1024x1024@2x.png?asset";
@@ -69,7 +78,9 @@ app.whenReady().then(async () => {
   // 注册 local-asset 协议处理器（带路径安全验证）
   protocol.handle("local-asset", async (request) => {
     // local-asset://path/to/file -> file:///path/to/file
-    const filePath = decodeURIComponent(request.url.replace("local-asset://", ""));
+    const filePath = decodeURIComponent(
+      request.url.replace("local-asset://", "")
+    );
     const normalizedPath = normalize(filePath);
 
     // 路径白名单验证
@@ -86,11 +97,40 @@ app.whenReady().then(async () => {
     });
 
     if (!isAllowed) {
-      console.warn(`[Protocol] Blocked access to unauthorized path: ${normalizedPath}`);
+      console.warn(
+        `[Protocol] Blocked access to unauthorized path: ${normalizedPath}`
+      );
       return new Response("Forbidden", { status: 403 });
     }
 
     return net.fetch(pathToFileURL(normalizedPath).href);
+  });
+
+  // CORS 白名单 - 为这些域名自动添加 CORS 响应头
+  const corsWhitelist = [
+    "avatar.iran.liara.run",
+    "api.weixin.qq.com",
+    "res.wx.qq.com",
+  ];
+
+  session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+    const url = new URL(details.url);
+    const isWhitelisted = corsWhitelist.some(
+      (domain) => url.hostname === domain || url.hostname.endsWith(`.${domain}`)
+    );
+
+    if (isWhitelisted) {
+      callback({
+        responseHeaders: {
+          ...details.responseHeaders,
+          "Access-Control-Allow-Origin": ["*"],
+          "Access-Control-Allow-Methods": ["GET, POST, OPTIONS"],
+          "Access-Control-Allow-Headers": ["*"],
+        },
+      });
+    } else {
+      callback({ responseHeaders: details.responseHeaders });
+    }
   });
 
   // Set app user model id for windows
@@ -136,11 +176,7 @@ app.whenReady().then(async () => {
     await ensureDatabaseReady();
 
     // 数据库就绪后初始化服务
-    await Promise.all([
-      SettingsService.init(),
-      Model.init(),
-      Provider.init(),
-    ]);
+    await Promise.all([SettingsService.init(), Model.init(), Provider.init()]);
   } catch (error) {
     console.error("Failed to initialize databases:", error);
   }

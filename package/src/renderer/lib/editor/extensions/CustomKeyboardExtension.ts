@@ -270,6 +270,94 @@ export const CustomKeyboardExtension = Extension.create({
         editor.chain().focus().setNode("paragraph").run();
         return true;
       },
+
+      // Mod-Enter: 在当前节点下方插入新段落
+      "Mod-Enter": ({ editor }) => {
+        const { state } = editor;
+        const { selection } = state;
+        const { $from } = selection;
+
+        // 如果在 title 节点中，不处理
+        if ($from.parent.type.name === "title") {
+          return false;
+        }
+
+        // 找到 doc 下的顶层块级节点（depth 1 是 doc 的直接子节点）
+        // 对于嵌套节点如 codeBlock，$from.depth 可能 > 1
+        let blockDepth = $from.depth;
+        while (
+          blockDepth > 1 &&
+          $from.node(blockDepth - 1).type.name !== "doc"
+        ) {
+          blockDepth--;
+        }
+
+        // 获取顶层块级节点的结束位置
+        const endOfNode = $from.end(blockDepth);
+        const afterNode = endOfNode + 1;
+
+        // 在当前节点后插入一个新段落并聚焦
+        editor
+          .chain()
+          .focus()
+          .command(({ tr, dispatch }) => {
+            if (dispatch) {
+              const paragraph = state.schema.nodes.paragraph.create();
+              tr.insert(afterNode, paragraph);
+              // 将光标移动到新段落中
+              tr.setSelection(
+                TextSelection.near(tr.doc.resolve(afterNode + 1))
+              );
+            }
+            return true;
+          })
+          .run();
+
+        return true;
+      },
+
+      // Mod-Shift-Enter: 在当前节点上方插入新段落
+      "Mod-Shift-Enter": ({ editor }) => {
+        const { state } = editor;
+        const { selection } = state;
+        const { $from } = selection;
+
+        // 如果在 title 节点中，不处理
+        if ($from.parent.type.name === "title") {
+          return false;
+        }
+
+        // 找到 doc 下的顶层块级节点（depth 1 是 doc 的直接子节点）
+        let blockDepth = $from.depth;
+        while (
+          blockDepth > 1 &&
+          $from.node(blockDepth - 1).type.name !== "doc"
+        ) {
+          blockDepth--;
+        }
+
+        // 获取顶层块级节点的开始位置
+        const startOfNode = $from.before(blockDepth);
+
+        // 在当前节点前插入一个新段落并聚焦
+        editor
+          .chain()
+          .focus()
+          .command(({ tr, dispatch }) => {
+            if (dispatch) {
+              const paragraph = state.schema.nodes.paragraph.create();
+              tr.insert(startOfNode, paragraph);
+              // 将光标移动到新段落中
+              tr.setSelection(
+                TextSelection.near(tr.doc.resolve(startOfNode + 1))
+              );
+            }
+            return true;
+          })
+          .run();
+
+        return true;
+      },
     };
   },
 });

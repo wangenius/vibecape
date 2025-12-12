@@ -137,8 +137,7 @@ export function useCachedAvatar(url: string): string {
 /**
  * 缓存头像组件的 Props
  */
-export interface CachedAvatarProps
-  extends React.ImgHTMLAttributes<HTMLImageElement> {
+export interface CachedAvatarProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   src: string;
 }
 

@@ -149,6 +149,10 @@ export const useDocEditorExtensions = ({
       LinkNode,
       Placeholder.configure({
         placeholder: ({ node, editor, pos }) => {
+          // Title 节点使用特定的 placeholder
+          if (node.type.name === "title") {
+            return t("common.settings.enterTitle");
+          }
           if (node.type.name === "heading") {
             const level = node.attrs.level;
             return t(`common.settings.headingPlaceholder.h${level}`);
@@ -171,7 +175,7 @@ export const useDocEditorExtensions = ({
           return "";
         },
         showOnlyWhenEditable: true,
-        showOnlyCurrent: true,
+        showOnlyCurrent: false, // 让 title 的 placeholder 始终显示（当为空时）
         includeChildren: true,
         emptyNodeClass: "is-empty",
         emptyEditorClass: "is-editor-empty",

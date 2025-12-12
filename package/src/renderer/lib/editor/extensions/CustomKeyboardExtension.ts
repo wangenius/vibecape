@@ -7,6 +7,8 @@
  */
 
 import { Extension } from "@tiptap/core";
+import { TextSelection } from "@tiptap/pm/state";
+import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
 
 // 标点符号（中英文）+ 空格
 const PUNCTUATION_CHARS = `，。！？；：、""''（）【】《》—…,.!?;:'"()[]<>-· `;
@@ -121,7 +123,7 @@ export const CustomKeyboardExtension = Extension.create({
         return false;
       },
 
-      // Backspace: 当光标在标题开头时的特殊处理
+      // Backspace: 特殊处理
       Backspace: ({ editor }) => {
         const { state } = editor;
         const { selection, doc } = state;
@@ -130,65 +132,80 @@ export const CustomKeyboardExtension = Extension.create({
         // 必须是光标选区（没有选中内容）
         if (!empty) return false;
 
-        // 检查当前节点是否是标题
-        const parent = $from.parent;
-        if (parent.type.name !== "heading") return false;
-
         // 检查光标是否在节点最开始位置
         const isAtStart = $from.parentOffset === 0;
         if (!isAtStart) return false;
 
-        // 获取当前节点在文档中的位置
+        const parent = $from.parent;
         const pos = $from.before();
 
-        // 检查是否是文档第一个节点
-        if (pos <= 0) {
-          // 是第一个节点，将标题转换为段落
-          editor.chain().focus().setNode("paragraph").run();
-          return true;
-        }
-
         // 获取上一个节点
-        const $before = doc.resolve(pos);
-        const nodeBefore = $before.nodeBefore;
-
-        // 如果没有上一个节点，将标题转换为段落
-        if (!nodeBefore) {
-          editor.chain().focus().setNode("paragraph").run();
-          return true;
+        let nodeBefore: ProseMirrorNode | null = null;
+        if (pos > 0) {
+          const $before = doc.resolve(pos);
+          nodeBefore = $before.nodeBefore;
         }
 
-        // 检查上一个节点的类型和状态
-        const isNodeBeforeEmpty = nodeBefore.content.size === 0;
-        const isNodeBeforeEmptyParagraph =
-          nodeBefore.type.name === "paragraph" && isNodeBeforeEmpty;
+        // ===== 处理段落 =====
+        if (parent.type.name === "paragraph") {
+          // 如果上一个节点是标题，将段落内容合并到标题中
+          if (nodeBefore && nodeBefore.type.name === "heading") {
+            // 获取段落内容
+            const paragraphContent = parent.content;
+            // 获取上一个节点（标题）的结束位置
+            const headingEndPos = pos - 1; // 标题内容的末尾
 
-        // 检查当前标题是否为空
-        const isCurrentHeadingEmpty = parent.content.size === 0;
+            // 删除当前段落，并将内容追加到标题
+            const tr = state.tr;
 
-        // 情况1: 上一个节点是空段落 -> 使用默认行为（删除空段落）
-        if (isNodeBeforeEmptyParagraph) {
+            // 先删除段落节点
+            tr.delete(pos, pos + parent.nodeSize);
+
+            // 如果段落有内容，追加到标题末尾
+            if (paragraphContent.size > 0) {
+              tr.insert(headingEndPos, paragraphContent);
+            }
+
+            // 设置光标位置到原标题内容末尾
+            const newCursorPos = headingEndPos;
+            tr.setSelection(TextSelection.near(tr.doc.resolve(newCursorPos)));
+
+            editor.view.dispatch(tr);
+            return true;
+          }
+          // 其他情况使用默认行为
           return false;
         }
 
-        // 情况2: 当前标题为空，上一个节点有内容 -> 将标题转换为段落
-        if (isCurrentHeadingEmpty && !isNodeBeforeEmpty) {
+        // ===== 处理标题 =====
+        if (parent.type.name === "heading") {
+          // 检查是否是文档第一个节点
+          if (pos <= 0 || !nodeBefore) {
+            // 是第一个节点或没有上一个节点，将标题转换为段落
+            editor.chain().focus().setNode("paragraph").run();
+            return true;
+          }
+
+          // 如果上一个节点不是段落，将标题转换为段落
+          if (nodeBefore.type.name !== "paragraph") {
+            editor.chain().focus().setNode("paragraph").run();
+            return true;
+          }
+
+          // 上一个节点是段落
+          const isNodeBeforeEmpty = nodeBefore.content.size === 0;
+
+          // 如果上一个节点是空段落，使用默认行为（删除空段落）
+          if (isNodeBeforeEmpty) {
+            return false;
+          }
+
+          // 上一个节点是有内容的段落，将标题转换为段落
           editor.chain().focus().setNode("paragraph").run();
           return true;
         }
 
-        // 情况3: 当前标题为空，上一个节点也为空（非段落，如空标题）-> 使用默认行为
-        if (isCurrentHeadingEmpty && isNodeBeforeEmpty) {
-          return false;
-        }
-
-        // 情况4: 当前标题有内容，上一个节点为空（非段落，如空标题）-> 将当前标题转换为段落
-        if (!isCurrentHeadingEmpty && isNodeBeforeEmpty) {
-          editor.chain().focus().setNode("paragraph").run();
-          return true;
-        }
-
-        // 其他情况，使用默认行为（合并到上一个有内容的节点）
+        // 其他节点类型，使用默认行为
         return false;
       },
 

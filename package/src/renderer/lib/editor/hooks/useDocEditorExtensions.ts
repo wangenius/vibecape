@@ -142,12 +142,24 @@ export const useDocEditorExtensions = ({
       ImageNode,
       LinkNode,
       Placeholder.configure({
-        placeholder: ({ node }) => {
+        placeholder: ({ node, editor, pos }) => {
           if (node.type.name === "heading") {
             const level = node.attrs.level;
             return t(`common.settings.headingPlaceholder.h${level}`);
           }
           if (node.type.name === "paragraph") {
+            // 检查父节点是否是表格单元格
+            if (pos >= 0) {
+              const $pos = editor.state.doc.resolve(pos);
+              const parent = $pos.parent;
+              if (
+                parent &&
+                (parent.type.name === "tableCell" ||
+                  parent.type.name === "tableHeader")
+              ) {
+                return "";
+              }
+            }
             return t("common.settings.slashPlaceholder");
           }
           return "";

@@ -20,15 +20,20 @@ import { useTranslation } from "react-i18next";
 export const DRAG_HOVER_DELAY = 800;
 
 const dropAnimationConfig: DropAnimation = {
+  keyframes({ transform }) {
+    const initial = transform.initial
+      ? `translate3d(${transform.initial.x}px, ${transform.initial.y}px, 0)`
+      : undefined;
+    return [
+      { opacity: 1, transform: initial },
+      { opacity: 0, transform: initial },
+    ];
+  },
+  duration: 150,
+  easing: "ease-out",
   sideEffects: defaultDropAnimationSideEffects({
-    styles: {
-      active: {
-        opacity: "0.5",
-      },
-    },
+    styles: { active: { opacity: "0.5" } },
   }),
-  duration: 200,
-  easing: "cubic-bezier(0.18, 0.67, 0.6, 1.22)",
 };
 // 文档树视图
 export const DocTreeView = ({ hoveredFolderId }: { hoveredFolderId: string | null }) => {

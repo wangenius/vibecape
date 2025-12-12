@@ -126,10 +126,18 @@ export const TitleNode = Node.create<TitleNodeOptions>({
             try {
               const nodeBeforePos = $from.before($from.depth);
               if (nodeBeforePos === afterTitlePos) {
-                return true; // 阻止默认行为
+                // 如果当前节点是 heading，让 CustomKeyboardExtension 处理（转换为 paragraph）
+                if ($from.parent.type.name === "heading") {
+                  return false;
+                }
+                return true; // 其他节点阻止默认行为
               }
             } catch {
               if ($from.pos <= afterTitlePos + 1) {
+                // 同样，heading 不拦截
+                if ($from.parent.type.name === "heading") {
+                  return false;
+                }
                 return true;
               }
             }

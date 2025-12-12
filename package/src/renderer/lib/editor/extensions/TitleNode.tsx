@@ -104,8 +104,13 @@ export const TitleNode = Node.create<TitleNodeOptions>({
         const { selection } = editor.state;
         const { $from, empty } = selection;
 
-        // 情况1：光标在 title 节点内且在最开头
-        if ($from.parent.type.name === "title" && $from.parentOffset === 0) {
+        // 情况1：光标在 title 节点内且在最开头（空选区）
+        // 有选中内容时允许删除（清空 title 文本）
+        if (
+          empty &&
+          $from.parent.type.name === "title" &&
+          $from.parentOffset === 0
+        ) {
           return true; // 阻止默认行为
         }
 
@@ -182,13 +187,11 @@ export const TitleNode = Node.create<TitleNodeOptions>({
             try {
               const nodeBeforePos = $from.before($from.depth);
               if (nodeBeforePos === afterTitlePos) {
-                // 移动到 title 节点的末尾
-                editor.commands.focus(titleNode.nodeSize - 1);
+                // 完全阻止左移，不进入 title
                 return true;
               }
             } catch {
               if ($from.pos <= afterTitlePos + 1) {
-                editor.commands.focus(titleNode.nodeSize - 1);
                 return true;
               }
             }

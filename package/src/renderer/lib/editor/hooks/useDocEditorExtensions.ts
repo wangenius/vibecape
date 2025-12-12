@@ -26,6 +26,7 @@ import { CustomKeyboardExtension } from "../extensions/CustomKeyboardExtension";
 import { TableExtension } from "../extensions/TableExtension";
 import { HeadingPlaceholder } from "../extensions/HeadingPlaceholder";
 import { TitleNode, CustomDocument } from "../extensions/TitleNode";
+import { TitlePlaceholder } from "../extensions/TitlePlaceholder";
 import { TFunction } from "i18next";
 import { dispatchQuoteEvent } from "@/lib/events/quoteEvent";
 import { useDocumentStore } from "@/hooks/stores/useDocumentStore";
@@ -149,7 +150,7 @@ export const useDocEditorExtensions = ({
       LinkNode,
       Placeholder.configure({
         placeholder: ({ node, editor, pos }) => {
-          // Title 节点使用特定的 placeholder
+          // Title 节点也返回 placeholder，确保 focus 时显示
           if (node.type.name === "title") {
             return t("common.settings.enterTitle");
           }
@@ -175,7 +176,7 @@ export const useDocEditorExtensions = ({
           return "";
         },
         showOnlyWhenEditable: true,
-        showOnlyCurrent: false, // 让 title 的 placeholder 始终显示（当为空时）
+        showOnlyCurrent: true, // 普通节点只在 focus 时显示 placeholder
         includeChildren: true,
         emptyNodeClass: "is-empty",
         emptyEditorClass: "is-editor-empty",
@@ -183,6 +184,10 @@ export const useDocEditorExtensions = ({
       HeadingPlaceholder.configure({
         getPlaceholder: (level: number) =>
           t(`common.settings.headingPlaceholder.h${level}`),
+      }),
+      TitlePlaceholder.configure({
+        titlePlaceholder: t("common.settings.enterTitle"),
+        emptyContentPlaceholder: t("common.settings.slashPlaceholder"),
       }),
       Underline,
       Highlight.configure({

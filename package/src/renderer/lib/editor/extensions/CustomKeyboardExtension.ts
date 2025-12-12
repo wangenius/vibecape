@@ -35,18 +35,27 @@ export const CustomKeyboardExtension = Extension.create({
         const { selection, doc } = state;
         const { $from } = selection;
 
-        // 检查是否有 title 节点，确定正文起始位置
+        // 检查是否有 title 节点
         const firstChild = doc.firstChild;
         const hasTitle = firstChild && firstChild.type.name === "title";
 
-        // 如果光标在 title 节点内（即在 React NodeView 的 input 中），不处理
-        // 因为 title 使用的是 input 元素，ProseMirror 的光标不会在里面
-        // 所以这里主要是防御性检查
-        if (hasTitle && $from.pos <= firstChild.nodeSize) {
-          // 额外检查：如果 $from 的父节点是 title，不处理
-          if ($from.parent.type.name === "title") {
-            return false;
+        // 如果光标在 title 节点内，只选中 title 的文本
+        if (hasTitle && $from.parent.type.name === "title") {
+          // 选中 title 节点内的所有文本（位置 1 到 firstChild.nodeSize - 1）
+          const titleStart = 1; // title 节点内容开始
+          const titleEnd = firstChild.nodeSize - 1; // title 节点内容结束
+
+          // 如果已经选中了 title 全部内容，不做任何操作
+          if (selection.from === titleStart && selection.to === titleEnd) {
+            return true;
           }
+
+          editor
+            .chain()
+            .focus()
+            .setTextSelection({ from: titleStart, to: titleEnd })
+            .run();
+          return true;
         }
 
         // 计算正文起始位置（跳过 title 节点）

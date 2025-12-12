@@ -1,6 +1,7 @@
 import { Model, ModelInsert, Provider, ProviderInsert } from "@common/schema";
 import type { AppConfig, MCPConfig } from "@common/schema/config";
 import type { Shape } from "@common/lib/shape";
+import { MCPServerStatus, MCPTool, MCPToolResult } from "@common/types/mcp";
 
 export interface SettingsAPI {
   /** 获取设置 */
@@ -9,31 +10,7 @@ export interface SettingsAPI {
   update: (path: Shape, value: unknown) => Promise<AppConfig>;
 }
 
-/** MCP 工具 */
-export interface MCPTool {
-  name: string;
-  description?: string;
-  inputSchema?: Record<string, unknown>;
-  serverName: string;
-}
 
-/** MCP 服务器状态 */
-export interface MCPServerStatus {
-  status: "disconnected" | "connecting" | "connected" | "error";
-  error?: string;
-  toolCount: number;
-}
-
-/** MCP 工具调用结果 */
-export interface MCPToolResult {
-  content: Array<{
-    type: string;
-    text?: string;
-    data?: string;
-    mimeType?: string;
-  }>;
-  isError?: boolean;
-}
 
 export interface MCPAPI {
   /** 获取 MCP 配置 */

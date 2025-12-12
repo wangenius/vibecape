@@ -9,7 +9,6 @@ import {
   type MCPServerConfig,
   DEFAULT_MCP_CONFIG,
 } from "@common/schema/config";
-import { type MCPServerStatus, type MCPTool } from "@common/api/app";
 import { useTranslation } from "react-i18next";
 import {
   SettingsContainer,
@@ -30,6 +29,7 @@ import {
   XCircle,
   Wrench,
 } from "lucide-react";
+import { MCPServerStatus, MCPTool } from "@common/types/mcp";
 
 // 解析 MCP JSON 配置，支持两种格式：
 // 1. { "mcpServers": { "name": { command, args, env } } }

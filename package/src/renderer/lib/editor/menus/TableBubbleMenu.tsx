@@ -18,8 +18,6 @@ import {
   Trash2,
   Merge,
   Split,
-  GripVertical,
-  GripHorizontal,
   Table as TableIcon,
   Eraser,
 } from "lucide-react";
@@ -30,8 +28,34 @@ interface TableBubbleMenuProps {
   containerRef?: React.RefObject<HTMLElement>;
 }
 
-// Handle Button Component - Must forward ref for Radix asChild
-const HandleButton = React.forwardRef<
+// 操作触发器 - 简洁的小圆点
+const HandleDot = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, onMouseDown, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn(
+      "absolute z-50 cursor-pointer",
+      "flex items-center justify-center",
+      // 小圆点样式 - 柔和的灰色系
+      "size-2.5 rounded-full",
+      "bg-muted-foreground/30",
+      "hover:bg-muted-foreground/60 hover:scale-150",
+      "transition-all duration-150",
+      className
+    )}
+    onMouseDown={(e) => {
+      e.preventDefault();
+      onMouseDown?.(e);
+    }}
+    {...props}
+  />
+));
+HandleDot.displayName = "HandleDot";
+
+// 表格全局操作按钮
+const TableButton = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, children, onMouseDown, ...props }, ref) => (
@@ -39,13 +63,13 @@ const HandleButton = React.forwardRef<
     ref={ref}
     className={cn(
       "absolute z-50 flex items-center justify-center cursor-pointer",
-      "bg-background border border-border shadow-sm text-muted-foreground",
-      "hover:bg-accent hover:text-accent-foreground transition-all duration-200",
-      "rounded-md",
+      "size-5 rounded",
+      "bg-muted/60 text-muted-foreground/60",
+      "hover:bg-primary/10 hover:text-primary",
+      "transition-all duration-150",
       className
     )}
     onMouseDown={(e) => {
-      // Important: Prevent editor blur when clicking the handle
       e.preventDefault();
       onMouseDown?.(e);
     }}
@@ -54,19 +78,24 @@ const HandleButton = React.forwardRef<
     {children}
   </div>
 ));
-HandleButton.displayName = "HandleButton";
+TableButton.displayName = "TableButton";
 
-export const TableBubbleMenu = ({ editor, containerRef }: TableBubbleMenuProps) => {
+export const TableBubbleMenu = ({
+  editor,
+  containerRef,
+}: TableBubbleMenuProps) => {
   const { t } = useTranslation();
   const [tableState, setTableState] = useState<{
     cell: { top: number; left: number; width: number; height: number };
-    table: { top: number; left: number };
+    table: { top: number; left: number; width: number; height: number };
+    selection: { top: number; left: number; width: number; height: number };
   } | null>(null);
 
   // Use a ref to track the last state to avoid unnecessary re-renders
   const lastState = useRef<{
     cell: { top: number; left: number; width: number; height: number };
-    table: { top: number; left: number };
+    table: { top: number; left: number; width: number; height: number };
+    selection: { top: number; left: number; width: number; height: number };
   } | null>(null);
 
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
@@ -92,7 +121,7 @@ export const TableBubbleMenu = ({ editor, containerRef }: TableBubbleMenuProps) 
     }
 
     const { from } = editor.state.selection;
-    
+
     // 获取当前单元格
     let dom = editor.view.domAtPos(from).node as HTMLElement;
     if (dom.nodeType === 3) {
@@ -100,8 +129,38 @@ export const TableBubbleMenu = ({ editor, containerRef }: TableBubbleMenuProps) 
     }
     const cell = dom.closest("td, th") as HTMLElement;
     const table = dom.closest("table") as HTMLElement;
-    
+
     if (cell && table && containerRef?.current) {
+      // 获取所有选中的单元格来计算选中区域
+      const selectedCells = table.querySelectorAll(".selectedCell");
+      let selectionRect: DOMRect;
+
+      if (selectedCells.length > 1) {
+        // 多个单元格选中：计算边界框
+        let minTop = Infinity,
+          minLeft = Infinity;
+        let maxBottom = -Infinity,
+          maxRight = -Infinity;
+
+        selectedCells.forEach((selectedCell) => {
+          const rect = selectedCell.getBoundingClientRect();
+          minTop = Math.min(minTop, rect.top);
+          minLeft = Math.min(minLeft, rect.left);
+          maxBottom = Math.max(maxBottom, rect.bottom);
+          maxRight = Math.max(maxRight, rect.right);
+        });
+
+        selectionRect = new DOMRect(
+          minLeft,
+          minTop,
+          maxRight - minLeft,
+          maxBottom - minTop
+        );
+      } else {
+        // 单个单元格或无选中：使用当前单元格
+        selectionRect = cell.getBoundingClientRect();
+      }
+
       // 1. Setup Observers if the cell has changed
       if (cell !== observedNodeRef.current) {
         // ResizeObserver
@@ -109,7 +168,7 @@ export const TableBubbleMenu = ({ editor, containerRef }: TableBubbleMenuProps) 
           resizeObserverRef.current.disconnect();
         } else {
           resizeObserverRef.current = new ResizeObserver(() => {
-             requestAnimationFrame(updatePosition);
+            requestAnimationFrame(updatePosition);
           });
         }
         resizeObserverRef.current.observe(cell);
@@ -136,17 +195,21 @@ export const TableBubbleMenu = ({ editor, containerRef }: TableBubbleMenuProps) 
       const cellRect = cell.getBoundingClientRect();
       const tableRect = table.getBoundingClientRect();
       const containerRect = containerRef.current.getBoundingClientRect();
-      
+
       const scrollLeft = containerRef.current.scrollLeft;
       const scrollTop = containerRef.current.scrollTop;
 
       // 相对于容器的坐标
       const cellTop = cellRect.top - containerRect.top + scrollTop;
       const cellLeft = cellRect.left - containerRect.left + scrollLeft;
-      
+
       const tableTop = tableRect.top - containerRect.top + scrollTop;
       const tableLeft = tableRect.left - containerRect.left + scrollLeft;
-      
+
+      const selectionTop = selectionRect.top - containerRect.top + scrollTop;
+      const selectionLeft =
+        selectionRect.left - containerRect.left + scrollLeft;
+
       const newState = {
         cell: {
           top: cellTop,
@@ -157,7 +220,15 @@ export const TableBubbleMenu = ({ editor, containerRef }: TableBubbleMenuProps) 
         table: {
           top: tableTop,
           left: tableLeft,
-        }
+          width: tableRect.width,
+          height: tableRect.height,
+        },
+        selection: {
+          top: selectionTop,
+          left: selectionLeft,
+          width: selectionRect.width,
+          height: selectionRect.height,
+        },
       };
 
       // Simple diff check to prevent re-renders (and closing of dropdowns)
@@ -168,7 +239,16 @@ export const TableBubbleMenu = ({ editor, containerRef }: TableBubbleMenuProps) 
         Math.abs(lastState.current.cell.width - newState.cell.width) > 1 ||
         Math.abs(lastState.current.cell.height - newState.cell.height) > 1 ||
         Math.abs(lastState.current.table.top - newState.table.top) > 1 ||
-        Math.abs(lastState.current.table.left - newState.table.left) > 1
+        Math.abs(lastState.current.table.left - newState.table.left) > 1 ||
+        Math.abs(lastState.current.selection.top - newState.selection.top) >
+          1 ||
+        Math.abs(lastState.current.selection.left - newState.selection.left) >
+          1 ||
+        Math.abs(lastState.current.selection.width - newState.selection.width) >
+          1 ||
+        Math.abs(
+          lastState.current.selection.height - newState.selection.height
+        ) > 1
       ) {
         lastState.current = newState;
         setTableState(newState);
@@ -192,7 +272,7 @@ export const TableBubbleMenu = ({ editor, containerRef }: TableBubbleMenuProps) 
     if (container) {
       container.addEventListener("scroll", handleUpdate);
     }
-    
+
     return () => {
       editor.off("selectionUpdate", handleUpdate);
       editor.off("update", handleUpdate);
@@ -210,60 +290,54 @@ export const TableBubbleMenu = ({ editor, containerRef }: TableBubbleMenuProps) 
 
   if (!tableState || !editor) return null;
 
-  const { cell, table } = tableState;
+  const { cell, table, selection } = tableState;
 
   return (
     <>
-      {/* 1. Whole Table Handle (Top-Left Corner) */}
-      <DropdownMenu modal={false}>
-        <DropdownMenuTrigger asChild>
-          <HandleButton
-            className="size-6"
-            style={{
-              top: table.top - 10,
-              left: table.left - 10,
-            }}
-            title={t("editor:table.tableActions")}
-          >
-            <TableIcon className="size-3.5" />
-          </HandleButton>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start">
-          <DropdownMenuLabel>{t("editor:table.tableActions")}</DropdownMenuLabel>
-          <DropdownMenuItem onClick={() => editor.chain().focus().deleteTable().run()} variant="destructive">
-            <Trash2 className="mr-2 size-4" />
-            {t("editor:table.deleteTable")}
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      {/* 选中区域边框覆盖层 - 柔和的灰色边框 */}
+      <div
+        className="absolute z-40 pointer-events-none border border-muted-foreground/40 rounded-sm"
+        style={{
+          top: selection.top,
+          left: selection.left,
+          width: selection.width,
+          height: selection.height,
+        }}
+      />
 
-      {/* 2. Column Handle (Top centered on cell) */}
+      {/* 1. 列操作 - 表格顶部，对应当前列 */}
       <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
-          <HandleButton
-            className="w-8 h-5"
+          <HandleDot
             style={{
-              top: cell.top - 10,
-              left: cell.left + (cell.width / 2) - 16, // Center horizontally
+              top: table.top - 16, // 表格顶部上方
+              left: cell.left + cell.width / 2 - 6, // 当前列中心
             }}
             title={t("editor:table.columnActions")}
-          >
-            <GripHorizontal className="size-3.5" />
-          </HandleButton>
+          />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="center">
-          <DropdownMenuLabel>{t("editor:table.columnActions")}</DropdownMenuLabel>
+          <DropdownMenuLabel>
+            {t("editor:table.columnActions")}
+          </DropdownMenuLabel>
           <DropdownMenuGroup>
-            <DropdownMenuItem onClick={() => editor.chain().focus().addColumnBefore().run()}>
+            <DropdownMenuItem
+              onClick={() => editor.chain().focus().addColumnBefore().run()}
+            >
               <ArrowLeft className="mr-2 size-4" />
               {t("editor:table.addColBefore")}
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => editor.chain().focus().addColumnAfter().run()}>
+            <DropdownMenuItem
+              onClick={() => editor.chain().focus().addColumnAfter().run()}
+            >
               <ArrowRight className="mr-2 size-4" />
               {t("editor:table.addColAfter")}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => editor.chain().focus().deleteColumn().run()} variant="destructive">
+            <DropdownMenuItem
+              onClick={() => editor.chain().focus().deleteColumn().run()}
+              className="text-destructive focus:text-destructive"
+            >
               <Trash2 className="mr-2 size-4" />
               {t("editor:table.deleteCol")}
             </DropdownMenuItem>
@@ -271,58 +345,108 @@ export const TableBubbleMenu = ({ editor, containerRef }: TableBubbleMenuProps) 
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {/* 3. Row Handle (Left centered on cell) */}
+      {/* 2. 行操作 - 表格左侧，对应当前行 */}
       <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
-          <HandleButton
-            className="w-5 h-8"
+          <HandleDot
             style={{
-              top: cell.top + (cell.height / 2) - 16, // Center vertically
-              left: cell.left - 10,
+              top: cell.top + cell.height / 2 - 6, // 当前行中心
+              left: table.left - 16, // 表格左侧
             }}
             title={t("editor:table.rowActions")}
-          >
-            <GripVertical className="size-3.5" />
-          </HandleButton>
+          />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" side="left">
           <DropdownMenuLabel>{t("editor:table.rowActions")}</DropdownMenuLabel>
           <DropdownMenuGroup>
-            <DropdownMenuItem onClick={() => editor.chain().focus().addRowBefore().run()}>
+            <DropdownMenuItem
+              onClick={() => editor.chain().focus().addRowBefore().run()}
+            >
               <ArrowUp className="mr-2 size-4" />
               {t("editor:table.addRowBefore")}
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => editor.chain().focus().addRowAfter().run()}>
+            <DropdownMenuItem
+              onClick={() => editor.chain().focus().addRowAfter().run()}
+            >
               <ArrowDown className="mr-2 size-4" />
               {t("editor:table.addRowAfter")}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => editor.chain().focus().deleteRow().run()} variant="destructive">
+            <DropdownMenuItem
+              onClick={() => editor.chain().focus().deleteRow().run()}
+              className="text-destructive focus:text-destructive"
+            >
               <Trash2 className="mr-2 size-4" />
               {t("editor:table.deleteRow")}
             </DropdownMenuItem>
           </DropdownMenuGroup>
-          
-          <DropdownMenuSeparator />
-          
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      {/* 3. 单元格操作 - 选中区域右侧 */}
+      <DropdownMenu modal={false}>
+        <DropdownMenuTrigger asChild>
+          <HandleDot
+            style={{
+              top: selection.top + selection.height / 2 - 6,
+              left: selection.left + selection.width + 4, // 选中区域右侧外
+            }}
+            title={t("editor:table.cellActions")}
+          />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" side="right">
+          <DropdownMenuLabel>{t("editor:table.cellActions")}</DropdownMenuLabel>
           <DropdownMenuGroup>
-             <DropdownMenuItem onClick={() => editor.chain().focus().mergeCells().run()}>
+            <DropdownMenuItem
+              onClick={() => editor.chain().focus().mergeCells().run()}
+            >
               <Merge className="mr-2 size-4" />
               {t("editor:table.mergeCells")}
             </DropdownMenuItem>
-             <DropdownMenuItem onClick={() => editor.chain().focus().splitCell().run()}>
+            <DropdownMenuItem
+              onClick={() => editor.chain().focus().splitCell().run()}
+            >
               <Split className="mr-2 size-4" />
               {t("editor:table.splitCell")}
             </DropdownMenuItem>
           </DropdownMenuGroup>
-          
+
           <DropdownMenuSeparator />
 
-          <DropdownMenuItem onClick={() => {
+          <DropdownMenuItem
+            onClick={() => {
               editor.chain().focus().deleteSelection().run();
-            }}>
-             <Eraser className="mr-2 size-4" />
-             {t("editor:table.clearCell")}
+            }}
+          >
+            <Eraser className="mr-2 size-4" />
+            {t("editor:table.clearCell")}
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      {/* 4. 表格操作 - 表格左上角 */}
+      <DropdownMenu modal={false}>
+        <DropdownMenuTrigger asChild>
+          <TableButton
+            style={{
+              top: table.top - 10,
+              left: table.left - 20,
+            }}
+            title={t("editor:table.tableActions")}
+          >
+            <TableIcon className="size-3" />
+          </TableButton>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start">
+          <DropdownMenuLabel>
+            {t("editor:table.tableActions")}
+          </DropdownMenuLabel>
+          <DropdownMenuItem
+            onClick={() => editor.chain().focus().deleteTable().run()}
+            className="text-destructive focus:text-destructive"
+          >
+            <Trash2 className="mr-2 size-4" />
+            {t("editor:table.deleteTable")}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

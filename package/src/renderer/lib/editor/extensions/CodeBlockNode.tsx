@@ -19,6 +19,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
 
 // 常用语言列表
 const LANGUAGES = [
@@ -181,14 +182,14 @@ const CodeBlockComponent = ({ node, updateAttributes }: NodeViewProps) => {
           {/* Language Selector */}
           <Popover open={languageOpen} onOpenChange={setLanguageOpen}>
             <PopoverTrigger asChild>
-              <button className="flex items-center gap-1 text-[10px] font-medium text-muted-foreground/80 hover:text-foreground transition-colors uppercase tracking-wider">
+              <Button
+                variant="default"
+                className="flex items-center gap-1 text-[10px] font-medium text-muted-foreground/80 hover:text-foreground transition-colors uppercase tracking-wider"
+              >
                 {language}
-              </button>
+              </Button>
             </PopoverTrigger>
-            <PopoverContent
-              align="start"
-              className="p-1 w-36"
-            >
+            <PopoverContent align="start" className="p-1 w-36">
               <input
                 ref={searchInputRef}
                 type="text"

@@ -156,8 +156,12 @@
 /* ========== 代码块字体 ========== */
 [data-type="codeBlock"],
 [data-type="codeBlock"] * {
-  font-family: 'Fira Code', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace !important;
-  font-feature-settings: "liga" 1, "calt" 1 !important;
+  font-family:
+    "Fira Code", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+    monospace !important;
+  font-feature-settings:
+    "liga" 1,
+    "calt" 1 !important;
   font-variant-ligatures: common-ligatures !important;
   font-size: 0.98em !important;
   line-height: 1.4 !important;
@@ -167,8 +171,12 @@
 .inline-code,
 .prose .inline-code,
 .prose code.inline-code {
-  font-family: 'Fira Code', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace !important;
-  font-feature-settings: "liga" 1, "calt" 1 !important;
+  font-family:
+    "Fira Code", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+    monospace !important;
+  font-feature-settings:
+    "liga" 1,
+    "calt" 1 !important;
   font-weight: 400 !important;
   font-size: 0.875em !important;
   padding: 0.15em 0.4em !important;
@@ -406,8 +414,19 @@
   color: rgb(134, 239, 172) !important;
 }
 
-/* ========== 表格样式 ========== */
-/* 完全重置 prose 的表格样式 - 使用最高优先级选择器 */
+/* ========== Notion 风格表格样式 ========== */
+
+/* 表格容器 - 支持 Notion 风格的悬停按钮 */
+.tiptap .tableWrapper,
+.ProseMirror .tableWrapper {
+  overflow-x: auto !important;
+  margin: 1.5rem 0 !important;
+  padding: 0 !important;
+  border-radius: 0.375rem !important;
+  position: relative !important;
+}
+
+/* 表格主体 - Notion 风格 */
 .tiptap table,
 .ProseMirror table,
 .prose table,
@@ -415,23 +434,17 @@
 [class*="prose"] table {
   all: unset !important;
   display: table !important;
-  border-collapse: separate !important;
-  border-spacing: 0 !important;
+  border-collapse: collapse !important;
   width: 100% !important;
-  margin: 1.5rem 0 !important;
   table-layout: fixed !important;
-  border: 1px solid var(--border) !important;
-  border-radius: 0.5rem !important;
-  overflow: hidden !important;
   box-sizing: border-box !important;
-}
-
-/* 表格容器 */
-.tiptap .tableWrapper,
-.ProseMirror .tableWrapper {
-  overflow-x: auto !important;
-  margin: 0.5rem 0 !important;
-  padding: 0 !important;
+  font-size: 0.875rem !important;
+  line-height: 1.5 !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 0.375rem !important;
+  overflow: hidden !important;
+  background: var(--background) !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
 }
 
 /* tbody/thead 重置 */
@@ -454,7 +467,7 @@
   display: table-header-group !important;
 }
 
-/* 表格行 - 完全重置 */
+/* 表格行 - Notion 风格 */
 .tiptap table tr,
 .ProseMirror table tr,
 .prose table tr,
@@ -465,9 +478,21 @@
   background: transparent !important;
   margin: 0 !important;
   padding: 0 !important;
+  transition: background-color 0.15s ease !important;
 }
 
-/* 表格单元格 - 核心样式 */
+/* 行悬停效果 - Notion 风格 */
+.tiptap table tbody tr:hover,
+.ProseMirror table tbody tr:hover {
+  background-color: rgba(0, 0, 0, 0.02) !important;
+}
+
+.dark .tiptap table tbody tr:hover,
+.dark .ProseMirror table tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.03) !important;
+}
+
+/* 表格单元格 - Notion 风格 */
 .tiptap table td,
 .tiptap table th,
 .ProseMirror table td,
@@ -478,21 +503,23 @@
 [class*="prose"] table th {
   all: unset !important;
   display: table-cell !important;
-  border: none !important;
   border-right: 1px solid var(--border) !important;
   border-bottom: 1px solid var(--border) !important;
   padding: 0.5rem 0.75rem !important;
   vertical-align: top !important;
   box-sizing: border-box !important;
   position: relative !important;
-  min-width: 80px !important;
-  background: var(--background) !important;
+  min-width: 100px !important;
+  background: transparent !important;
   color: var(--foreground) !important;
-  font-size: 0.81rem !important;
-  line-height: 1.6 !important;
+  font-size: 0.875rem !important;
+  line-height: 1.5 !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+  transition: background-color 0.15s ease !important;
 }
 
-/* Remove right border from last column to avoid double border with table */
+/* 移除最后一列的右边框 */
 .tiptap table tr td:last-child,
 .tiptap table tr th:last-child,
 .ProseMirror table tr td:last-child,
@@ -502,14 +529,17 @@
   border-right: none !important;
 }
 
-/* Remove bottom border from last row to avoid double border with table */
+/* 移除最后一行的底边框 */
 .tiptap table tbody tr:last-child td,
+.tiptap table thead tr:last-child th,
 .ProseMirror table tbody tr:last-child td,
-.prose table tbody tr:last-child td {
+.ProseMirror table thead tr:last-child th,
+.prose table tbody tr:last-child td,
+.prose table thead tr:last-child th {
   border-bottom: none !important;
 }
 
-/* 表头样式 */
+/* 表头样式 - Notion 风格 */
 .tiptap table th,
 .ProseMirror table th,
 .prose table th,
@@ -517,7 +547,16 @@
   background-color: var(--muted) !important;
   font-weight: 600 !important;
   text-align: left !important;
-  color: var(--foreground) !important;
+  color: var(--muted-foreground) !important;
+  font-size: 0.8125rem !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+}
+
+/* 表头行不参与悬停效果 */
+.tiptap table thead tr:hover,
+.ProseMirror table thead tr:hover {
+  background-color: transparent !important;
 }
 
 /* 单元格内容 - 移除段落边距 */
@@ -531,64 +570,51 @@
 .ProseMirror table th p {
   margin: 0 !important;
   padding: 0 !important;
-  line-height: 1.6 !important;
+  line-height: 1.5 !important;
 }
 
-/* 单元格选中样式 */
+/* 单元格选中样式 - Notion 风格 */
+/* 选中的单元格只显示背景色，边框通过 JS 渲染统一边框 */
 .tiptap table .selectedCell,
 .ProseMirror table .selectedCell {
-  background-color: rgba(59, 130, 246, 0.1) !important;
+  background-color: rgba(0, 0, 0, 0.04) !important;
 }
 
-.tiptap table .selectedCell::after,
-.ProseMirror table .selectedCell::after {
-  content: "" !important;
-  position: absolute !important;
-  inset: 0 !important;
-  pointer-events: none !important;
-  border: 2px solid rgb(59, 130, 246) !important;
-  z-index: 1 !important;
-  border-radius: inherit !important;
+.dark .tiptap table .selectedCell,
+.dark .ProseMirror table .selectedCell {
+  background-color: rgba(255, 255, 255, 0.06) !important;
 }
 
-/* Rounded corners for corner cells */
-/* Top Left - Header */
+/* 圆角处理 - Notion 风格 */
+/* 左上角 */
 .tiptap table thead tr:first-child > :first-child,
-.ProseMirror table thead tr:first-child > :first-child {
-  border-top-left-radius: 0.5rem !important;
-}
-
-/* Top Right - Header */
-.tiptap table thead tr:first-child > :last-child,
-.ProseMirror table thead tr:first-child > :last-child {
-  border-top-right-radius: 0.5rem !important;
-}
-
-/* Top Left - Body (when no header) */
+.ProseMirror table thead tr:first-child > :first-child,
 .tiptap table:not(:has(thead)) tbody tr:first-child > :first-child,
 .ProseMirror table:not(:has(thead)) tbody tr:first-child > :first-child {
-  border-top-left-radius: 0.5rem !important;
+  border-top-left-radius: 0.375rem !important;
 }
 
-/* Top Right - Body (when no header) */
+/* 右上角 */
+.tiptap table thead tr:first-child > :last-child,
+.ProseMirror table thead tr:first-child > :last-child,
 .tiptap table:not(:has(thead)) tbody tr:first-child > :last-child,
 .ProseMirror table:not(:has(thead)) tbody tr:first-child > :last-child {
-  border-top-right-radius: 0.5rem !important;
+  border-top-right-radius: 0.375rem !important;
 }
 
-/* Bottom Left */
+/* 左下角 */
 .tiptap table tbody tr:last-child > :first-child,
 .ProseMirror table tbody tr:last-child > :first-child {
-  border-bottom-left-radius: 0.5rem !important;
+  border-bottom-left-radius: 0.375rem !important;
 }
 
-/* Bottom Right */
+/* 右下角 */
 .tiptap table tbody tr:last-child > :last-child,
 .ProseMirror table tbody tr:last-child > :last-child {
-  border-bottom-right-radius: 0.5rem !important;
+  border-bottom-right-radius: 0.375rem !important;
 }
 
-/* 列宽度调整拉柄 */
+/* 列宽度调整拉柄 - Notion 风格 */
 .tiptap .column-resize-handle,
 .ProseMirror .column-resize-handle {
   position: absolute !important;
@@ -599,7 +625,7 @@
   background-color: rgb(59, 130, 246) !important;
   cursor: col-resize !important;
   opacity: 0 !important;
-  transition: opacity 0.15s ease !important;
+  transition: opacity 0.2s ease !important;
   z-index: 10 !important;
 }
 
@@ -607,24 +633,56 @@
 .tiptap .column-resize-handle:hover,
 .ProseMirror table:hover .column-resize-handle,
 .ProseMirror .column-resize-handle:hover {
+  opacity: 0.6 !important;
+}
+
+.tiptap .column-resize-handle:active,
+.ProseMirror .column-resize-handle:active {
   opacity: 1 !important;
 }
 
-/* 暗色模式 */
+/* 暗色模式优化 */
+.dark .tiptap table,
+.dark .ProseMirror table {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.3) !important;
+}
+
 .dark .tiptap table td,
 .dark .tiptap table th,
 .dark .ProseMirror table td,
 .dark .ProseMirror table th {
-  background: var(--background) !important;
-  border-color: var(--border) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
 }
 
 .dark .tiptap table th,
 .dark .ProseMirror table th {
-  background-color: rgba(255, 255, 255, 0.03) !important;
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  color: rgba(255, 255, 255, 0.7) !important;
 }
 
 .dark .tiptap table .selectedCell,
 .dark .ProseMirror table .selectedCell {
-  background-color: rgba(59, 130, 246, 0.15) !important;
+  background-color: rgba(59, 130, 246, 0.12) !important;
+}
+
+/* 空单元格占位符 */
+.tiptap table td:empty::before,
+.ProseMirror table td:empty::before {
+  content: "" !important;
+  display: inline-block !important;
+  width: 1px !important;
+  height: 1.5em !important;
+}
+
+/* 表格焦点状态 */
+.tiptap table:focus-within,
+.ProseMirror table:focus-within {
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1) !important;
+}
+
+.dark .tiptap table:focus-within,
+.dark .ProseMirror table:focus-within {
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
 }

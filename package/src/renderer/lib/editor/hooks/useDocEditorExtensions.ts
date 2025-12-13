@@ -150,15 +150,23 @@ export const useDocEditorExtensions = ({
       LinkNode,
       Placeholder.configure({
         placeholder: ({ node, editor, pos }) => {
-          // Title 节点也返回 placeholder，确保 focus 时显示
+          // 如果主编辑器没有 DOM 焦点（比如焦点在 DocAIPromptNode 的 mini editor 中），
+          // 普通节点不显示 placeholder
+          const hasFocus = editor.view.hasFocus();
+          
+          // Title 节点：只在编辑器有焦点时显示 placeholder
           if (node.type.name === "title") {
-            return t("common.settings.enterTitle");
+            return hasFocus ? t("common.settings.enterTitle") : "";
           }
+          // Heading 节点：只在编辑器有焦点时显示 placeholder
           if (node.type.name === "heading") {
+            if (!hasFocus) return "";
             const level = node.attrs.level;
             return t(`common.settings.headingPlaceholder.h${level}`);
           }
           if (node.type.name === "paragraph") {
+            // 编辑器没有焦点时不显示 placeholder
+            if (!hasFocus) return "";
             // 检查父节点是否是表格单元格
             if (pos >= 0) {
               const $pos = editor.state.doc.resolve(pos);

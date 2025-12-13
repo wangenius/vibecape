@@ -1242,19 +1242,47 @@ function DocAIPromptComponent(props: any) {
                 e.commands.selectAll();
                 return true;
               },
-              // Cmd/Ctrl + Enter: 发送/重新生成
-              "Mod-Enter": () => {
+              // Option/Alt + Enter: 发送/重新生成
+              "Alt-Enter": () => {
                 const currentPrompt = promptRef.current;
                 if (statusRef.current !== "loading" && currentPrompt.trim()) {
                   handleSubmitRef.current();
                 }
                 return true;
               },
-              // Shift + Enter: 接受应用（仅在有生成内容时）
-              "Shift-Enter": () => {
+              // Option/Alt + Shift + Enter: 接受应用（仅在有生成内容时）
+              "Alt-Shift-Enter": () => {
                 if (statusRef.current === "completed") {
                   handleAcceptRef.current();
                 }
+                return true;
+              },
+              // Cmd/Ctrl + Enter: 在 DocAIPromptNode 下面创建新段落
+              "Mod-Enter": () => {
+                const nodePos = props.getPos();
+                const nodeSize = node.nodeSize;
+                const insertPos = nodePos + nodeSize;
+                
+                // 在节点后插入新段落
+                const paragraph = editor.state.schema.nodes.paragraph.create();
+                const tr = editor.state.tr.insert(insertPos, paragraph);
+                // 将光标移动到新段落中
+                tr.setSelection(editor.state.selection.constructor.near(tr.doc.resolve(insertPos + 1)));
+                editor.view.dispatch(tr);
+                editor.commands.focus();
+                return true;
+              },
+              // Cmd/Ctrl + Shift + Enter: 在 DocAIPromptNode 上面创建新段落
+              "Mod-Shift-Enter": () => {
+                const nodePos = props.getPos();
+                
+                // 在节点前插入新段落
+                const paragraph = editor.state.schema.nodes.paragraph.create();
+                const tr = editor.state.tr.insert(nodePos, paragraph);
+                // 将光标移动到新段落中
+                tr.setSelection(editor.state.selection.constructor.near(tr.doc.resolve(nodePos + 1)));
+                editor.view.dispatch(tr);
+                editor.commands.focus();
                 return true;
               },
               // Backspace: 空内容时关闭节点
@@ -1378,7 +1406,7 @@ function DocAIPromptComponent(props: any) {
           </div>
           {/* 提示文字 */}
           <div className="text-xs text-muted-foreground/50 shrink-0">
-            {status === "idle" && t("common.aiRewrite.idleHint", "⌘↵ 发送")}
+            {status === "idle" && t("common.aiRewrite.idleHint", "⌥↵ 发送")}
             {status === "loading" && (
               <span className="flex items-center gap-1">
                 <Loader2 className="size-3 animate-spin" />
@@ -1386,10 +1414,10 @@ function DocAIPromptComponent(props: any) {
             )}
             {status === "completed" &&
               !error &&
-              t("common.aiRewrite.completedHint", "⇧↵ 应用")}
+              t("common.aiRewrite.completedHint", "⌥⇧↵ 应用")}
             {error && (
               <span className="text-destructive">
-                {t("common.aiRewrite.errorHint", "⌘↵ 重试")}
+                {t("common.aiRewrite.errorHint", "⌥↵ 重试")}
               </span>
             )}
           </div>

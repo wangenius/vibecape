@@ -144,11 +144,10 @@ function LinkComponent(props: any) {
     [normalizeUrl]
   );
 
-  // 处理 URL 提交
-  const handleUrlSubmit = useCallback(() => {
+  // 自动保存 URL
+  const saveUrl = useCallback(() => {
     const finalUrl = normalizeUrl(urlInput);
     props.updateAttributes({ href: finalUrl || null });
-    setOpen(false);
   }, [normalizeUrl, urlInput, props]);
 
   // URL 键盘事件
@@ -160,19 +159,30 @@ function LinkComponent(props: any) {
       }
       if (e.key === "Enter") {
         e.preventDefault();
-        handleUrlSubmit();
+        setOpen(false);
       }
       if (e.key === "Escape") {
         setOpen(false);
         setUrlInput(href || "");
       }
     },
-    [handleUrlSubmit, href]
+    [href]
+  );
+
+  // Popover 关闭时自动保存
+  const handleOpenChange = useCallback(
+    (newOpen: boolean) => {
+      if (!newOpen && open) {
+        saveUrl();
+      }
+      setOpen(newOpen);
+    },
+    [open, saveUrl]
   );
 
   return (
     <NodeViewWrapper as="span" className="inline" data-type="link-node">
-      <Popover open={open} onOpenChange={setOpen}>
+      <Popover open={open} onOpenChange={handleOpenChange}>
         <PopoverAnchor asChild>
           <span
             onMouseMove={(e) => setIsModHover(e.metaKey || e.ctrlKey)}
@@ -196,27 +206,19 @@ function LinkComponent(props: any) {
         </PopoverAnchor>
 
         <PopoverContent
-          className="w-72 p-2"
+          className="w-64 p-2"
           align="start"
           onOpenAutoFocus={(e) => e.preventDefault()}
         >
-          <div className="flex items-center gap-2">
-            <Input
-              ref={urlInputRef}
-              type="text"
-              placeholder="https://example.com"
-              value={urlInput}
-              onValueChange={setUrlInput}
-              onKeyDown={handleUrlKeyDown}
-              className="h-8 flex-1"
-            />
-            <button
-              onClick={handleUrlSubmit}
-              className="h-8 px-3 text-xs bg-primary text-primary-foreground hover:bg-primary/90 rounded shrink-0 transition-colors"
-            >
-              保存
-            </button>
-          </div>
+          <Input
+            ref={urlInputRef}
+            type="text"
+            placeholder="https://example.com"
+            value={urlInput}
+            onValueChange={setUrlInput}
+            onKeyDown={handleUrlKeyDown}
+            className="h-8"
+          />
         </PopoverContent>
       </Popover>
     </NodeViewWrapper>

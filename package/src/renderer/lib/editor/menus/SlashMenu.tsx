@@ -247,6 +247,7 @@ interface SlashMenuProps {
   items: SlashMenuItem[];
   command: (item: SlashMenuItem) => void;
   t: any;
+  onMouseMoved?: () => void;
 }
 
 export interface SlashMenuRef {
@@ -254,14 +255,27 @@ export interface SlashMenuRef {
 }
 
 export const SlashMenuComponent = forwardRef<SlashMenuRef, SlashMenuProps>(
-  ({ items, command, t }, ref) => {
+  ({ items, command, t, onMouseMoved }, ref) => {
     const [selectedIndex, setSelectedIndex] = useState(0);
+    const [mouseHasMoved, setMouseHasMoved] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
     const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
     useEffect(() => {
       setSelectedIndex(0);
     }, [items]);
+
+    // 监听鼠标移动，只有移动后才允许 hover 改变选中项
+    useEffect(() => {
+      const handleMouseMove = () => {
+        if (!mouseHasMoved) {
+          setMouseHasMoved(true);
+          onMouseMoved?.();
+        }
+      };
+      document.addEventListener("mousemove", handleMouseMove);
+      return () => document.removeEventListener("mousemove", handleMouseMove);
+    }, [mouseHasMoved, onMouseMoved]);
 
     // 滚动到选中项
     useEffect(() => {
@@ -386,7 +400,7 @@ export const SlashMenuComponent = forwardRef<SlashMenuRef, SlashMenuProps>(
                             : "text-foreground hover:bg-accent/50"
                         )}
                         onClick={() => selectItem(globalIndex)}
-                        onMouseEnter={() => setSelectedIndex(globalIndex)}
+                        onMouseEnter={() => mouseHasMoved && setSelectedIndex(globalIndex)}
                       >
                         <div
                           className={cn(
@@ -431,6 +445,16 @@ export const createSlashMenuPlugin = (t: any) => {
   let popup: TippyInstance[] | null = null;
   const SLASH_MENU_ITEMS = getSlashMenuItems(t);
 
+  // 隐藏鼠标光标
+  const hideCursor = () => {
+    document.body.style.cursor = "none";
+  };
+
+  // 恢复鼠标光标
+  const restoreCursor = () => {
+    document.body.style.cursor = "";
+  };
+
   return {
     char: "/",
 
@@ -461,11 +485,14 @@ export const createSlashMenuPlugin = (t: any) => {
         onStart: (props: any) => {
           // 锁定主容器滚动，防止弹出菜单位置偏移
           lockScroll();
+          // 隐藏鼠标光标，直到用户移动鼠标
+          hideCursor();
 
           localComponent = new ReactRenderer(SlashMenuComponent, {
             props: {
               items: props.items,
               t,
+              onMouseMoved: restoreCursor,
               command: (item: SlashMenuItem) => {
                 // 删除 / 字符和查询文本
                 props.editor.chain().focus().deleteRange(props.range).run();
@@ -541,6 +568,8 @@ export const createSlashMenuPlugin = (t: any) => {
         onExit() {
           // 解锁滚动
           unlockScroll();
+          // 恢复鼠标光标
+          restoreCursor();
 
           popup?.[0]?.destroy();
           localComponent?.destroy();

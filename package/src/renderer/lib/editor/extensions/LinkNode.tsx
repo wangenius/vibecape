@@ -184,7 +184,7 @@ function LinkComponent(props: any) {
                 openLink(href);
               }
             }}
-            className={`underline underline-offset-2 decoration-current/30 text-muted-foreground ${
+            className={`underline underline-offset-2 decoration-current text-muted-foreground ${
               isModHover && href ? "cursor-pointer" : "cursor-text"
             }`}
           >

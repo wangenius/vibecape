@@ -23,6 +23,7 @@ import { PromptCommand } from "./PromptCommand";
 import { PromptNode } from "./PromptNode";
 import { createPromptPlugin } from "../menus/PromptMenu";
 import { usePromptStore } from "@/hooks/stores/usePromptStore";
+import { useDocumentStore } from "@/hooks/stores/useDocumentStore";
 
 export interface DocAIPromptOptions {
   HTMLAttributes: Record<string, any>;
@@ -33,7 +34,10 @@ declare module "@tiptap/core" {
     docAIPrompt: {
       insertDocAIPrompt: () => ReturnType;
       insertDocAIPolish: () => ReturnType;
+      /** Generate 模式：将 PromptNode 转换为普通段落 */
       removeDocAIPrompt: (id: string) => ReturnType;
+      /** Polish 模式：直接删除 PromptNode 并移除关联的 mark */
+      deleteDocAIPrompt: (id: string) => ReturnType;
       /** 开始 Generate 模式流式编辑 */
       startAIGenerateStream: (nodeId: string) => ReturnType;
       /** 开始流式编辑：删除原文，创建 AIDiffMark，更新节点属性 */
@@ -209,7 +213,41 @@ export const DocAIPromptNode = Node.create<DocAIPromptOptions>({
           return true;
         },
 
+      /** 
+       * Generate 模式：将 PromptNode 转换为普通段落
+       */
       removeDocAIPrompt:
+        (id: string) =>
+        ({ state, tr, dispatch }) => {
+          let found = false;
+          let nodePos: number | null = null;
+          let nodeSize: number = 0;
+
+          // 找到目标节点
+          state.doc.descendants((node, pos) => {
+            if (node.type.name === "docAIPrompt" && node.attrs.id === id) {
+              nodePos = pos;
+              nodeSize = node.nodeSize;
+              found = true;
+              return false;
+            }
+            return true;
+          });
+
+          if (!found || nodePos === null) return false;
+
+          // 用空段落替换 DocAIPromptNode（转换为普通节点）
+          const paragraph = state.schema.nodes.paragraph.create();
+          tr.replaceWith(nodePos, nodePos + nodeSize, paragraph);
+
+          if (dispatch) dispatch(tr);
+          return true;
+        },
+
+      /**
+       * Polish 模式：直接删除 PromptNode 并移除关联的 mark
+       */
+      deleteDocAIPrompt:
         (id: string) =>
         ({ state, tr, dispatch }) => {
           let found = false;
@@ -231,11 +269,10 @@ export const DocAIPromptNode = Node.create<DocAIPromptOptions>({
 
           if (!found || nodePos === null) return false;
 
-          // 用空段落替换 DocAIPromptNode（转换为普通节点）
-          const paragraph = state.schema.nodes.paragraph.create();
-          tr.replaceWith(nodePos, nodePos + nodeSize, paragraph);
+          // 直接删除 DocAIPromptNode
+          tr.delete(nodePos, nodePos + nodeSize);
 
-          // 如果有关联的 mark（polish 模式），移除它（波浪线）
+          // 移除关联的 polish mark（波浪线）
           if (markId) {
             const markType = state.schema.marks.docAIPolishMark;
             if (markType) {
@@ -742,7 +779,7 @@ function DocAIPromptComponent(props: any) {
     if (currentDiffId) {
       if (nodeAttrs?.isCrossNode) {
         // 跨节点：删除 AIDiffNode，保留原文
-        const diffNodeType = editor.state.schema.nodes.docAIPromptffNode;
+        const diffNodeType = editor.state.schema.nodes.aiDiffNode;
         const polishMarkType = editor.state.schema.marks.docAIPolishMark;
         const { tr } = editor.state;
 
@@ -861,34 +898,51 @@ function DocAIPromptComponent(props: any) {
       const currentNode = editor.state.doc.nodeAt(props.getPos());
       const isCrossNode = currentNode?.attrs.isCrossNode;
 
-      // 构建系统消息
-      const systemMessage = isPolishMode
-        ? {
-            role: "system",
-            content: `你是一个专业的小说写作助手。请根据用户的润色需求，改写以下文字。
-
-原文：
-${savedOriginalText}
-
-要求：
-1. 直接输出润色后的内容，不要有任何前缀或解释
-2. 保持原文的核心意思
-3. 保持与上下文一致的风格和语气
-${
-  !isCrossNode
-    ? "4. 纯文本输出，不使用 Markdown 格式"
-    : "4. 使用 Markdown 格式输出"
-}`,
+      // 获取文档上下文信息
+      const { activeDoc, activeDocId } = useDocumentStore.getState();
+      
+      // 获取当前节点位置
+      const nodePos = props.getPos();
+      
+      // 获取上方节点内容（最多3个节点）
+      let contextBefore = "";
+      if (nodePos > 0) {
+        const doc = editor.state.doc;
+        const nodesBeforeContent: string[] = [];
+        let collected = 0;
+        
+        doc.nodesBetween(0, nodePos, (node) => {
+          if (collected >= 3) return false;
+          if (node.type.name !== "title" && node.type.name !== "docAIPrompt" && node.isBlock) {
+            const text = node.textContent.trim();
+            if (text) {
+              nodesBeforeContent.push(text);
+              collected++;
+            }
           }
-        : {
-            role: "system",
-            content: `你是一个专业的小说写作助手。请根据用户的指令生成内容。
+          return true;
+        });
+        
+        // 取最后3个
+        contextBefore = nodesBeforeContent.slice(-3).join("\n\n");
+      }
 
-要求：
-1. 直接输出生成的内容，不要有任何前缀或解释
-2. 保持与上下文一致的风格和语气
-3. 使用 Markdown 格式输出`,
-          };
+      // 构建完整的 prompt（包含提及的预设提示词）
+      let fullPrompt = "";
+      miniEditorRef.current?.state.doc.descendants((node) => {
+        if (node.type.name === "promptNode") {
+          // 获取预设提示词的实际内容
+          const promptId = node.attrs.id;
+          const promptContent = usePromptStore.getState().getPromptText(promptId);
+          if (promptContent) {
+            fullPrompt += promptContent;
+          }
+        } else if (node.isText) {
+          fullPrompt += node.text || "";
+        }
+        return true;
+      });
+      fullPrompt = fullPrompt.trim();
 
       let fullResponse = "";
 
@@ -922,7 +976,7 @@ ${
 
       (window as any).electron?.ipcRenderer.on(channel, handler);
 
-      // 使用 docs:ai:generate API
+      // 使用 docs:ai:generate API - 只传递上下文信息，提示词在后端构建
       const docsAI = (window as any).api?.docs?.ai;
       if (!docsAI?.generate) {
         throw new Error(t("common.aiRewrite.apiNotEnabled"));
@@ -930,8 +984,22 @@ ${
 
       await docsAI.generate({
         id: requestId,
-        prompt: prompt.trim(),
-        messages: [systemMessage],
+        // 上下文信息，提示词在后端构建
+        context: {
+          // 文档信息
+          docId: activeDocId,
+          docTitle: activeDoc?.title || "",
+          // 模式: polish = 润色选中文本, generate = 生成新内容
+          mode: isPolishMode ? "polish" : "generate",
+          // 输出格式
+          outputFormat: isCrossNode ? "markdown" : "plaintext",
+          // 上方内容（上下文）
+          contextBefore,
+          // 选中的原文（polish 模式）
+          selectedText: savedOriginalText,
+          // 用户输入的提示词（已包含展开的预设提示词）
+          prompt: fullPrompt,
+        },
       });
     } catch (err) {
       console.error("AI 改写失败:", err);
@@ -943,7 +1011,9 @@ ${
     }
   }, [prompt, status, editor, isPolishMode, markId, nodeId, props, t, node]);
 
-  // 取消：拒绝 diff 并关闭输入节点，将 PromptNode 转换为普通段落
+  // 取消：根据模式不同处理
+  // - Generate 模式：将 PromptNode 转换为普通段落
+  // - Polish 模式：直接删除 PromptNode，光标移到选中文本末尾
   const handleCancel = useCallback(() => {
     // 停止进行中的请求
     if (abortControllerRef.current) {
@@ -958,7 +1028,7 @@ ${
     // 记录当前节点位置，用于转换后定位光标
     const currentNodePos = props.getPos();
 
-    // 如果有 diff，拒绝它（这会删除 diff 内容和 PromptNode）
+    // 如果有 diff，拒绝它
     if (currentDiffId) {
       const nodeAttrs = editor.state.doc.nodeAt(props.getPos())?.attrs;
       if (nodeAttrs?.isCrossNode) {
@@ -967,7 +1037,7 @@ ${
         editor.commands.rejectAIDiff(currentDiffId);
       }
       
-      // polish 模式：光标移动到原文末尾
+      // 光标移动到原文末尾
       setTimeout(() => {
         let originalTextEndPos = -1;
         const polishMarkType = editor.state.schema.marks.docAIPolishMark;
@@ -991,8 +1061,43 @@ ${
           editor.commands.focus();
         }
       }, 0);
+    } else if (isPolishMode) {
+      // Polish 模式（无 diff）：直接删除 PromptNode，光标移到选中文本末尾
+      // 先找到原文末尾位置
+      let originalTextEndPos = -1;
+      const polishMarkType = editor.state.schema.marks.docAIPolishMark;
+      if (polishMarkType && markId) {
+        editor.state.doc.descendants((n, pos) => {
+          if (n.isText) {
+            const mark = n.marks.find(
+              (m) => m.type === polishMarkType && m.attrs.id === markId
+            );
+            if (mark) {
+              originalTextEndPos = pos + n.nodeSize;
+            }
+          }
+          return true;
+        });
+      }
+
+      // 删除 PromptNode 并移除 mark
+      editor.commands.deleteDocAIPrompt(nodeId);
+
+      // 将光标移动到原文末尾
+      setTimeout(() => {
+        if (originalTextEndPos !== -1) {
+          // 由于删除了节点，需要调整位置
+          const nodeSize = node.nodeSize || 0;
+          const adjustedPos = originalTextEndPos > currentNodePos 
+            ? originalTextEndPos - nodeSize 
+            : originalTextEndPos;
+          editor.commands.focus(Math.max(1, adjustedPos));
+        } else {
+          editor.commands.focus();
+        }
+      }, 0);
     } else {
-      // 没有 diff（generate 模式）：将 PromptNode 转换为普通段落
+      // Generate 模式（无 diff）：将 PromptNode 转换为普通段落
       editor.commands.removeDocAIPrompt(nodeId);
 
       // 将光标移动到新创建的段落中
@@ -1011,7 +1116,7 @@ ${
         }
       }, 0);
     }
-  }, [editor, nodeId, props, node]);
+  }, [editor, nodeId, props, node, isPolishMode, markId]);
 
   // 接受 diff 并关闭输入节点，光标移动到新内容的末尾
   const handleAccept = useCallback(() => {

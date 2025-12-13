@@ -34,8 +34,18 @@ const api = {
     moveDoc: (storyId: string, sourceId: string, targetFolderId: string) =>
       ipcRenderer.invoke("docs:moveDoc", { storyId, sourceId, targetFolderId }),
     ai: {
-      generate: (payload: { id: string; prompt: string; messages?: any[] }) =>
-        ipcRenderer.invoke("docs:ai:generate", payload),
+      generate: (payload: {
+        id: string;
+        context: {
+          docId?: string;
+          docTitle?: string;
+          mode: "polish" | "generate";
+          outputFormat: "markdown" | "plaintext";
+          contextBefore?: string;
+          selectedText?: string;
+          prompt: string;
+        };
+      }) => ipcRenderer.invoke("docs:ai:generate", payload),
       cancel: (id: string) => ipcRenderer.invoke("docs:ai:cancel", id),
     },
   },

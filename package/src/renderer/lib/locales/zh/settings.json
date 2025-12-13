@@ -4,6 +4,8 @@
   "darkMode": "黑暗模式",
   "lightMode": "明亮模式",
   "toggleMode": "切换明亮和黑暗显示模式",
+  "followSystemMode": "跟随系统",
+  "followSystemModeDesc": "自动跟随系统深色/浅色模式切换",
   "theme": "主题",
   "selectTheme": "选择界面主题风格",
   "language": "语言",

@@ -56,6 +56,15 @@ export const GeneralSettings = () => {
     void updateSettings(appConfigShape.ui.mode, checked ? "dark" : "light");
   }, []);
 
+  const handleFollowSystemModeChange = useCallback((checked: boolean) => {
+    void updateSettings(appConfigShape.ui.follow_system_mode, checked);
+    if (checked) {
+      // 立即应用系统主题
+      const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      void updateSettings(appConfigShape.ui.mode, isDark ? "dark" : "light");
+    }
+  }, []);
+
   const handleSelectDocsRoot = async () => {
     const result = await window.electron.ipcRenderer.invoke(
       "dialog:openDirectory"
@@ -72,18 +81,30 @@ export const GeneralSettings = () => {
         description={t("common.settings.customizeInterface")}
       >
         <SettingItem
-          label={
-            settings.ui.mode === "dark"
-              ? t("common.settings.darkMode")
-              : t("common.settings.lightMode")
-          }
-          description={t("common.settings.toggleMode")}
+          label={t("common.settings.followSystemMode")}
+          description={t("common.settings.followSystemModeDesc")}
         >
           <Switch
-            checked={settings.ui.mode === "dark"}
-            onCheckedChange={handleModeChange}
+            checked={settings.ui.follow_system_mode}
+            onCheckedChange={handleFollowSystemModeChange}
           />
         </SettingItem>
+
+        {!settings.ui.follow_system_mode && (
+          <SettingItem
+            label={
+              settings.ui.mode === "dark"
+                ? t("common.settings.darkMode")
+                : t("common.settings.lightMode")
+            }
+            description={t("common.settings.toggleMode")}
+          >
+            <Switch
+              checked={settings.ui.mode === "dark"}
+              onCheckedChange={handleModeChange}
+            />
+          </SettingItem>
+        )}
 
         <SettingItem
           label={t("common.settings.theme")}

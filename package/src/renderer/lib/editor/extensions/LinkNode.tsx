@@ -4,7 +4,11 @@
  */
 
 import { Node, mergeAttributes } from "@tiptap/core";
-import { NodeViewContent, ReactNodeViewRenderer, NodeViewWrapper } from "@tiptap/react";
+import {
+  NodeViewContent,
+  ReactNodeViewRenderer,
+  NodeViewWrapper,
+} from "@tiptap/react";
 import { Plugin, PluginKey, TextSelection } from "@tiptap/pm/state";
 import { useState, useCallback, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
@@ -12,7 +16,6 @@ import {
   Popover,
   PopoverAnchor,
   PopoverContent,
-  PopoverTrigger,
 } from "@/components/ui/popover";
 
 // URL 正则
@@ -21,7 +24,11 @@ const URL_REGEX = /^(https?:\/\/)?[\w-]+(\.[\w-]+)+[^\s]*$/i;
 declare module "@tiptap/core" {
   interface Commands<ReturnType> {
     linkNode: {
-      setLinkNode: (options: { href: string; title?: string; isNew?: boolean }) => ReturnType;
+      setLinkNode: (options: {
+        href: string;
+        title?: string;
+        isNew?: boolean;
+      }) => ReturnType;
       insertLinkPlaceholder: () => ReturnType;
     };
   }
@@ -80,12 +87,49 @@ function LinkComponent(props: any) {
     const tr = state.tr.setSelection(TextSelection.create(state.doc, from, to));
     view.dispatch(tr);
     setTimeout(() => props.updateAttributes({ isNew: false }), 0);
-  }, [isNew, props.editor, props.getPos, props.node.nodeSize, props.updateAttributes]);
+  }, [
+    isNew,
+    props.editor,
+    props.getPos,
+    props.node.nodeSize,
+    props.updateAttributes,
+  ]);
+
+  // 监听选区变化，当节点内文本被全选时弹出编辑框
+  useEffect(() => {
+    const { editor } = props;
+    if (!editor) return;
+
+    const checkSelection = () => {
+      const pos = typeof props.getPos === "function" ? props.getPos() : null;
+      if (typeof pos !== "number") return;
+
+      const { state } = editor;
+      const { from, to } = state.selection;
+      const nodeSize = props.node.nodeSize;
+      const nodeStart = pos + 1;
+      const nodeEnd = pos + nodeSize - 1;
+      const textLength = nodeEnd - nodeStart;
+
+      // 检查是否全选了节点内的文本（至少有1个字符）
+      if (textLength > 0 && from === nodeStart && to === nodeEnd) {
+        setOpen(true);
+      }
+    };
+
+    editor.on("selectionUpdate", checkSelection);
+    return () => {
+      editor.off("selectionUpdate", checkSelection);
+    };
+  }, [props.editor, props.getPos, props.node.nodeSize]);
 
   const normalizeUrl = useCallback((raw: string) => {
     const trimmedUrl = raw.trim();
     if (!trimmedUrl) return "";
-    if (!trimmedUrl.startsWith("http://") && !trimmedUrl.startsWith("https://")) {
+    if (
+      !trimmedUrl.startsWith("http://") &&
+      !trimmedUrl.startsWith("https://")
+    ) {
       return `https://${trimmedUrl}`;
     }
     return trimmedUrl;
@@ -127,16 +171,8 @@ function LinkComponent(props: any) {
   );
 
   return (
-    <NodeViewWrapper
-      as="span"
-      className="inline-flex items-baseline"
-      data-type="link-node"
-    >
+    <NodeViewWrapper as="span" className="inline" data-type="link-node">
       <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <span tabIndex={-1} aria-hidden className="sr-only" />
-        </PopoverTrigger>
-
         <PopoverAnchor asChild>
           <span
             onMouseMove={(e) => setIsModHover(e.metaKey || e.ctrlKey)}
@@ -148,17 +184,14 @@ function LinkComponent(props: any) {
                 openLink(href);
               }
             }}
-            onDoubleClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              setOpen(true);
-            }}
-            className={`min-w-[1ch] underline underline-offset-2 decoration-current/30 text-muted-foreground ${
+            className={`underline underline-offset-2 decoration-current/30 text-muted-foreground ${
               isModHover && href ? "cursor-pointer" : "cursor-text"
             }`}
           >
-            <NodeViewContent as="span" />
-            {isTextEmpty ? (title || "链接") : null}
+            <NodeViewContent
+              as={"span" as any}
+              className="outline-none empty:before:content-['链接'] empty:before:text-muted-foreground/50"
+            />
           </span>
         </PopoverAnchor>
 
@@ -212,7 +245,8 @@ export const LinkNode = Node.create({
       },
       title: {
         default: null,
-        parseHTML: (element) => element.getAttribute("title") || element.textContent,
+        parseHTML: (element) =>
+          element.getAttribute("title") || element.textContent,
         renderHTML: (attributes) => ({
           title: attributes.title,
         }),
@@ -302,14 +336,19 @@ export const LinkNode = Node.create({
             // 检查是否是 URL
             if (URL_REGEX.test(text)) {
               event.preventDefault();
-              
+
               // 确保有协议
-              const href = text.startsWith("http://") || text.startsWith("https://")
-                ? text
-                : `https://${text}`;
-              
+              const href =
+                text.startsWith("http://") || text.startsWith("https://")
+                  ? text
+                  : `https://${text}`;
+
               // 插入链接节点，title 默认为 "链接"，标记为新节点
-              this.editor.chain().focus().setLinkNode({ href, title: "链接", isNew: true }).run();
+              this.editor
+                .chain()
+                .focus()
+                .setLinkNode({ href, title: "链接", isNew: true })
+                .run();
               return true;
             }
 

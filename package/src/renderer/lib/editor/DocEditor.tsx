@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import type { JSONContent } from "@tiptap/core";
 import type { DocData } from "@common/schema/docs";
@@ -10,7 +10,10 @@ import {
   useDocEditorSync,
   editorPropsConfig,
 } from "./hooks";
-import { createDocumentWithTitle } from "./extensions/TitleNode";
+import {
+  createDocumentWithTitle,
+  getTitleFromDocument,
+} from "./extensions/TitleNode";
 
 type Props = {
   doc: DocData;
@@ -64,6 +67,45 @@ export const DocEditor = ({ doc, onChange, onSave }: Props) => {
 
   // 文档同步、远程工具、快捷键等
   useDocEditorSync({ editor, doc, onSave });
+
+  // 自动聚焦逻辑：标题为空时聚焦标题，否则内容为空时聚焦内容第一行
+  useEffect(() => {
+    if (!editor || !editor.isEditable) return;
+
+    // 等待编辑器完全初始化
+    const timer = setTimeout(() => {
+      const docContent = editor.getJSON();
+      const title = getTitleFromDocument(docContent);
+
+      if (!title || title.trim() === "") {
+        // 标题为空，聚焦到标题位置（位置 1 是 title 节点内部开头）
+        editor.commands.focus(1);
+      } else {
+        // 标题不为空，检查内容是否为空
+        const content = docContent.content || [];
+        // 第一个节点是 title，检查后续内容
+        const bodyContent = content.slice(1);
+
+        // 判断内容是否为空（只有一个空段落或没有实际文本）
+        const isBodyEmpty =
+          bodyContent.length === 0 ||
+          (bodyContent.length === 1 &&
+            bodyContent[0]?.type === "paragraph" &&
+            (!bodyContent[0]?.content || bodyContent[0]?.content.length === 0));
+
+        if (isBodyEmpty) {
+          // 内容为空，聚焦到内容第一行
+          const titleNode = editor.state.doc.firstChild;
+          if (titleNode) {
+            const afterTitlePos = titleNode.nodeSize + 1;
+            editor.commands.focus(afterTitlePos);
+          }
+        }
+      }
+    }, 0);
+
+    return () => clearTimeout(timer);
+  }, [editor, doc.id]);
 
   // 点击底部空白区域时聚焦到编辑器末尾
   const handleContainerClick = useCallback(

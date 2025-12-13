@@ -7,6 +7,32 @@
 import { Node, mergeAttributes } from "@tiptap/core";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 
+// Suggestion 插件的 PluginKey 列表，用于检查是否有菜单激活
+const suggestionPluginKeys = [
+  "slashSuggestion",
+  "mentionSuggestion",
+];
+
+/**
+ * 检查是否有任何 Suggestion 菜单正在激活
+ */
+function isSuggestionActive(editor: any): boolean {
+  const { state } = editor;
+  for (const keyName of suggestionPluginKeys) {
+    // Suggestion 插件的状态中有 active 属性
+    const pluginState = state.plugins.find(
+      (p: any) => p.key?.startsWith(`${keyName}$`)
+    );
+    if (pluginState) {
+      const pluginData = pluginState.getState(state);
+      if (pluginData?.active) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 export interface TitleNodeOptions {
   HTMLAttributes: Record<string, unknown>;
   placeholder?: string;
@@ -163,6 +189,11 @@ export const TitleNode = Node.create<TitleNodeOptions>({
 
       // 在 title 节点中按 ArrowDown 应该跳到下一个节点
       ArrowDown: ({ editor }) => {
+        // 如果有 Suggestion 菜单激活，不拦截事件
+        if (isSuggestionActive(editor)) {
+          return false;
+        }
+
         const { selection } = editor.state;
         const { $from } = selection;
 
@@ -210,6 +241,12 @@ export const TitleNode = Node.create<TitleNodeOptions>({
 
       // 从第一个内容节点通过上键移动到 title 节点末尾
       ArrowUp: ({ editor }) => {
+        // 如果有 Suggestion 菜单激活（如 SlashMenu 或 MentionMenu），不拦截事件
+        // 让事件传递给 Suggestion 插件处理菜单导航
+        if (isSuggestionActive(editor)) {
+          return false;
+        }
+
         const { selection } = editor.state;
         const { $from, empty } = selection;
 

@@ -16,9 +16,8 @@ import {
 } from "@/components/ui/command";
 import { Palette } from "@/lib/palette/base";
 import {
-  openStatsTab,
   toggleLeftSidebar,
-  toggleBayBar,
+  toggleBayBar
 } from "@/hooks/app/useViewManager";
 import { openSettingsDialog } from "@/layouts/settings";
 import { useSettings, updateSettings } from "@/hooks/app/useSettings";
@@ -79,7 +78,7 @@ export const CommandPalette = ({ extraCommands = [] }: CommandPaletteProps) => {
       id: "open-stats",
       label: t("command.openStats", "打开统计"),
       icon: <BarChart3 className="h-4 w-4" />,
-      action: () => openStatsTab(),
+      action: () => {},
       group: "navigation",
       keywords: ["stats", "statistics", "统计", "数据"],
     },

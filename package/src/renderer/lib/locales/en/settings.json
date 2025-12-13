@@ -4,6 +4,8 @@
   "darkMode": "Dark Mode",
   "lightMode": "Light Mode",
   "toggleMode": "Toggle between light and dark display mode",
+  "followSystemMode": "Follow System",
+  "followSystemModeDesc": "Automatically switch dark/light mode with system",
   "theme": "Theme",
   "selectTheme": "Select interface theme style",
   "language": "Language",

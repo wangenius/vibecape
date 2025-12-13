@@ -9,8 +9,9 @@ import { ReactNodeViewRenderer, NodeViewWrapper } from "@tiptap/react";
 import type { NodeViewProps } from "@tiptap/react";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { useState, useCallback, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
-import { Loader2, ImageIcon, X } from "lucide-react";
+import { Loader2, ImageIcon, X, Maximize2 } from "lucide-react";
 import { toast } from "sonner";
 import { lang } from "@/lib/locales/i18n";
 import { useTranslation } from "react-i18next";
@@ -345,35 +346,50 @@ const ImageComponent = ({
                 )}
               />
             )}
+            {/* 展开按钮 - hover 时显示 */}
+            {!loading && (
+              <button
+                className="absolute top-2 right-2 p-1.5 rounded-md bg-black/50 text-white opacity-0 group-hover:opacity-100 hover:bg-black/70 transition-all"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowPreview(true);
+                }}
+              >
+                <Maximize2 className="size-4" />
+              </button>
+            )}
           </div>
         )}
       </figure>
 
-      {/* 图片预览弹层 */}
-      {showPreview && resolvedSrc && (
-        <div
-          className="modal-container bg-foreground/80 backdrop-blur-sm animate-in fade-in duration-200"
-          onClick={() => setShowPreview(false)}
-        >
-          <button
-            className="absolute top-md right-md p-sm rounded-full bg-background/10 text-background hover:bg-background/20 transition-colors"
+      {/* 图片预览弹层 - 使用 Portal 渲染到 body */}
+      {showPreview &&
+        resolvedSrc &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-9999 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-200"
             onClick={() => setShowPreview(false)}
           >
-            <X className="size-5" />
-          </button>
-          <img
-            src={resolvedSrc}
-            alt={alt || ""}
-            className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl animate-in zoom-in-95 duration-200"
-            onClick={(e) => e.stopPropagation()}
-          />
-          {alt && (
-            <div className="absolute bottom-md left-1/2 -translate-x-1/2 px-md py-sm bg-foreground/60 text-background text-sm rounded-full backdrop-blur-sm">
-              {alt}
-            </div>
-          )}
-        </div>
-      )}
+            <button
+              className="absolute top-4 right-4 p-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
+              onClick={() => setShowPreview(false)}
+            >
+              <X className="size-5" />
+            </button>
+            <img
+              src={resolvedSrc}
+              alt={alt || ""}
+              className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl animate-in zoom-in-95 duration-200"
+              onClick={(e) => e.stopPropagation()}
+            />
+            {alt && (
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 bg-black/60 text-white text-sm rounded-full backdrop-blur-sm">
+                {alt}
+              </div>
+            )}
+          </div>,
+          document.body
+        )}
     </NodeViewWrapper>
   );
 };

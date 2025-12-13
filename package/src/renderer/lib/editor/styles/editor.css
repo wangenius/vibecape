@@ -1,5 +1,11 @@
 /* Editor 样式 */
 
+/* ========== 编辑器根元素样式 ========== */
+.tiptap,
+.ProseMirror {
+  color: var(--foreground);
+}
+
 /* ========== Title Node 样式 ========== */
 .title-node,
 h1.title-node,
@@ -13,6 +19,7 @@ h1.title-node,
   outline: none;
   border: none;
   background: transparent;
+  color: var(--foreground);
 }
 
 /* Title 节点的 placeholder */
@@ -74,6 +81,7 @@ h1.title-node,
   margin-bottom: 0;
   margin-top: 1em;
   margin-bottom: 0.5em;
+  color: var(--foreground);
 }
 
 .tiptap h1:first-child,
@@ -115,6 +123,7 @@ h1.title-node,
   margin: 0;
   padding: 0;
   line-height: 1.7;
+  color: var(--foreground);
 }
 
 .tiptap p + p {
@@ -147,6 +156,7 @@ h1.title-node,
 
 .tiptap li {
   margin: 0.25em 0;
+  color: var(--foreground);
 }
 
 .tiptap li > p {

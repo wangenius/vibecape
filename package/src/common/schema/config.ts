@@ -8,6 +8,7 @@
 export type UIConfig = {
   theme: string;
   mode: "light" | "dark";
+  follow_system_mode: boolean;
   language: string;
   prompt_language: string;
   show_chapter_list: boolean;
@@ -72,6 +73,7 @@ export type AppConfig = {
 export const DEFAULT_UI_CONFIG: UIConfig = {
   theme: "default",
   mode: "light",
+  follow_system_mode: false,
   language: "en",
   prompt_language: "en",
   show_chapter_list: true,

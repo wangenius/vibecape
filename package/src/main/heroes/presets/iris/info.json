@@ -5,5 +5,9 @@
     "en": "Professional writing consultant for polishing and creating articles",
     "zh": "专业写作顾问，帮助打磨与创作文章"
   },
+  "welcome": {
+    "en": "Hello! I'm Iris, your writing consultant. Ready to help polish or create your articles.",
+    "zh": "你好！我是 Iris，你的写作顾问。随时帮你打磨或创作文章。"
+  },
   "avatar": "https://avatar.iran.liara.run/public/girl?username=iris"
 }

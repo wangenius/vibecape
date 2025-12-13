@@ -47,7 +47,7 @@ const REPO_SETTINGS_KEYS = ["basic", "asset", "link", "llmtxt", "trash"];
 const SettingsSidebar = () => {
   const { t } = useTranslation();
   const currentSection =
-    useViewManager((state) => state.previewCosmosId) || "general";
+    useViewManager((state) => state.settings_section) || "general";
   const repository = useRepositoryStore((state) => state.repository);
 
   return (
@@ -66,7 +66,7 @@ const SettingsSidebar = () => {
                 <Button
                   key={item.key}
                   onClick={() => {
-                    setViewManager({ previewCosmosId: item.key });
+                    setViewManager({ settings_section: item.key });
                   }}
                   size="sidebar"
                   actived={isActive}
@@ -95,7 +95,7 @@ const SettingsSidebar = () => {
             <Button
               key={item.key}
               onClick={() => {
-                setViewManager({ previewCosmosId: item.key });
+                setViewManager({ settings_section: item.key });
               }}
               size={"sidebar"}
               actived={isActive}
@@ -111,7 +111,7 @@ const SettingsSidebar = () => {
 };
 
 const SettingsDialogContent = () => {
-  const settingsSection = useViewManager((state) => state.previewCosmosId);
+  const settingsSection = useViewManager((state) => state.settings_section);
   const repository = useRepositoryStore((state) => state.repository);
 
   return (
@@ -150,10 +150,10 @@ export function openSettingsDialog(initialSection?: string) {
 
   // 设置初始 section
   if (initialSection) {
-    setViewManager({ previewCosmosId: initialSection });
+    setViewManager({ settings_section: initialSection });
   } else {
     // 默认显示 general
-    setViewManager({ previewCosmosId: "general" });
+    setViewManager({ settings_section: "general" });
   }
 
   const close = dialog({

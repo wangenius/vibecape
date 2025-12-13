@@ -5,5 +5,9 @@
     "en": "Senior programmer helping with code writing and optimization",
     "zh": "资深程序员，帮助编写和优化代码"
   },
+  "welcome": {
+    "en": "Hello! I'm Max, a senior programmer. Need help with coding or optimization?",
+    "zh": "你好！我是 Max，一位资深程序员。需要帮你写代码或做优化吗？"
+  },
   "avatar": "https://avatar.iran.liara.run/public/girl?username=max"
 }

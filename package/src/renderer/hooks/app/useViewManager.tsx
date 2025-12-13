@@ -34,6 +34,8 @@ export interface ViewManagerState {
   /** 侧边栏视图模式：tree=文档树, toc=目录 */
   sidebarViewMode: SidebarViewMode;
 
+  settings_section: string;
+
   // ========== 历史记录 ==========
   /**
    * 路由历史记录
@@ -67,6 +69,7 @@ const useViewManagerStore = create<ViewManagerStore>()(
       isBayBarOpen: false,
       sidebarViewMode: "tree",
       history: [],
+      settings_section: "general",
 
       // ========== 基础状态操作 ==========
       setState: (newState) => set((state) => ({ ...state, ...newState })),

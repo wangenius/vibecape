@@ -22,6 +22,8 @@ export interface HeroInfo {
   description: BilingualPrompt;
   avatar: string;
   isDefault?: boolean;
+  /** 新会话欢迎消息 */
+  welcome?: BilingualPrompt;
 }
 
 /** 语言类型 */

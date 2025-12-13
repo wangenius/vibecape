@@ -8,7 +8,7 @@ import { StorageSettings } from "./StorageSettings";
 import { AboutSettings } from "./AboutSettings";
 
 export const AppSettingsPanel = () => {
-  const settingsSection = useViewManager((state) => state.previewCosmosId);
+  const settingsSection = useViewManager((state) => state.settings_section);
 
   switch (settingsSection) {
     case "models":

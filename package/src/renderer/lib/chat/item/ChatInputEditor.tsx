@@ -140,7 +140,6 @@ export const ChatInputEditor = ({
               onClick={onStop}
               size="icon"
               className="chat-input-stop-btn"
-              variant="secondary"
               title={t("chat.input.stopGeneration")}
             >
               <StopIcon className="h-4 w-4 stroke-3" />

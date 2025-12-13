@@ -1,17 +1,20 @@
 import { useCallback, useState, useEffect } from "react";
-import { TbSparkles } from "react-icons/tb";
 import {
   Conversation,
   ConversationContent,
   ConversationScrollButton,
 } from "@/lib/chat/item/conversation";
 import { useChat } from "@/hooks/chat/useChat";
+import { useHero } from "@/hooks/chat/useHero";
 import type { UIMessage } from "ai";
 import { MessageRenderer, ErrorMessage } from "@/lib/chat/item/MessageRenderer";
 import {
   ChatInputEditor,
   ChatInputProps,
 } from "@/lib/chat/item/ChatInputEditor";
+import { useTranslation } from "react-i18next";
+import { getPrompt, type LocaleLike } from "@common/types/hero";
+import { CachedAvatar } from "@/hooks/util/useAvatarCache";
 
 // 预设建议
 const suggestionPresets = [
@@ -49,6 +52,10 @@ interface ChatCoreProps {
 }
 
 export const ChatCore: React.FC<ChatCoreProps> = ({ chatId }) => {
+  const { i18n } = useTranslation();
+  const locale: LocaleLike = i18n.language?.startsWith("zh") ? "zh" : "en";
+  const { currentHero } = useHero();
+
   const { messages, status, error, sendMessage, stop, getQueueLength } =
     useChat(chatId);
   const [queueLength, setQueueLength] = useState(0);
@@ -98,9 +105,23 @@ export const ChatCore: React.FC<ChatCoreProps> = ({ chatId }) => {
           {visibleMessages.length === 0 ? (
             <div className="flex flex-col items-center justify-center min-h-[50vh] gap-8 px-4">
               <div className="flex flex-col items-center gap-3">
-                <TbSparkles className="h-8 w-8 text-muted-foreground/40" />
-                <p className="text-xs text-muted-foreground/60 tracking-wide">
-                  开始对话
+                {currentHero?.avatar ? (
+                  <CachedAvatar
+                    src={currentHero.avatar}
+                    alt={currentHero.name}
+                    className="size-12 rounded-full"
+                  />
+                ) : (
+                  <div className="size-12 rounded-full bg-muted-foreground/20" />
+                )}
+                <p className="text-sm text-muted-foreground/80 tracking-wide text-center max-w-xs">
+                  {currentHero?.welcome
+                    ? getPrompt(currentHero.welcome, locale)
+                    : currentHero?.description
+                      ? getPrompt(currentHero.description, locale)
+                      : locale === "zh"
+                        ? "开始对话"
+                        : "Start a conversation"}
                 </p>
               </div>
               <div className="w-full max-w-md flex flex-col gap-2">

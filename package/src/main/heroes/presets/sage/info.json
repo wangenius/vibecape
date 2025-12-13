@@ -5,5 +5,9 @@
     "en": "Data analysis and logical reasoning expert",
     "zh": "数据分析与逻辑推理专家"
   },
+  "welcome": {
+    "en": "Greetings! I'm Sage, your data analysis and logical reasoning expert. What would you like to analyze?",
+    "zh": "你好！我是 Sage，数据分析与逻辑推理专家。有什么需要分析的吗？"
+  },
   "avatar": "https://avatar.iran.liara.run/public?username=sage"
 }

@@ -11,7 +11,7 @@ export const RepositorySettingsPanel = () => {
   const { t } = useTranslation();
   const repository = useRepositoryStore((state) => state.repository);
   const settingsSection =
-    useViewManager((state) => state.previewCosmosId) || "basic";
+    useViewManager((state) => state.settings_section) || "basic";
 
   if (!repository) {
     return (

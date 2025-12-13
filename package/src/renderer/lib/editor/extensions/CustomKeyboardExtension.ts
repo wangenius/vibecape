@@ -7,8 +7,8 @@
  */
 
 import { Extension } from "@tiptap/core";
-import { TextSelection } from "@tiptap/pm/state";
-import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
+import { Plugin, PluginKey, TextSelection } from "@tiptap/pm/state";
+import type { MarkType, Node as ProseMirrorNode, ResolvedPos } from "@tiptap/pm/model";
 
 // 标点符号（中英文）+ 空格
 const PUNCTUATION_CHARS = `，。！？；：、""''（）【】《》—…,.!?;:'"()[]<>-· `;
@@ -17,14 +17,294 @@ function isPunctuation(char: string): boolean {
   return PUNCTUATION_CHARS.includes(char);
 }
 
+function getContiguousMarkRange(
+  $pos: ResolvedPos,
+  markType: MarkType
+): { from: number; to: number } | null {
+  const parent = $pos.parent;
+  const parentStart = $pos.start($pos.depth);
+  const offset = $pos.parentOffset;
+
+  const hasMark = (node: ProseMirrorNode) =>
+    !!node.marks?.find((m) => m.type === markType);
+
+  const getMarkAttrsKey = (node: ProseMirrorNode) => {
+    const m = node.marks?.find((mk) => mk.type === markType);
+    return m ? JSON.stringify(m.attrs ?? {}) : null;
+  };
+
+  // Prefer the text node after the cursor; if not marked, fallback to the one before.
+  const after = parent.childAfter(offset);
+  const before = offset > 0 ? parent.childBefore(offset) : null;
+
+  let anchor = after.node;
+  let anchorOffset = after.offset;
+
+  if (!anchor?.isText || !hasMark(anchor)) {
+    if (before?.node?.isText && hasMark(before.node)) {
+      anchor = before.node;
+      anchorOffset = before.offset;
+    } else {
+      return null;
+    }
+  }
+
+  const attrsKey = getMarkAttrsKey(anchor);
+  if (!attrsKey) return null;
+
+  let start = anchorOffset;
+  let end = anchorOffset + anchor.nodeSize;
+
+  // Extend left across adjacent text nodes that have the same mark (by type + attrs)
+  while (start > 0) {
+    const left = parent.childBefore(start);
+    if (!left?.node?.isText) break;
+    if (!hasMark(left.node)) break;
+    if (getMarkAttrsKey(left.node) !== attrsKey) break;
+    start = left.offset;
+  }
+
+  // Extend right across adjacent text nodes that have the same mark (by type + attrs)
+  while (end < parent.content.size) {
+    const right = parent.childAfter(end);
+    if (!right?.node?.isText) break;
+    if (!hasMark(right.node)) break;
+    if (getMarkAttrsKey(right.node) !== attrsKey) break;
+    end = right.offset + right.node.nodeSize;
+  }
+
+  const from = parentStart + start;
+  const to = parentStart + end;
+  if (from >= to) return null;
+
+  return { from, to };
+}
+
+function getContiguousWordRange(
+  $pos: ResolvedPos
+): { from: number; to: number } | null {
+  const parent = $pos.parent;
+  const parentStart = $pos.start($pos.depth);
+  const offset = $pos.parentOffset;
+
+  const before = offset > 0 ? parent.childBefore(offset) : null;
+  const after = parent.childAfter(offset);
+
+  let anchor = before?.node;
+  let anchorOffset = before?.offset ?? 0;
+  let indexInNode = before ? offset - before.offset : 0;
+
+  if (!anchor?.isText) {
+    anchor = after.node;
+    anchorOffset = after.offset;
+    indexInNode = 0;
+  }
+
+  if (!anchor?.isText) return null;
+
+  const text = anchor.text ?? "";
+  if (!text) return null;
+
+  const safeIndex = Math.max(0, Math.min(indexInNode, text.length));
+
+  let left = safeIndex;
+  let right = safeIndex;
+
+  while (left > 0 && !isPunctuation(text[left - 1]!)) {
+    left -= 1;
+  }
+
+  while (right < text.length && !isPunctuation(text[right]!)) {
+    right += 1;
+  }
+
+  if (left === right) return null;
+
+  const from = parentStart + anchorOffset + left;
+  const to = parentStart + anchorOffset + right;
+  if (from >= to) return null;
+
+  return { from, to };
+}
+
 export const CustomKeyboardExtension = Extension.create({
   name: "customKeyboard",
 
+  priority: 1000,
+
   addStorage() {
     return {
+      lastWordRange: null as { from: number; to: number } | null,
+      lastMarkRange: null as { from: number; to: number } | null,
       // 记录上次选中的段落范围（使用 storage 而非模块级变量，确保每个编辑器实例独立）
       lastParagraphRange: null as { from: number; to: number } | null,
     };
+  },
+
+  addProseMirrorPlugins() {
+    const editor = this.editor;
+    const storage = this.storage as {
+      lastWordRange: { from: number; to: number } | null;
+      lastMarkRange: { from: number; to: number } | null;
+      lastParagraphRange: { from: number; to: number } | null;
+    };
+
+    return [
+      new Plugin({
+        key: new PluginKey("customKeyboardModA"),
+        props: {
+          handleKeyDown: (_view, event) => {
+            const isModA =
+              (event.key === "a" || event.key === "A") &&
+              (event.metaKey || event.ctrlKey) &&
+              !event.altKey;
+
+            if (!isModA) return false;
+
+            event.preventDefault();
+
+            const { state } = editor;
+            const { selection, doc } = state;
+            const { $from } = selection;
+
+            const isSameRange = (r: { from: number; to: number } | null) =>
+              !!r && selection.from === r.from && selection.to === r.to;
+
+            const firstChild = doc.firstChild;
+            const hasTitle = firstChild && firstChild.type.name === "title";
+
+            if (hasTitle && $from.parent.type.name === "title") {
+              const titleStart = 1;
+              const titleEnd = firstChild.nodeSize - 1;
+              if (!(selection.from === titleStart && selection.to === titleEnd)) {
+                editor
+                  .chain()
+                  .focus()
+                  .setTextSelection({ from: titleStart, to: titleEnd })
+                  .run();
+              }
+              return true;
+            }
+
+            if (selection.empty) {
+              const wordRange = getContiguousWordRange($from);
+              if (wordRange && !isSameRange(wordRange)) {
+                editor
+                  .chain()
+                  .focus()
+                  .setTextSelection({ from: wordRange.from, to: wordRange.to })
+                  .run();
+                storage.lastWordRange = wordRange;
+                storage.lastMarkRange = null;
+                storage.lastParagraphRange = null;
+                return true;
+              }
+
+              if (state.schema.marks.link) {
+                const linkRange = getContiguousMarkRange($from, state.schema.marks.link);
+                if (linkRange && !isSameRange(linkRange)) {
+                  editor
+                    .chain()
+                    .focus()
+                    .setTextSelection({ from: linkRange.from, to: linkRange.to })
+                    .run();
+                  storage.lastWordRange = null;
+                  storage.lastMarkRange = linkRange;
+                  storage.lastParagraphRange = null;
+                  return true;
+                }
+              }
+            }
+
+            const contentStart = hasTitle ? firstChild.nodeSize : 0;
+            const docEnd = doc.content.size;
+
+            const isFullDocSelected =
+              selection.from <= contentStart + 1 &&
+              selection.to >= docEnd - 1 &&
+              selection.to - selection.from > 10;
+
+            if (isFullDocSelected) {
+              return true;
+            }
+
+            const paragraphStart = $from.start($from.depth);
+            const paragraphEnd = $from.end($from.depth);
+            const safeParagraphStart = Math.max(paragraphStart, contentStart);
+
+            if (!selection.empty && isSameRange(storage.lastWordRange) && state.schema.marks.link) {
+              const linkRange = getContiguousMarkRange($from, state.schema.marks.link);
+              if (linkRange && !isSameRange(linkRange)) {
+                editor
+                  .chain()
+                  .focus()
+                  .setTextSelection({ from: linkRange.from, to: linkRange.to })
+                  .run();
+                storage.lastWordRange = null;
+                storage.lastMarkRange = linkRange;
+                storage.lastParagraphRange = null;
+                return true;
+              }
+            }
+
+            if (!selection.empty && isSameRange(storage.lastMarkRange)) {
+              if (!(selection.from === safeParagraphStart && selection.to === paragraphEnd)) {
+                editor
+                  .chain()
+                  .focus()
+                  .setTextSelection({
+                    from: safeParagraphStart,
+                    to: paragraphEnd,
+                  })
+                  .run();
+                storage.lastWordRange = null;
+                storage.lastMarkRange = null;
+                storage.lastParagraphRange = {
+                  from: safeParagraphStart,
+                  to: paragraphEnd,
+                };
+                return true;
+              }
+            }
+
+            const isCurrentParagraphSelected =
+              selection.from === safeParagraphStart && selection.to === paragraphEnd;
+
+            const lastParagraphRange = storage.lastParagraphRange;
+            const wasLastSelectSameParagraph =
+              lastParagraphRange?.from === safeParagraphStart &&
+              lastParagraphRange?.to === paragraphEnd &&
+              isCurrentParagraphSelected;
+
+            if (wasLastSelectSameParagraph) {
+              editor
+                .chain()
+                .focus()
+                .setTextSelection({ from: contentStart, to: docEnd })
+                .run();
+              storage.lastWordRange = null;
+              storage.lastMarkRange = null;
+              storage.lastParagraphRange = null;
+              return true;
+            }
+
+            editor
+              .chain()
+              .focus()
+              .setTextSelection({ from: safeParagraphStart, to: paragraphEnd })
+              .run();
+            storage.lastWordRange = null;
+            storage.lastMarkRange = null;
+            storage.lastParagraphRange = {
+              from: safeParagraphStart,
+              to: paragraphEnd,
+            };
+
+            return true;
+          },
+        },
+      }),
+    ];
   },
 
   addKeyboardShortcuts() {
@@ -34,6 +314,9 @@ export const CustomKeyboardExtension = Extension.create({
         const { state } = editor;
         const { selection, doc } = state;
         const { $from } = selection;
+
+        const isSameRange = (r: { from: number; to: number } | null) =>
+          !!r && selection.from === r.from && selection.to === r.to;
 
         // 检查是否有 title 节点
         const firstChild = doc.firstChild;
@@ -56,6 +339,36 @@ export const CustomKeyboardExtension = Extension.create({
             .setTextSelection({ from: titleStart, to: titleEnd })
             .run();
           return true;
+        }
+
+        if (selection.empty) {
+          const wordRange = getContiguousWordRange($from);
+          if (wordRange && !isSameRange(wordRange)) {
+            editor
+              .chain()
+              .focus()
+              .setTextSelection({ from: wordRange.from, to: wordRange.to })
+              .run();
+            this.storage.lastWordRange = wordRange;
+            this.storage.lastMarkRange = null;
+            this.storage.lastParagraphRange = null;
+            return true;
+          }
+
+          if (state.schema.marks.link) {
+            const linkRange = getContiguousMarkRange($from, state.schema.marks.link);
+            if (linkRange && !isSameRange(linkRange)) {
+              editor
+                .chain()
+                .focus()
+                .setTextSelection({ from: linkRange.from, to: linkRange.to })
+                .run();
+              this.storage.lastWordRange = null;
+              this.storage.lastMarkRange = linkRange;
+              this.storage.lastParagraphRange = null;
+              return true;
+            }
+          }
         }
 
         // 计算正文起始位置（跳过 title 节点）
@@ -83,6 +396,35 @@ export const CustomKeyboardExtension = Extension.create({
         const isCurrentParagraphSelected =
           selection.from === safeParagraphStart &&
           selection.to === paragraphEnd;
+
+        if (!selection.empty && isSameRange(this.storage.lastWordRange) && state.schema.marks.link) {
+          const linkRange = getContiguousMarkRange($from, state.schema.marks.link);
+          if (linkRange && !isSameRange(linkRange)) {
+            editor
+              .chain()
+              .focus()
+              .setTextSelection({ from: linkRange.from, to: linkRange.to })
+              .run();
+            this.storage.lastWordRange = null;
+            this.storage.lastMarkRange = linkRange;
+            this.storage.lastParagraphRange = null;
+            return true;
+          }
+        }
+
+        if (!selection.empty && isSameRange(this.storage.lastMarkRange)) {
+          if (!(selection.from === safeParagraphStart && selection.to === paragraphEnd)) {
+            editor
+              .chain()
+              .focus()
+              .setTextSelection({ from: safeParagraphStart, to: paragraphEnd })
+              .run();
+            this.storage.lastWordRange = null;
+            this.storage.lastMarkRange = null;
+            this.storage.lastParagraphRange = { from: safeParagraphStart, to: paragraphEnd };
+            return true;
+          }
+        }
 
         const lastParagraphRange = this.storage.lastParagraphRange;
 

@@ -4,12 +4,16 @@
  */
 
 import { Node, mergeAttributes } from "@tiptap/core";
-import { ReactNodeViewRenderer, NodeViewWrapper } from "@tiptap/react";
-import { Plugin, PluginKey } from "@tiptap/pm/state";
+import { NodeViewContent, ReactNodeViewRenderer, NodeViewWrapper } from "@tiptap/react";
+import { Plugin, PluginKey, TextSelection } from "@tiptap/pm/state";
 import { useState, useCallback, useRef, useEffect } from "react";
-import { Link2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverAnchor,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 // URL 正则
 const URL_REGEX = /^(https?:\/\/)?[\w-]+(\.[\w-]+)+[^\s]*$/i;
@@ -29,32 +33,10 @@ function LinkComponent(props: any) {
   const [open, setOpen] = useState(false);
   const [urlInput, setUrlInput] = useState(href || "");
   const urlInputRef = useRef<HTMLInputElement>(null);
-  const titleRef = useRef<HTMLSpanElement>(null);
-  const hasInitialized = useRef(false);
+  const [isModHover, setIsModHover] = useState(false);
+  const hasMigratedLegacyTitle = useRef(false);
 
-  const displayText = title || "链接";
-  const isSelected = props.selected;
-
-  // 新插入的节点，自动选中标题文字
-  useEffect(() => {
-    if (isNew && !hasInitialized.current && titleRef.current) {
-      hasInitialized.current = true;
-      // 延迟执行，确保 DOM 已渲染
-      setTimeout(() => {
-        if (titleRef.current) {
-          titleRef.current.focus();
-          // 选中所有文字
-          const range = document.createRange();
-          range.selectNodeContents(titleRef.current);
-          const selection = window.getSelection();
-          selection?.removeAllRanges();
-          selection?.addRange(range);
-        }
-        // 移除 isNew 标记
-        props.updateAttributes({ isNew: false });
-      }, 0);
-    }
-  }, [isNew, props]);
+  const isTextEmpty = props.node.content.size === 0;
 
   // 打开 popover 时聚焦
   useEffect(() => {
@@ -63,22 +45,75 @@ function LinkComponent(props: any) {
     }
   }, [open]);
 
+  useEffect(() => {
+    if (open) return;
+    setUrlInput(href || "");
+  }, [href, open]);
+
+  useEffect(() => {
+    if (hasMigratedLegacyTitle.current) return;
+    if (!isTextEmpty) return;
+    if (!title) return;
+    const pos = typeof props.getPos === "function" ? props.getPos() : null;
+    if (typeof pos !== "number") return;
+
+    hasMigratedLegacyTitle.current = true;
+    props.editor
+      .chain()
+      .focus()
+      .command(({ tr, dispatch }) => {
+        tr.insertText(String(title), pos + 1);
+        if (dispatch) dispatch(tr);
+        return true;
+      })
+      .run();
+  }, [isTextEmpty, props.editor, props.getPos, title]);
+
+  useEffect(() => {
+    if (!isNew) return;
+    const pos = typeof props.getPos === "function" ? props.getPos() : null;
+    if (typeof pos !== "number") return;
+    const { state, view } = props.editor;
+    const nodeSize = props.node.nodeSize;
+    const from = pos + 1;
+    const to = Math.max(from, pos + nodeSize - 1);
+    const tr = state.tr.setSelection(TextSelection.create(state.doc, from, to));
+    view.dispatch(tr);
+    setTimeout(() => props.updateAttributes({ isNew: false }), 0);
+  }, [isNew, props.editor, props.getPos, props.node.nodeSize, props.updateAttributes]);
+
+  const normalizeUrl = useCallback((raw: string) => {
+    const trimmedUrl = raw.trim();
+    if (!trimmedUrl) return "";
+    if (!trimmedUrl.startsWith("http://") && !trimmedUrl.startsWith("https://")) {
+      return `https://${trimmedUrl}`;
+    }
+    return trimmedUrl;
+  }, []);
+
+  const openLink = useCallback(
+    (raw: string) => {
+      const finalUrl = normalizeUrl(raw);
+      if (!finalUrl) return;
+      window.open(finalUrl, "_blank");
+    },
+    [normalizeUrl]
+  );
+
   // 处理 URL 提交
   const handleUrlSubmit = useCallback(() => {
-    const trimmedUrl = urlInput.trim();
-    
-    let finalUrl = trimmedUrl;
-    if (trimmedUrl && !trimmedUrl.startsWith("http://") && !trimmedUrl.startsWith("https://")) {
-      finalUrl = `https://${trimmedUrl}`;
-    }
-
+    const finalUrl = normalizeUrl(urlInput);
     props.updateAttributes({ href: finalUrl || null });
     setOpen(false);
-  }, [urlInput, props]);
+  }, [normalizeUrl, urlInput, props]);
 
   // URL 键盘事件
   const handleUrlKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
+      if ((e.key === "a" || e.key === "A") && (e.metaKey || e.ctrlKey)) {
+        e.stopPropagation();
+        return;
+      }
       if (e.key === "Enter") {
         e.preventDefault();
         handleUrlSubmit();
@@ -91,48 +126,44 @@ function LinkComponent(props: any) {
     [handleUrlSubmit, href]
   );
 
-  // 标题编辑 - 直接在 contentEditable 中编辑
-  const handleTitleBlur = useCallback(() => {
-    const newTitle = titleRef.current?.textContent?.trim() || "链接";
-    props.updateAttributes({ title: newTitle });
-  }, [props]);
-
-  const handleTitleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      titleRef.current?.blur();
-    }
-  }, []);
-
   return (
     <NodeViewWrapper
       as="span"
-      className="inline-flex items-center"
+      className="inline-flex items-baseline"
       data-type="link-node"
     >
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
+          <span tabIndex={-1} aria-hidden className="sr-only" />
+        </PopoverTrigger>
+
+        <PopoverAnchor asChild>
           <span
-            className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-sm font-medium transition-all cursor-text select-none mx-0.5 text-blue-700 dark:text-blue-400 bg-blue-50/80 dark:bg-blue-500/10 hover:bg-blue-100/80 dark:hover:bg-blue-500/20 ${
-              isSelected ? "bg-blue-200/80 dark:bg-blue-500/30 ring-1 ring-blue-400/50" : ""
+            onMouseMove={(e) => setIsModHover(e.metaKey || e.ctrlKey)}
+            onMouseLeave={() => setIsModHover(false)}
+            onMouseDown={(e) => {
+              if ((e.metaKey || e.ctrlKey) && href) {
+                e.preventDefault();
+                e.stopPropagation();
+                openLink(href);
+              }
+            }}
+            onDoubleClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setOpen(true);
+            }}
+            className={`min-w-[1ch] underline underline-offset-2 decoration-current/30 text-muted-foreground ${
+              isModHover && href ? "cursor-pointer" : "cursor-text"
             }`}
           >
-            <Link2 className="size-3 mr-1 opacity-60" />
-            <span
-              ref={titleRef}
-              contentEditable
-              suppressContentEditableWarning
-              onBlur={handleTitleBlur}
-              onKeyDown={handleTitleKeyDown}
-              onClick={(e) => e.stopPropagation()}
-              className="outline-none min-w-[1ch]"
-            >
-              {displayText}
-            </span>
+            <NodeViewContent as="span" />
+            {isTextEmpty ? (title || "链接") : null}
           </span>
-        </PopoverTrigger>
-        <PopoverContent 
-          className="w-64 p-2" 
+        </PopoverAnchor>
+
+        <PopoverContent
+          className="w-72 p-2"
           align="start"
           onOpenAutoFocus={(e) => e.preventDefault()}
         >
@@ -150,7 +181,7 @@ function LinkComponent(props: any) {
               onClick={handleUrlSubmit}
               className="h-8 px-3 text-xs bg-primary text-primary-foreground hover:bg-primary/90 rounded shrink-0 transition-colors"
             >
-              确定
+              保存
             </button>
           </div>
         </PopoverContent>
@@ -165,6 +196,10 @@ export const LinkNode = Node.create({
   group: "inline",
 
   inline: true,
+
+  selectable: false,
+
+  content: "text*",
 
   addAttributes() {
     return {
@@ -193,13 +228,20 @@ export const LinkNode = Node.create({
   parseHTML() {
     return [
       {
+        tag: 'span[data-type="link-node"]',
+      },
+      {
         tag: 'div[data-type="link-node"]',
       },
     ];
   },
 
   renderHTML({ HTMLAttributes }) {
-    return ["div", mergeAttributes(HTMLAttributes, { "data-type": "link-node" })];
+    return [
+      "span",
+      mergeAttributes(HTMLAttributes, { "data-type": "link-node" }),
+      0,
+    ];
   },
 
   addNodeView() {
@@ -210,19 +252,39 @@ export const LinkNode = Node.create({
     return {
       setLinkNode:
         (options) =>
-        ({ commands }) => {
-          return commands.insertContent({
-            type: this.name,
-            attrs: options,
-          });
+        ({ state, dispatch }) => {
+          const { from, to } = state.selection;
+          const text = state.schema.text(options.title || "链接");
+          const node = state.schema.nodes[this.name].create(
+            { ...options, title: options.title || null, isNew: true },
+            text
+          );
+
+          let tr = state.tr.replaceRangeWith(from, to, node);
+          tr = tr.setSelection(
+            TextSelection.create(tr.doc, from + 1, from + node.nodeSize - 1)
+          );
+
+          if (dispatch) dispatch(tr);
+          return true;
         },
       insertLinkPlaceholder:
         () =>
-        ({ commands }) => {
-          return commands.insertContent({
-            type: this.name,
-            attrs: { href: null, title: null },
-          });
+        ({ state, dispatch }) => {
+          const { from, to } = state.selection;
+          const text = state.schema.text("链接");
+          const node = state.schema.nodes[this.name].create(
+            { href: null, title: null, isNew: true },
+            text
+          );
+
+          let tr = state.tr.replaceRangeWith(from, to, node);
+          tr = tr.setSelection(
+            TextSelection.create(tr.doc, from + 1, from + node.nodeSize - 1)
+          );
+
+          if (dispatch) dispatch(tr);
+          return true;
         },
     };
   },

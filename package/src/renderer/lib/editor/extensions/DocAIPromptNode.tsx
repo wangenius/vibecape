@@ -4,7 +4,7 @@
  */
 
 import { Node, Mark, mergeAttributes } from "@tiptap/core";
-import { Plugin, PluginKey, TextSelection } from "@tiptap/pm/state";
+import { Plugin, PluginKey } from "@tiptap/pm/state";
 import {
   ReactNodeViewRenderer,
   NodeViewWrapper,
@@ -128,12 +128,28 @@ export const DocAIPromptNode = Node.create<DocAIPromptOptions>({
     return {
       insertDocAIPrompt:
         () =>
-        ({ commands }) => {
+        ({ state, tr, dispatch }) => {
           const id = `ai-rewrite-${Date.now()}`;
-          return commands.insertContent({
-            type: this.name,
-            attrs: { id, mode: "generate" },
-          });
+          const { $from } = state.selection;
+          const parent = $from.parent;
+
+          // 如果当前段落是空的，替换整个段落而不是在其中插入
+          if (parent.type.name === "paragraph" && parent.content.size === 0) {
+            const start = $from.before($from.depth);
+            const end = $from.after($from.depth);
+            const nodeType = state.schema.nodes.docAIPrompt;
+            const newNode = nodeType.create({ id, mode: "generate" });
+            tr.replaceWith(start, end, newNode);
+            if (dispatch) dispatch(tr);
+            return true;
+          }
+
+          // 否则在当前位置插入
+          const nodeType = state.schema.nodes.docAIPrompt;
+          const newNode = nodeType.create({ id, mode: "generate" });
+          tr.insert($from.pos, newNode);
+          if (dispatch) dispatch(tr);
+          return true;
         },
 
       insertDocAIPolish:
@@ -195,23 +211,32 @@ export const DocAIPromptNode = Node.create<DocAIPromptOptions>({
 
       removeDocAIPrompt:
         (id: string) =>
-        ({ state, tr }) => {
+        ({ state, tr, dispatch }) => {
           let found = false;
           let markId: string | null = null;
+          let nodePos: number | null = null;
+          let nodeSize: number = 0;
 
-          // 找到并删除 node
+          // 找到目标节点
           state.doc.descendants((node, pos) => {
             if (node.type.name === "docAIPrompt" && node.attrs.id === id) {
               markId = node.attrs.markId;
-              tr.delete(pos, pos + node.nodeSize);
+              nodePos = pos;
+              nodeSize = node.nodeSize;
               found = true;
               return false;
             }
             return true;
           });
 
-          // 如果有关联的 mark，移除它（波浪线）
-          if (markId && found) {
+          if (!found || nodePos === null) return false;
+
+          // 用空段落替换 DocAIPromptNode（转换为普通节点）
+          const paragraph = state.schema.nodes.paragraph.create();
+          tr.replaceWith(nodePos, nodePos + nodeSize, paragraph);
+
+          // 如果有关联的 mark（polish 模式），移除它（波浪线）
+          if (markId) {
             const markType = state.schema.marks.docAIPolishMark;
             if (markType) {
               tr.doc.descendants((node, pos) => {
@@ -228,7 +253,8 @@ export const DocAIPromptNode = Node.create<DocAIPromptOptions>({
             }
           }
 
-          return found;
+          if (dispatch) dispatch(tr);
+          return true;
         },
 
       /** 开始 Generate 模式流式编辑：在节点位置插入 DiffNode */
@@ -917,7 +943,7 @@ ${
     }
   }, [prompt, status, editor, isPolishMode, markId, nodeId, props, t, node]);
 
-  // 取消：拒绝 diff 并关闭输入节点，光标移动到原文末尾
+  // 取消：拒绝 diff 并关闭输入节点，将 PromptNode 转换为普通段落
   const handleCancel = useCallback(() => {
     // 停止进行中的请求
     if (abortControllerRef.current) {
@@ -929,28 +955,10 @@ ${
     const currentDiffId = node.attrs.diffId;
     const currentMarkId = node.attrs.markId;
 
-    // 记录当前节点位置，用于删除后定位
+    // 记录当前节点位置，用于转换后定位光标
     const currentNodePos = props.getPos();
 
-    // 找到原文的位置（用于定位光标）
-    let originalTextEndPos = -1;
-    const polishMarkType = editor.state.schema.marks.docAIPolishMark;
-
-    if (polishMarkType && currentMarkId) {
-      editor.state.doc.descendants((n, pos) => {
-        if (n.isText) {
-          const mark = n.marks.find(
-            (m) => m.type === polishMarkType && m.attrs.id === currentMarkId
-          );
-          if (mark) {
-            originalTextEndPos = pos + n.nodeSize;
-          }
-        }
-        return true;
-      });
-    }
-
-    // 如果有 diff，拒绝它
+    // 如果有 diff，拒绝它（这会删除 diff 内容和 PromptNode）
     if (currentDiffId) {
       const nodeAttrs = editor.state.doc.nodeAt(props.getPos())?.attrs;
       if (nodeAttrs?.isCrossNode) {
@@ -958,44 +966,52 @@ ${
       } else {
         editor.commands.rejectAIDiff(currentDiffId);
       }
-    } else {
-      // 没有 diff，直接移除节点
-      editor.commands.removeDocAIPrompt(nodeId);
-    }
-
-    // 将光标移动到原文末尾
-    setTimeout(() => {
-      const { state } = editor;
-      // 找不到原文位置，定位到 DocAIPromptNode 之前的位置
-      // 如果我们删除了节点，之前的位置现在应该是空位或者下一个内容的位置，
-      // 但我们想要 "before this node"，所以使用删除前的 pos
-      let targetPos =
-        originalTextEndPos !== -1
-          ? originalTextEndPos
-          : Math.max(0, Math.min(currentNodePos || 0, state.doc.content.size));
-
-      // 确保不超出文档范围
-      targetPos = Math.max(0, Math.min(targetPos, state.doc.content.size));
-
-      editor.commands.focus();
-
-      // 使用 TextSelection.near 找到最近的有效文本位置
-      try {
-        const $pos = state.doc.resolve(targetPos);
-        const selection = TextSelection.near($pos, -1);
-        editor.view.dispatch(state.tr.setSelection(selection));
-      } catch (e) {
-        // 如果失败，尝试选择文档开头
-        try {
-          const $start = state.doc.resolve(1);
-          const selection = TextSelection.near($start, 1);
-          editor.view.dispatch(state.tr.setSelection(selection));
-        } catch (e2) {
-          console.warn("Failed to set selection after cancel", e2);
+      
+      // polish 模式：光标移动到原文末尾
+      setTimeout(() => {
+        let originalTextEndPos = -1;
+        const polishMarkType = editor.state.schema.marks.docAIPolishMark;
+        if (polishMarkType && currentMarkId) {
+          editor.state.doc.descendants((n, pos) => {
+            if (n.isText) {
+              const mark = n.marks.find(
+                (m) => m.type === polishMarkType && m.attrs.id === currentMarkId
+              );
+              if (mark) {
+                originalTextEndPos = pos + n.nodeSize;
+              }
+            }
+            return true;
+          });
         }
-      }
-    }, 0);
-  }, [deleteNode, editor, isPolishMode, markId, nodeId, props, node]);
+        
+        if (originalTextEndPos !== -1) {
+          editor.commands.focus(originalTextEndPos);
+        } else {
+          editor.commands.focus();
+        }
+      }, 0);
+    } else {
+      // 没有 diff（generate 模式）：将 PromptNode 转换为普通段落
+      editor.commands.removeDocAIPrompt(nodeId);
+
+      // 将光标移动到新创建的段落中
+      setTimeout(() => {
+        // removeDocAIPrompt 将节点替换为空段落，段落内部位置是 currentNodePos + 1
+        const targetPos = (currentNodePos || 0) + 1;
+        
+        try {
+          const { state } = editor;
+          // 确保位置有效
+          const safePos = Math.max(1, Math.min(targetPos, state.doc.content.size));
+          editor.commands.focus(safePos);
+        } catch (e) {
+          // 如果失败，尝试聚焦到文档
+          editor.commands.focus();
+        }
+      }, 0);
+    }
+  }, [editor, nodeId, props, node]);
 
   // 接受 diff 并关闭输入节点，光标移动到新内容的末尾
   const handleAccept = useCallback(() => {
@@ -1136,6 +1152,16 @@ ${
                 }
                 return true;
               },
+              // Backspace: 空内容时关闭节点
+              Backspace: ({ editor: e }) => {
+                const currentPrompt = promptRef.current;
+                // 只有在内容为空时才关闭
+                if (!currentPrompt.trim() && e.state.doc.textContent.trim() === "") {
+                  handleCancelRef.current();
+                  return true;
+                }
+                return false;
+              },
               // Shift + Backspace: 没有内容时关闭
               "Shift-Backspace": () => {
                 const currentPrompt = promptRef.current;
@@ -1154,7 +1180,16 @@ ${
                 }
                 return false;
               },
-              // Enter: 不定义，使用默认行为（新段落/换行）
+              // Enter: 空内容时关闭节点，有内容时使用默认行为
+              Enter: ({ editor: e }) => {
+                const currentPrompt = promptRef.current;
+                // 只有在内容为空时才关闭
+                if (!currentPrompt.trim() && e.state.doc.textContent.trim() === "") {
+                  handleCancelRef.current();
+                  return true;
+                }
+                return false;
+              },
               // Escape: 取消并关闭
               Escape: () => {
                 handleCancelRef.current();

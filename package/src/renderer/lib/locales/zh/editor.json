@@ -1,7 +1,7 @@
 {
   "slashMenu": {
-    "aiRewrite": "AI 改写",
-    "aiRewriteDesc": "使用 AI 改写或生成内容",
+    "aiRewrite": "让 AI 写",
+    "aiRewriteDesc": "告诉 AI 你想要什么",
     "aiContinue": "AI 续写",
     "aiContinueDesc": "AI 帮你续写内容",
     "h1": "一级标题",

@@ -1,7 +1,7 @@
 {
   "slashMenu": {
-    "aiRewrite": "AI Rewrite",
-    "aiRewriteDesc": "Rewrite or generate content with AI",
+    "aiRewrite": "Ask AI",
+    "aiRewriteDesc": "Tell AI what you want",
     "aiContinue": "AI Continue",
     "aiContinueDesc": "Let AI continue writing",
     "h1": "Heading 1",

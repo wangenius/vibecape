@@ -188,6 +188,27 @@ export const CustomKeyboardExtension = Extension.create({
 
         // ===== 处理段落 =====
         if (parent.type.name === "paragraph") {
+          // 如果段落前一个节点是 blockquote，且当前段落为空
+          // 默认行为会把当前段落“合并进” blockquote，导致 blockquote 内出现一个新的空段落（看起来像多了一行）
+          // 这里改为：删除当前空段落，并把光标移动到 blockquote 的末尾
+          if (
+            nodeBefore &&
+            nodeBefore.type.name === "blockquote" &&
+            parent.content.size === 0
+          ) {
+            const tr = state.tr;
+
+            // 删除当前空段落
+            tr.delete(pos, pos + parent.nodeSize);
+
+            // 光标移动到 blockquote 的末尾（偏向前一个节点内部的可落点位置）
+            const targetPos = Math.min(pos - 1, tr.doc.content.size);
+            tr.setSelection(TextSelection.near(tr.doc.resolve(targetPos), -1));
+
+            editor.view.dispatch(tr);
+            return true;
+          }
+
           // 如果上一个节点是标题，将段落内容合并到标题中
           if (nodeBefore && nodeBefore.type.name === "heading") {
             // 获取段落内容

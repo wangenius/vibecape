@@ -51,13 +51,13 @@ export const ThreadListItem: React.FC<ThreadListItemProps> = ({
           </span>
         </div>
         {isHovered && onDelete && (
-          <button
+          <span
             onClick={handleDelete}
             className="shrink-0 rounded text-xs hover:text-destructive transition-colors"
             title={t("common.delete")}
           >
             delete
-          </button>
+          </span>
         )}
       </div>
     </div>

@@ -152,7 +152,8 @@ export const useDocEditorExtensions = ({
         placeholder: ({ node, editor, pos }) => {
           // 如果主编辑器没有 DOM 焦点（比如焦点在 DocAIPromptNode 的 mini editor 中），
           // 普通节点不显示 placeholder
-          const hasFocus = editor.view.hasFocus();
+          // 安全检查：确保 editor.view 已挂载
+          const hasFocus = editor.view?.hasFocus?.() ?? false;
           
           // Title 节点：只在编辑器有焦点时显示 placeholder
           if (node.type.name === "title") {
